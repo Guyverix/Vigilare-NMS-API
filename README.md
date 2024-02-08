@@ -18,6 +18,7 @@ Notes and information on the application do currently reside on **[wiki.iwillfea
 - **Template system:** Extend functionality beyond initial design with adding templates.
 - **Independent GUI:** Use your own UI for in-house branding and looks.
 - **Multiple Graph options available:** Support for rrd, and graphite are built in.
+- **Database authentication:** Discrete access levels per user are supported.      
 
 ## Getting Started
 - [ ] All testing done on Ubuntu / Debian systems
