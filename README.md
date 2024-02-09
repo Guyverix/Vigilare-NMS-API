@@ -55,7 +55,10 @@ cd Vigilare-api
 cd apps
 ```
 ### nano config.php
-Anything defined with ??? is a maditory parameter
+Anything defined with ??? is a mandatory parameter or is in ALL CAPS
+
+The installer should take care of this once it is completed.
+
 - [ ] ```$apiUrl ='https://FQDN';```
 - [ ] ```$apiHost="https://FQDN of localhost"```
 - [ ] ```$apiPort='PORT';```
