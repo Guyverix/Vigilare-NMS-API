@@ -1835,8 +1835,8 @@ class fork_daemon
 			// close our socket (we only need the one to the child)
 			socket_close($socket_parent);
 
-			// debug logging
-			$this->log('forking child ' . $pid . ' for bucket ' . $bucket, self::LOG_LEVEL_DEBUG);
+			// debug logging Disabled 02-19-24.  Basically noise  CSH
+			// $this->log('forking child ' . $pid . ' for bucket ' . $bucket, self::LOG_LEVEL_DEBUG);
 
 			// parent spawned child callback
 			$this->invoke_callback($this->parent_function_fork[$bucket], array($pid, $identifier), true);
