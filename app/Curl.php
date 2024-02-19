@@ -23,15 +23,14 @@ class Curl{
   public $content = '';
   // class variable that will hold any custom headers
   public $headers = [];
+  // Get trap URL from config.php
+  private $apiUrl;
+  private $apiPort;
 
   // Set some sane defaults
   public function __construct() {
-    /*
-      We cannot easily use include, or require here.
-      If this was part of the slim4 framework we could use settings.php
-      The constructor is a catchall really for now..
-    */
-    $this->url = "https://larvel01.iwillfearnoevil.com:8002/trap";
+    include("config.php");
+    $this->url = $apiUrl . ':' . $apiPort . "/trap";
     $this->method = "get";
   }
 
