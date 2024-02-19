@@ -21,4 +21,4 @@ app/settings.php
 /app/settings.php
 app/config.php
 testing/**
-
+app/routes.php
