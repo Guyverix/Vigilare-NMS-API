@@ -1,0 +1,57 @@
+This is where the pre-defined options are for generating a pretty graph from grapite.
+
+The logic should be full match or catchall..
+
+
+match against <poller>.<check>
+Everything under check should be a stored metric for use.
+
+All of them defined SHOULD be supported.
+
+Template will return a full URL with all parameters defined for display
+
+This SHOULD be able to also be manipulated to return raw metric values for things
+like javacsript to display..  FUTURE
+
+
+
+*****************************
+
+
+The returnUrl needs to follow this convention for NRPE.  this is due to SNMP being one level deeper
+and still needing to figure out what the graph is..
+
+SNMP: monitorName is the distint value such as a drive name, interface name, lm-sensor name....
+$renderUrl[$checkName][$monitorName] = $graphiteUrl . ":" . $graphitePort . "/render/?" . $renderBegin . $renderEnd . $returnFormat;
+
+NRPE
+$renderUrl[$checkName][$checkName] = $graphiteUrl . ":" . $graphitePort . "/render/?" . $renderBegin . $renderEnd . $returnFormat;
+
+
+
+****************************
+
+All returns are as a nested array
+NRPE:
+return [checkName][checkName] = array of URL's
+
+SNMP:
+return [checkName][monitorName] = array of URL's
+
+
+***************************
+Note that in the JSON return, all slashes ARE escaped.  They will go back to normal once this is turned back into an array.  They were removed here when I saved this example.
+
+{
+    "statusCode": 200,
+    "data": [
+        {
+            "checkOpenFiles": {
+                "checkOpenFiles": "https://graphite.iwillfearnoevil.com:443/render/?&width=897&height=192&from=-1d&to=-1m&bgcolor=ffffff&fgcolor=000000&majorGridLineColor=FF22FF&minorGridLineColor=darkgrey&title=checkOpenFiles&lineWidth=2&target=color(alias(nms.guyver-office_iwillfearnoevil_com.nrpe.checkOpenFiles.open_fd,'open_fd'),'00cc00')"
+            }
+        },
+        {
+            "checkPortLocal-22": {
+                "checkPortLocal-22": "https://graphite.iwillfearnoevil.com:443/render/?&width=897&height=192&from=-1d&to=-1m&bgcolor=ffffff&fgcolor=000000&majorGridLineColor=FF22FF&minorGridLineColor=darkgrey&title=checkPortLocal-22&lineWidth=2&target=color(alias(nms.guyver-office_iwillfearnoevil_com.nrpe.checkPortLocal-22.time,'time'),'00cc00')"
+            }
+        },

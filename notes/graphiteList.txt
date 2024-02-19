@@ -1,0 +1,10 @@
+https://graphite.iwillfearnoevil.com/metrics/index.json
+
+curl | jq '.' | grep hostname will return ALL matching hostnames
+
+
+JSON is a valid return to display elsewhere..
+
+https://graphite.iwillfearnoevil.com/render/?width=586&height=308&target=nms.guyver-office_iwillfearnoevil_com.interfaces.enp2s0.ifHCInOctets&format=json
+
+That will return a json array of target, name, and datapoints.  arr[0] is value, arr[1] is time

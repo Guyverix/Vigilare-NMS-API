@@ -1,0 +1,20 @@
+Create route in routes.php
+set your endpoints
+
+Create DI autowire in repostories.php
+Add in your paths to different namespaces
+Create the autowire that adds the repository class to your extended class name
+  This is usually in the Infrastructure where blahRepo extends Repo
+
+Likely this is the culprit for why we cannot easily create our db class, but Meh..
+get the damn code to MVP
+
+create actions
+set up vars, and parse input
+
+create Domain
+create functions that can be called from actions
+
+create functions in Infrastructure
+infra is where you are doing your db queries from
+

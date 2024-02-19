@@ -1,0 +1,36 @@
+Logic:
+Calling the /trap API is not the same as an snmptrap.  This is really more of an Event API living at /trap
+
+There is NO logic for inserting the event into the database.  All data must be set before calling this URL.
+
+
+Testing possibilities:
+curl -X POST -F 'endEvent=blah' -F 'evid=12345' -F 'device=fake' -F 'stateChange=2021-04-21 00:00:00'  -F 'eventAddress=""'  http://larvel01:8002/trap
+curl -X POST -F 'eventAgeout=2600' -F 'eventCounter=2'  -F 'eventRaw=raw crap' -F 'eventReceiver=123' -F 'eventSeverity=0' -F 'eventAddress=""' -F 'eventDetails=""' -F 'eventProxyIp=""' -F 'eventName=name' \
+-F 'eventType=blah' -F 'eventMonitor=dammit' -F 'eventSummary=blah' -F 'foo=bar' http://larvel01:8002/trap
+
+
+/trap Events all will go into the database without exception.
+Delete is only used to move from event >> history tables
+
+
+1) This does not invoke the pre or post filtering like the snmptrap does.
+2) There is no performance metric saved from values sent to this API.
+3) The flow is all based on the severity value and matches against device + eventName.
+4) This will either set the alarm or clear an existing one that is == device + eventName.
+  a) Updates will change certain values, but not all of them
+  b) Inserts will insert all posted values as POST gives
+    i) Safties are in place to default values if they are not given
+    ii) Default events are DEBUG level SET events if not given
+
+* Sloppy POST statements will make things not work well.
+1) Device is very important, even if it is not already defined in the database
+2) EventName SHOULD be set or the default is unknown which will cause issues with set and clears
+3) This API is really designed for adhoc events to be put into the database
+  a) Pre filtering for events should call (if it exists yet) /trap/prefilter
+  b) Post filtering for events should call (if it exists) /trap/postfilter
+4) pre/post filters will be able to alter any event based against the name matching in the mapping table
+  a) Pre filters will end up calling back the /trap URL with changes that it sets to insert into the database
+  b) Post filters will internally update the database as the event database entry will already exist
+
+

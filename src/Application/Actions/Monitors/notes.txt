@@ -1,0 +1,29 @@
+This is going to be the controller for working with the monitoringDevicePoller table.
+
+Normal CRUD.
+
+Minimal info:
+checkName: Unique
+checkAction: command or oid (including vars)
+type: walk | get | nrpe | shell | disabled
+iteration cycle: 60 | 300 | ? ( Daemon must be turned on with new cycles)
+storage: rrd | graphite | database | databaseMetric | none
+hostid: csv of device ids
+hostGroup: csv of hostGroups from table hostGroup
+
+
+Inputs to support:
+create
+update
+delete
+addHostId
+deleteHostId
+addHostGroup
+deleteHostGroup
+
+
+Used to leverage the above for updates, etc.
+FindMonitors
+FindMonitorsDisable
+FindMonitorsAll
+FindMonitorsBycheckName

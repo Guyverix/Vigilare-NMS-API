@@ -1,0 +1,41 @@
+# Root domain name
+DOMAIN="somedomain.com"
+
+# API details
+# Used for apache cfg, config.php, settings.php
+API_HOSTNAME="api01"
+API_PORT="8002"
+API_URL="${API_HOSTNAME}.${DOMAIN}"
+
+# Used for the API to create URLs
+GUI_HOSTNAME="vigilare"
+GUI_PORT="443"
+GUI_URL="${GUI_HOSTNAME}.${DOMAIN}"
+
+# System is designed only for a single instance with V1
+DB_IP="10.1.0.255"
+DB_PORT="3306"
+
+# What the API will talk with the db as
+DB_USER="vigilare"
+DB_PASS="password"
+
+# Create the service account with this admin acct
+DB_INSTALL_USER="root"
+DB_INSTALL_PASS="somethingComplex"
+
+# Note the trailing / in SSL_PATH
+SSL_PATH="/etc/ssl/certs/"
+SSL_CERT_NAME="cert.pem"
+SSL_CERT_KEY="key.pem"
+
+# These are your security keys
+
+# Dont change unless you know what they are doing
+# If you want to change them to something more complex, go ahead
+# but pls avoid reseverved chars or sadness may ensue.
+
+API_KEY=$(uuidgen)
+JWT_SECRET=$(strings /dev/urandom | grep -o '[[:alnum:]]' | head -n 15 | tr -d '\n')
+PEPPER=$(strings /dev/urandom | grep -o '[[:alnum:]]' | head -n 10 | tr -d '\n')
+

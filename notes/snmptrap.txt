@@ -1,0 +1,23 @@
+I want to log the snmptrapd output beyond the /var/log/syslog messages
+
+
+sudo nano /lib/systemd/system/snmptrapd.service
+
+change systemd file with the following value
+
+Currently testing:
+ExecStart=/usr/sbin/snmptrapd -On -LOw -f -p /run/snmptrapd.pid
+
+
+Have tested:
+/usr/sbin/snmptrapd -Le -Lf /opt/nmsApi/logs/snmptrapd.log -On -f -p /run/snmptrapd.pid
+
+-On is used to disable MIB change from raw oids to named.
+Reason for this, is that we have transforms in place that match raw oid, not names
+
+
+
+/etc/snmp/snmptrapd.conf only needs this:
+
+traphandle .1.* /usr/bin/php /opt/nmsApi/traps/trapReceiver.php
+disableAuthorization yes

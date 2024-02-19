@@ -1,0 +1,65 @@
+This route is going to be specific to dealing with database table trapEventMap
+
+This will allow a CRUD system
+Create Retrieve Update Delete
+
+The frontend GUI is going to have to do some basic validation to make sure that the PHP is at least syntatically correct.
+
+Values we are going to be working with:
+oid
+display_name
+severity
+pre_processing
+type
+parent_of
+child_of
+age_out
+post_processing
+
+This is where an SNMP trap is mapped to known values, and other manipulation is done.
+
+oid may be renamed to something else at a later date, and then simply have this be the whole mapper no matter what is used.
+
+oid is the critical match, as everything hangs off of this value.
+
+There can be ONLY one match, either an exact match, OR unknown.  that is all.
+
+
+
+Stubbed and unused:
+parent_of
+child_of
+type
+post_processing
+
+Anything that is defined as a "default" can be overwritten in the pre_processing
+
+
+
+
+SQL:
+CREATE TABLE `trapEventMap` (
+ `oid` varchar(255) DEFAULT NULL,
+ `display_name` varchar(255) DEFAULT NULL,
+ `severity` tinyint(6) DEFAULT NULL,
+ `pre_processing` text,
+ `type` int(9) DEFAULT NULL,
+ `parent_of` text,
+ `child_of` text,
+ `age_out` varchar(32) DEFAULT NULL,
+ `post_processing` text,
+ UNIQUE KEY `oid` (`oid`)
+) ENGINE=InnoDB
+
+
+
+CREATE TABLE `monitoringPoller` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `checkName` varchar(128) NOT NULL COMMENT 'monitoring name.  Camel case, do not use spaces',
+  `checkAction` text CHARACTER SET utf8 NOT NULL COMMENT 'command args needed.  oids, nrpe args, shell args, etc...  Variables allowed in here match hostname and IP address only ',
+  `type` varchar(10) CHARACTER SET utf8 NOT NULL COMMENT 'nrpe shell curl (snmp)get (snmp)walk  (snmp)future: bulk',
+  `iteration` int(5) NOT NULL DEFAULT '300',
+  `storage` varchar(25) NOT NULL DEFAULT 'graphite' COMMENT 'database ( raw save) databaseMetric (json) graphite (curl push)',
+  `hostname` text NOT NULL COMMENT 'This is simply a list of hostnames that we are going to run against.  This is a JSON save.  Decode it internally at runtime for list.',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=latin1

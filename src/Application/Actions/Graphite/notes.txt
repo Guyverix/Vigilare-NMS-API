@@ -1,0 +1,9 @@
+Graphite API that will return links...
+
+Lots and lots of links...
+
+filtering is the {fliter} arg
+
+filter against hostname is best...
+
+remember calling a domain name needs periods redefined to _ character

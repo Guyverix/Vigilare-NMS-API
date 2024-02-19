@@ -1,0 +1,162 @@
+http://forums.cacti.net/viewtopic.php?p=51529
+/usr/bin/rrdtool graph - \
+--imgformat=PNG \
+--start=-86400 \
+--end=-300 \
+--title="Cybercon 1 - TCP Protocol Statistics" \
+--rigid \
+--base=1000 \
+--height=120 \
+--width=500 \
+--alt-autoscale \
+--vertical-label="per 5 minutes" \
+DEF:a="/usr/share/cacti/site/rra/cybercon_1_tcpactiveopens_26.rrd":tcpActiveOpens:AVERAGE \
+DEF:b="/usr/share/cacti/site/rra/cybercon_1_tcpactiveopens_26.rrd":tcpAttemptFails:AVERAGE \
+DEF:c="/usr/share/cacti/site/rra/cybercon_1_tcpactiveopens_26.rrd":tcpEstabResets:AVERAGE \
+DEF:d="/usr/share/cacti/site/rra/cybercon_1_tcpactiveopens_26.rrd":tcpInErrs:AVERAGE \
+DEF:e="/usr/share/cacti/site/rra/cybercon_1_tcpactiveopens_26.rrd":tcpOutRsts:AVERAGE \
+DEF:f="/usr/share/cacti/site/rra/cybercon_1_tcpactiveopens_26.rrd":tcpPassiveOpens:AVERAGE \
+DEF:g="/usr/share/cacti/site/rra/cybercon_1_tcpactiveopens_26.rrd":tcpRetransSegs:AVERAGE \
+DEF:h="/usr/share/cacti/site/rra/cybercon_1_tcpactiveopens_26.rrd":tcpCurrEstab:AVERAGE \
+CDEF:cdefa=a,300,* \
+CDEF:cdefe=b,300,* \
+CDEF:cdefi=c,300,* \
+CDEF:cdefbc=d,300,* \
+CDEF:cdefbg=e,300,* \
+CDEF:cdefca=f,300,* \
+CDEF:cdefce=g,300,* \
+AREA:cdefa#FFD660:"tcpActiveOpens"  \
+GPRINT:cdefa:LAST:" Current\:"  \
+GPRINT:cdefa:AVERAGE:"Average\:"  \
+GPRINT:cdefa:MAX:"Maximum\:\n"  \
+STACK:cdefe#FF5700:"tcpAttemptFails"  \
+GPRINT:cdefe:LAST:"Current\:"  \
+GPRINT:cdefe:AVERAGE:"Average\:"  \
+GPRINT:cdefe:MAX:"Maximum\:\n"  \
+STACK:cdefi#EAAF00:"tcpEstabResets"  \
+GPRINT:cdefi:LAST:" Current\:"  \
+GPRINT:cdefi:AVERAGE:"Average\:"  \
+GPRINT:cdefi:MAX:"Maximum\:\n"  \
+STACK:cdefbc#D8ACE0:"tcpInErrs"  \
+GPRINT:cdefbc:LAST:"      Current\:"  \
+GPRINT:cdefbc:AVERAGE:"Average\:"  \
+GPRINT:cdefbc:MAX:"Maximum\:\n"  \
+STACK:cdefbg#CDCFC4:"tcpOutRsts"  \
+GPRINT:cdefbg:LAST:"     Current\:"  \
+GPRINT:cdefbg:AVERAGE:"Average\:"  \
+GPRINT:cdefbg:MAX:"Maximum\:\n"  \
+STACK:cdefca#C4FD3D:"tcpPassiveOpens"  \
+GPRINT:cdefca:LAST:"Current\:"  \
+GPRINT:cdefca:AVERAGE:"Average\:"  \
+GPRINT:cdefca:MAX:"Maximum\:\n"  \
+STACK:cdefce#AD3B6E:"tcpRetransSegs"  \
+GPRINT:cdefce:LAST:" Current\:"  \
+GPRINT:cdefce:AVERAGE:"Average\:"  \
+GPRINT:cdefce:MAX:"Maximum\:\n"  \
+LINE1:h#4444FF:"tcpCurrEstab"  \
+GPRINT:h:LAST:"   Current\:"  \
+GPRINT:h:AVERAGE:"Average\:"  \
+GPRINT:h:MAX:"Maximum\:\n" 
+
+https://forums.cacti.net/about15908.html
+APC graphs
+RRDTool Command:
+c:/rrdtool/rrdtool.exe graph - \
+--imgformat=PNG \
+--start=-86400 \
+--end=-300 \
+--title="AH2 UPS1 MDF - Line voltages" \
+--rigid \
+--base=1000 \
+--height=120 \
+--width=500 \
+--alt-autoscale-max \
+--lower-limit=200 \
+--vertical-label="Vac" \
+--slope-mode \
+DEF:a="C\:/Inetpub/wwwroot/cacti/rra/ah2_ups1_mdf_max_voltage_1295.rrd":outp_voltage:AVERAGE \
+DEF:b="C\:/Inetpub/wwwroot/cacti/rra/ah2_ups1_mdf_max_voltage_1295.rrd":line_voltage:AVERAGE \
+DEF:c="C\:/Inetpub/wwwroot/cacti/rra/ah2_ups1_mdf_max_voltage_1295.rrd":max_voltage:AVERAGE \
+DEF:d="C\:/Inetpub/wwwroot/cacti/rra/ah2_ups1_mdf_max_voltage_1295.rrd":min_voltage:AVERAGE \
+AREA:a#00FF00:"Output voltage" \
+GPRINT:a:LAST:" Current\:%8.2lf %s" \
+GPRINT:a:AVERAGE:"Average\:%8.2lf %s" \
+GPRINT:a:MAX:"Maximum\:%8.2lf %s\n" \
+AREA:b#35962B:"Line voltage" \
+GPRINT:b:LAST:" Current\:%8.2lf %s" \
+GPRINT:b:AVERAGE:"Average\:%8.2lf %s" \
+GPRINT:b:MAX:"Maximum\:%8.2lf %s\n" \
+LINE1:c#6DC8FE:"Maximum voltage" \
+GPRINT:c:LAST:"Current\:%8.2lf %s" \
+GPRINT:c:AVERAGE:"Average\:%8.2lf %s" \
+GPRINT:c:MAX:"Maximum\:%8.2lf %s\n" \
+LINE1:d#FFF200:"Minimum voltage" \
+GPRINT:d:LAST:"Current\:%8.2lf %s" \
+GPRINT:d:AVERAGE:"Average\:%8.2lf %s" \
+GPRINT:d:MIN:"Minimum\:%8.2lf %s\n" \
+HRULE:204#FFC73B:"Low transfer voltage" \
+HRULE:252#FFC73B:"High transfer voltage" 
+
+Multi-CPU graph
+/usr/bin/rrdtool graph - \
+--imgformat=PNG \
+--start=-86400 \
+--end=-300 \
+--title="UKEC4SI - Test Server - CPU Utilization Multi" \
+--base=1000 \
+--height=120 \
+--width=500 \
+--alt-autoscale-max \
+--lower-limit=0 \
+--vertical-label="" \
+--slope-mode \
+DEF:a="/var/www/html/rra/ukec4si_test_server_cpu_194.rrd":cpu:AVERAGE \
+DEF:b="/var/www/html/rra/ukec4si_test_server_cpu_194.rrd":cpu1:AVERAGE \
+LINE1:a#FF0000:"CPU Utilization (CPU0)"  \
+GPRINT:a:LAST:"Current\:%8.0lf"  \
+GPRINT:a:AVERAGE:"Average\:%8.0lf"  \
+GPRINT:a:MAX:"Max\:%8.0lf\n"  \
+LINE1:b#0D006A:"CPU Utilization (CPU1)"  \
+GPRINT:b:LAST:"Current\:%8.0lf"  \
+GPRINT:b:AVERAGE:"Average\:%8.0lf"  \
+GPRINT:b:MAX:"Max\:%8.0lf" 
+
+/usr/bin/rrdtool graph - \
+--imgformat=PNG \
+--start=-86400 \
+--end=-300 \
+--title="Multi CPU Utilization on UKHALWEB1" \
+--base=1000 \
+--height=120 \
+--width=500 \
+--alt-autoscale-max \
+--lower-limit=0 \
+--vertical-label="" \
+--slope-mode \
+DEF:a="/var/www/html/rra/ukhalweb1_cpu_97.rrd":cpu:AVERAGE \
+DEF:b="/var/www/html/rra/ukhalweb1_cpu_97.rrd":cpu:AVERAGE \
+DEF:c="/var/www/html/rra/ukhalweb1_cpu_98.rrd":cpu:AVERAGE \
+DEF:d="/var/www/html/rra/ukhalweb1_cpu_99.rrd":cpu:AVERAGE \
+DEF:e="/var/www/html/rra/ukhalweb1_cpu_100.rrd":cpu:AVERAGE \
+CDEF:cdefa=TIME,1138381205,GT,b,b,UN,0,b,IF,IF,TIME,1138381205,GT,b,b,UN,0,b,IF,IF,TIME,1138381205,GT,c,c,UN,0,c,IF,IF,TIME,1138381205,GT,d,d,UN,0,d,IF,IF,TIME,1138381205,GT,e,e,UN,0,e,IF,IF,+,+,+,+,4,/ \
+CDEF:cdefb=TIME,1138381205,GT,b,b,UN,0,b,IF,IF,TIME,1138381205,GT,b,b,UN,0,b,IF,IF,TIME,1138381205,GT,c,c,UN,0,c,IF,IF,TIME,1138381205,GT,d,d,UN,0,d,IF,IF,TIME,1138381205,GT,e,e,UN,0,e,IF,IF,+,+,+,+,4,/ \
+AREA:cdefa#FAFD9E:"Mean CPU"  \
+GPRINT:cdefb:LAST:"    Current\:%8.2lf %%"  \
+GPRINT:cdefb:MIN:"Min\:%8.2lf %%"  \
+GPRINT:cdefb:MAX:"Max\:%8.2lf %%\n"  \
+LINE1:b#0000FF:"CPU0"  \
+GPRINT:b:LAST:"    Current\:%8.2lf %%"  \
+GPRINT:b:MIN:"Min\:%8.2lf %%"  \
+GPRINT:b:MAX:"Max\:%8.2lf %%\n"  \
+LINE1:c#00A348:"CPU1"  \
+GPRINT:c:LAST:"    Current\:%8.2lf %%"  \
+GPRINT:c:MIN:"Min\:%8.2lf %%"  \
+GPRINT:c:MAX:"Max\:%8.2lf %%\n"  \
+LINE1:d#C4FD3D:"CPU2"  \
+GPRINT:d:AVERAGE:"    Current\:%8.2lf %%"  \
+GPRINT:d:MIN:"Min\:%8.2lf %%"  \
+GPRINT:d:MAX:"Max\:%8.2lf %%\n"  \
+LINE1:e#FF0000:"CPU3"  \
+GPRINT:e:AVERAGE:"    Current\:%8.2lf %%"  \
+GPRINT:e:MIN:"Min\:%8.2lf %%"  \
+GPRINT:e:MAX:"Max\:%8.2lf %%" 

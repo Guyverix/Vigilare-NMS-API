@@ -1,0 +1,60 @@
+Quick and dirty notes for the templates to create the RRD files..
+
+99% of the time anything done outside of SNMP will be of type gauge.
+
+SNMP itself has many data types, unless explicit counter is defined in a walk test, use gague.
+
+Always walk the oid you are building the template for manually, and notice when you get stuff like 4096 bytes as you are going to have
+to strip out the string bytes, as well as the whitespace.
+
+The other RRD supported types CAN be used by people who know exactly what they are attempting to build but
+will likely be mostly unused.
+
+This template will likely be the "standard" for defining an RRD database metric.
+  template_rrd_ifName_64.php
+  template_rrd_1.3.6.1.2.1.25.2.3.1.php
+
+Currently RRD will attempt checkName and then checkAction to find a template file...
+
+
+A skel file has been made based on the above file with additional notes.
+
+1) uses SNMP
+2) this example has an index to loop through
+3) Additional metrics are stored in the database that we can pull on graph generation but are not generally needed
+
+
+template logic:
+1) get data to work on
+2) find a unique identifiable index "thing" (name to use)
+3) Iterate over the table and pull out metrics we care about.
+  a) Give metrics names < 19 characters (rrd limit)
+  b) Define the metric type: "COUNTER", "GAUGE", "DCOUNTER", "DERIVE", "DDERIVE", "ABSOLUTE", "COMPUTE"
+  c) Define a name such as "INVALID" for things we never want to attempt to stuff into the rrd.
+4) Define our RRD window (I like cycle time * 3)
+5) Define the file destination using information known in the script: hostname, checkName (or a generic name)
+  a) Make sure to explicitly call out _32 or _64 when dealing with counter data in the file name
+6)  Build create rrd command
+7) Build update rrd command
+8) Glue array together.
+
+End result should look like this:
+Array
+( 
+  [NAME] => Array
+  (
+    [fileName] => test.foo.bar.iwillfearnoevil.com/snmp/drive/space/_run_snapd_foo_32.rrd
+    [create] => DS:hrStorageType:GAUGE:900:0:U DS:hrStorageUnit:GAUGE:900:0:U DS:hrStorageSize:GAUGE:900:0:U DS:hrStorageUsed:GAUGE:900:0:U 
+    [update] => N:4:4096:1442162:398
+  )
+  [ANOTHER_NAME] => Array
+  (
+    [fileName] => test.foo.bar.iwillfearnoevil.com/snmp/drive/space/_run_snapd_blah_32.rrd
+    [create] => DS:hrStorageType:GAUGE:900:0:U DS:hrStorageUnit:GAUGE:900:0:U DS:hrStorageSize:GAUGE:900:0:U DS:hrStorageUsed:GAUGE:900:0:U 
+    [update] => N:4:4096:1442162:398
+  )
+)
+
+* Notice specifically the different filenames, even if they have the same storage data names this is in fact valid.
+* The above will create 1 rrd file for each [NAME] with the defined DS:NAMES as set in the create.
+* RRDtool is really grouchy on whitespace.  Use caution and strip out all white in the update every time.

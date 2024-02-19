@@ -1,0 +1,18 @@
+[Unit]
+Description=Vigilare Housekeeping daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=${PTH}/daemon/housekeepingPoller.php -i 60 -s start
+ExecStop=${PTH}/daemon/housekeepingPoller.php -i 60 -s stop
+User=www-data
+Group=www-data
+Restart=on-failure
+# Direct stdout to a specific file
+StandardOutput=append:${PTH}/logs/housekeepingPoller.log
+# Direct stderr to a specific file
+StandardError=append:${PTH}/logs/housekeepingPoller.log
+
+[Install]
+WantedBy=multi-user.target

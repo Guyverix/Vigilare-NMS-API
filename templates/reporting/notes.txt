@@ -1,0 +1,11 @@
+Da Rulez:
+
+1) Only an idiot will allow unbound queries to be run against a read/write datatabase.
+2) Always try to place limits on your query.  See #1
+3) Always validate your limits were set in the origional query for #2
+4) Never allow anything other than SELECT for reporting.
+5) This can be so easily abused I have removed the ability to add new templates from the UI
+6) Test your query for times on return BEFORE going live
+7) If a query locks up a table for too long, build yourself a replica database and query there
+8) Common sense, and testing will save your butt.  Do something stupid, watch your database die.  Duh.
+9) Good descriptive filenames help other people ;)

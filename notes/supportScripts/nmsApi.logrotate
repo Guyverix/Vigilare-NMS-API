@@ -1,0 +1,31 @@
+#/opt/nmsApi/logs/housekeeping.log
+#/opt/nmsApi/logs/nrpePoller.log
+#/opt/nmsApi/logs/shellPoller.log
+#/opt/nmsApi/logs/snmptrapd.log
+/opt/nmsApi/logs/apiCall.log
+/opt/nmsApi/logs/PdoTrapReceiver.log
+/opt/nmsApi/logs/*Poller.log
+{
+        su chubbard chubbard
+        daily
+        missingok
+        rotate 3
+        compress
+        delaycompress
+        notifempty
+        create 644 chubbard chubbard
+        sharedscripts
+        prerotate
+ #               sudo chown chubbard:chubbard /opt/nmsApi/logs/snmptrapd.log;
+                sudo chown chubbard:chubbard /opt/nmsApi/logs/PdoTrapReceiver.log;
+        endscript
+       postrotate
+ #              chown chubbard:chubbard /opt/nmsApi/logs/*.log;
+ #              sudo chmod 664 /opt/nmsApi/logs/*.log;
+ #              sudo chown root:root /opt/nmsApi/logs/snmptrapd.log;
+ #              sudo chmod 664 /opt/nmsApi/logs/snmptrapd.log;
+ #              sudo chown root:root /opt/nmsApi/logs/PdoTrapReceiver.log;
+ #              sudo chmod 664 /opt/nmsApi/logs/PdoTrapReceiver.log;
+              service snmptrapd restart
+       endscript
+}

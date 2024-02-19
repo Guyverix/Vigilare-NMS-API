@@ -1,0 +1,89 @@
+Any templates in this directory will directly relate to the creation of a graph from data stored in RRD or Graphite.
+
+Any template used must define the "type" or "title" of the graph.
+This is due to things like ethernet interfaces showing throughput, packets, errs, all from the same rrd file.  We need
+a way to tell the difference at a glance, and not have the image names collide.
+
+
+VARS:
+$start
+$end
+$hostname
+$rrdFile
+$type
+
+
+Info returned when the template is called:
+Array
+  image as /static/hostname_type_rrdfile.jpg
+  rrd lastupdate values (raw, but parsable if it is in an array)
+  rrd DS in the rrd file ? maybe.  This may be more useful for someone WRITING a new template, and not give much useful info otherwise.
+
+
+
+Destination is public/static/image.jpg on the API server.  All data is kept on the API server unless specfically requested as
+something like raw data for the UI to render manually or via javascript.
+
+Cleanup will happen via housekeeping, where images older than X seconds are removed (3600?)
+
+
+For Version 1 of the RRD graph rendering there will not be a concept of distinct rendering on a per host or hostGroup basis.  Everyone
+gets the same template.  If a distinction is needed in the future, likley we are then looking at going to a database so we can
+select things easier.  I dont know if that is the best direction to go however.  Will have to think about this.  So for now at least
+we have a cookie cutter solution which should work pretty well as long as the UI server can show the image from the API server.
+Likely this is going to cause some heartburn between the two, especially if the API server is in a walled garden or remote network from
+the UI server.  Some kind of proxy will need to be in place for rendered images.  This will have to be thought about later.
+
+Initial design is UI, API, database, Graphite servers are on the same network.  However we cannot guarentee this, and from a security perspective
+it is not ideal.  API has all the data, we want to minimize the attack surface to as few possiblities as we can.  This should assist in
+locking the system down, while not affecting how it functions.
+
+API server will likley NEVER be on a standard port range, by default I would prefer a higher port such as my testing on 8002..  An even
+better solution would be above 10K so it would be even less likely to pop on a port scan unless they are hitting all ports.
+
+This will still allow for proper <img> tags to work and show the rendered graph.  This feels like the most viable solution for a V1 system.
+
+So far testing rrd is showing identical behavior to Zenoss 2.5.2, and old Observium as far as the raw data is concerned.  So I did not screw that
+up.  Yay me!  
+
+
+
+Testing graphv
+rrdtool graphv /opt/nmsGui/public/event/enp2s0_2.jpg  --start -1d --alt-autoscale-max --rigid --vertical-label=B/s DEF:inoctets=/opt/nmsApi/templates/render/../../rrd/guyver-office.iwillfearnoevil.com/snmp/interfaces/Realtek_Semiconductor_Co___Ltd__RTL8111_8168_8411_PCI_Express_Gigabit_Ethernet_Controller_32.rrd:ifInOctets:AVERAGE DEF:outoctets=/opt/nmsApi/templates/render/../../rrd/guyver-office.iwillfearnoevil.com/snmp/interfaces/Realtek_Semiconductor_Co___Ltd__RTL8111_8168_8411_PCI_Express_Gigabit_Ethernet_Controller_32.rrd:ifOutOctets:AVERAGE DEF:inoctets_max=/opt/nmsApi/templates/render/../../rrd/guyver-office.iwillfearnoevil.com/snmp/interfaces/Realtek_Semiconductor_Co___Ltd__RTL8111_8168_8411_PCI_Express_Gigabit_Ethernet_Controller_32.rrd:ifInOctets:MAX DEF:outoctets_max=/opt/nmsApi/templates/render/../../rrd/guyver-office.iwillfearnoevil.com/snmp/interfaces/Realtek_Semiconductor_Co___Ltd__RTL8111_8168_8411_PCI_Express_Gigabit_Ethernet_Controller_32.rrd:ifOutOctets:MAX CDEF:octets=inoctets,outoctets,+ CDEF:doutoctets=outoctets,-1,* CDEF:outbits=outoctets,8,* CDEF:outbits_max=outoctets_max,8,* CDEF:doutoctets_max=outoctets_max,-1,* CDEF:doutbits=doutoctets,8,* CDEF:doutbits_max=doutoctets_max,8,* CDEF:inbits=inoctets,8,* CDEF:inbits_max=inoctets_max,8,* VDEF:totin=inoctets,TOTAL VDEF:totout=outoctets,TOTAL VDEF:tot=octets,TOTAL VDEF:95thin=inbits,95,PERCENT VDEF:95thout=outbits,95,PERCENT VDEF:d95thout=doutbits,5,PERCENT AREA:inbits#92B73F LINE1.25:inbits#4A8328:"In " GPRINT:inbits:LAST:%6.2lf%s GPRINT:inbits:AVERAGE:%6.2lf%s GPRINT:inbits_max:MAX:%6.2lf%s GPRINT:95thin:%6.2lf%s\\n AREA:doutbits#7075B8 LINE1.25:doutbits#323B7C:"Out" GPRINT:outbits:LAST:%6.2lf%s GPRINT:outbits:AVERAGE:%6.2lf%s GPRINT:outbits_max:MAX:%6.2lf%s GPRINT:95thout:%6.2lf%s\\n GPRINT:tot:"Total %6.2lf%s" GPRINT:totin:"(In %6.2lf%s" GPRINT:totout:"Out %6.2lf%s)\l" LINE1:95thin#aa0000 LINE1:d95thout#aa0000
+graph_left = 67
+graph_top = 15
+graph_width = 400
+graph_height = 100
+image_width = 497
+image_height = 183
+graph_start = 1687974367
+graph_end = 1688060767
+value_min = -2.9656615575e+06
+value_max = 1.7264764091e+07
+legend[0] = "  In "
+coords[0] = "16,134,51,148"
+legend[1] = "220.18k"
+coords[1] = "67,134,116,148"
+legend[2] = "420.85k"
+coords[2] = "132,134,181,148"
+legend[3] = " 17.26M"
+coords[3] = "197,134,246,148"
+legend[4] = "438.31k"
+coords[4] = "262,134,311,148"
+legend[5] = "  Out"
+coords[5] = "16,148,51,162"
+legend[6] = " 30.94k"
+coords[6] = "67,148,116,162"
+legend[7] = " 67.84k"
+coords[7] = "132,148,181,162"
+legend[8] = "  2.97M"
+coords[8] = "197,148,246,162"
+legend[9] = "199.85k"
+coords[9] = "262,148,311,162"
+legend[10] = "Total   5.26G"
+coords[10] = "16,162,107,176"
+legend[11] = "(In   4.53G"
+coords[11] = "123,162,200,176"
+legend[12] = "Out 730.12M)"
+coords[12] = "216,162,300,176"
+

@@ -1,0 +1,146 @@
+returns one host
+SELECT device, eventName, count(eventSeverity) as count FROM(select device, eventSeverity, eventName from history where startEvent >= '2024-01-20 00:00:00' AND device='mary-win.iwillfearnoevil.com' order by eventName) t1 group by eventSeverity;
++------------------------------+-----------+-------+
+| device                       | eventName | count |
++------------------------------+-----------+-------+
+| mary-win.iwillfearnoevil.com | linkUp    |     8 |
+| mary-win.iwillfearnoevil.com | coldStart |     2 |
+| mary-win.iwillfearnoevil.com | linkDown  |     3 |
+| mary-win.iwillfearnoevil.com | ping      |    16 |
++------------------------------+-----------+-------+
+
+
+
+SELECT device, eventName, count(eventSeverity) as count FROM(select device, eventSeverity, eventName from history where startEvent >= '2024-01-20 00:00:00' order by eventName) t1 group by device, eventSeverity;
++------------------------------------+-----------------------------+-------+
+| device                             | eventName                   | count |
++------------------------------------+-----------------------------+-------+
+| 192.168.0.1                        | coldStart                   |     2 |
+| dell-6248-home.iwillfearnoevil.com | authenticationFailure       |    13 |
+| dell-6248-home.iwillfearnoevil.com | dot1dStpPortStateForwarding |     6 |
+| dell-6248-home.iwillfearnoevil.com | linkDown                    |     3 |
+| gateway01.iwillfearnoevil.com      | hrStorageEntry              |     7 |
+| gateway01.iwillfearnoevil.com      | drive_32                    |     2 |
+| gateway01.iwillfearnoevil.com      | hostOs                      |     2 |
+| gateway01.iwillfearnoevil.com      | portsUsed                   |     1 |
+| guyver-myth.iwillfearnoevil.com    | check_faults                |     1 |
+| guyver-office.iwillfearnoevil.com  | checkNetworkConnections-443 |     2 |
+| guyver-office.iwillfearnoevil.com  | check_faults                |     1 |
+| kvm03.iwillfearnoevil.com          | checkChrony                 |     1 |
+| kvm03.iwillfearnoevil.com          | checkIdleServer             |     1 |
+| kvm03.iwillfearnoevil.com          | check_load                  |    36 |
+| larvel01.iwillfearnoevil.com       | snmpPoller-300-pid          |     1 |
+| mary-win.iwillfearnoevil.com       | linkUp                      |     8 |
+| mary-win.iwillfearnoevil.com       | coldStart                   |     2 |
+| mary-win.iwillfearnoevil.com       | linkDown                    |     3 |
+| mary-win.iwillfearnoevil.com       | ping                        |    16 |
+| nas01.iwillfearnoevil.com          | laEntry2                    |     2 |
+| nas03.iwillfearnoevil.com          | unmapped                    |     1 |
+| nas03.iwillfearnoevil.com          | wdNasSoftware               |     7 |
+| nas03.iwillfearnoevil.com          | wdNasData                   |    12 |
+| nas03.iwillfearnoevil.com          | ping                        |     1 |
+| radio01.iwillfearnoevil.com        | ping                        |     2 |
+| tvheadend01.iwillfearnoevil.com    | ping                        |     4 |
++------------------------------------+-----------------------------+-------+
+26 rows in set (0.10 sec)
+
+
+
+
+mysql> SELECT device, eventName, count(eventSeverity) as count FROM(select device, eventSeverity, eventName from history where startEvent >= '2024-01-01 00:00:00' order by eventName) t1 group by device, eventName order by count desc;
++-------------------------------------+------------------------------------------+-------+
+| device                              | eventName                                | count |
++-------------------------------------+------------------------------------------+-------+
+| webserver01.iwillfearnoevil.com     | lm-sensors                               |   771 |
+| dell-6248-home.iwillfearnoevil.com  | hrSystem                                 |   679 |
+| power-wireless.iwillfearnoevil.com  | ping                                     |   588 |
+| mary-win.iwillfearnoevil.com        | ping                                     |    38 |
+| kvm03.iwillfearnoevil.com           | check_load                               |    36 |
+| mary-win.iwillfearnoevil.com        | linkUp                                   |    21 |
+| nas03.iwillfearnoevil.com           | wdNasData                                |    21 |
+| power01.iwillfearnoevil.com         | ping                                     |    16 |
+| nas03.iwillfearnoevil.com           | wdNasSoftware                            |    16 |
+| larvel01.iwillfearnoevil.com        | snmpPoller-300-pid                       |    13 |
+| dell-6248-home.iwillfearnoevil.com  | authenticationFailure                    |     8 |
+| mary-win.iwillfearnoevil.com        | linkDown                                 |     7 |
+| tvheadend01.iwillfearnoevil.com     | ping                                     |     7 |
+| dell-6248-home.iwillfearnoevil.com  | dot1dStpPortStateForwarding              |     6 |
+| dell-6248-home.iwillfearnoevil.com  | dot1dStpPortStateNotForwarding           |     6 |
+| dell-6248-home.iwillfearnoevil.com  | linkDown                                 |     6 |
+| dell-6248-home.iwillfearnoevil.com  | linkFailureSwitchBackUp                  |     6 |
+| dell-6248-home.iwillfearnoevil.com  | linkUp                                   |     6 |
+| brother-printer.iwillfearnoevil.com | ping                                     |     6 |
+| dell-6248-home.iwillfearnoevil.com  | stpInstanceTopologyChangeTrap            |     6 |
+| power01.iwillfearnoevil.com         | hostOs                                   |     5 |
+| power01.iwillfearnoevil.com         | portsUsed                                |     5 |
+| mary-win.iwillfearnoevil.com        | coldStart                                |     4 |
+| power01.iwillfearnoevil.com         | hrSystem                                 |     4 |
+| power01.iwillfearnoevil.com         | ipRoute                                  |     4 |
+| power01.iwillfearnoevil.com         | lm-sensors                               |     4 |
+| guyver-office.iwillfearnoevil.com   | checkNetworkConnections-443              |     3 |
+| guyver-win.iwillfearnoevil.com      | coldStart                                |     3 |
+| power01.iwillfearnoevil.com         | drive_32                                 |     3 |
+| power01.iwillfearnoevil.com         | hrStorageEntry                           |     3 |
+| power01.iwillfearnoevil.com         | hrStorageEntry2                          |     3 |
+| power01.iwillfearnoevil.com         | ifName_32                                |     3 |
+| power01.iwillfearnoevil.com         | ifName_64                                |     3 |
+| guyver-win.iwillfearnoevil.com      | linkUp                                   |     3 |
+| larvel01.iwillfearnoevil.com        | nrpePoller-300-pid                       |     3 |
+| larvel01.iwillfearnoevil.com        | snmpPoller-300                           |     3 |
+| power01.iwillfearnoevil.com         | ssIndex2                                 |     3 |
+| brother-printer.iwillfearnoevil.com | brotherPrinterStats                      |     2 |
+| larvel01.iwillfearnoevil.com        | check_load                               |     2 |
+| webserver01.iwillfearnoevil.com     | check_load                               |     2 |
+| dell-6248-home.iwillfearnoevil.com  | envMonFanStatusTable                     |     2 |
+| dell-6248-home.iwillfearnoevil.com  | envMonSupplyState                        |     2 |
+| dell-6248-home.iwillfearnoevil.com  | ifName_64                                |     2 |
+| 192.168.15.240                      | linkUp                                   |     2 |
+| radio01.iwillfearnoevil.com         | ping                                     |     2 |
+| 192.168.15.202                      | .1.3.6.1.4.1.674.10895                   |     1 |
+| 192.168.15.137                      | .1.3.6.1.4.1.674.10895                   |     1 |
+| 192.168.15.202                      | .1.3.6.1.4.1.674.10895.5000.2.6132.1.1.1 |     1 |
+| 192.168.15.137                      | .1.3.6.1.4.1.674.10895.5000.2.6132.1.1.1 |     1 |
+| 192.168.15.202                      | .1.3.6.1.6.3.1.1.5                       |     1 |
+| larvel01.iwillfearnoevil.com        | authenticationFailure                    |     1 |
+| guyver-office.iwillfearnoevil.com   | check_faults                             |     1 |
+| guyver-myth.iwillfearnoevil.com     | check_faults                             |     1 |
+| kvm03.iwillfearnoevil.com           | checkChrony                              |     1 |
+| kvm03.iwillfearnoevil.com           | checkIdleServer                          |     1 |
+| pmorris-legacy.iwillfearnoevil.com  | coldStart                                |     1 |
+| 192.168.0.1                         | coldStart                                |     1 |
+| gateway01.iwillfearnoevil.com       | drive_32                                 |     1 |
+| brother-printer.iwillfearnoevil.com | hostOs                                   |     1 |
+| gateway01.iwillfearnoevil.com       | hostOs                                   |     1 |
+| gateway01.iwillfearnoevil.com       | hrStorageEntry                           |     1 |
+| gateway01.iwillfearnoevil.com       | hrStorageEntry2                          |     1 |
+| guyver-office.iwillfearnoevil.com   | hrStorageEntry3                          |     1 |
+| gateway01.iwillfearnoevil.com       | hrSystem                                 |     1 |
+| dell-6248-home.iwillfearnoevil.com  | ifName_32                                |     1 |
+| gateway01.iwillfearnoevil.com       | ifName_32                                |     1 |
+| gateway01.iwillfearnoevil.com       | ifName_64                                |     1 |
+| gateway01.iwillfearnoevil.com       | ipRoute                                  |     1 |
+| fake.device.iwilllfearnoevil.com    | iwillfearnoevil-trapGenerator-testing    |     1 |
+| nas01.iwillfearnoevil.com           | laEntry2                                 |     1 |
+| 192.168.15.240                      | linkDown                                 |     1 |
+| guyver-win.iwillfearnoevil.com      | linkDown                                 |     1 |
+| gateway01.iwillfearnoevil.com       | lm-sensors                               |     1 |
+| larvel01.iwillfearnoevil.com        | nrpePoller-300                           |     1 |
+| pmorris-legacy.iwillfearnoevil.com  | nsNotifyRestart                          |     1 |
+| 192.168.0.1                         | nsNotifyRestart                          |     1 |
+| dell-6248-home.iwillfearnoevil.com  | ping                                     |     1 |
+| guyver-win.iwillfearnoevil.com      | ping                                     |     1 |
+| asus03.iwillfearnoevil.com          | ping                                     |     1 |
+| nas03.iwillfearnoevil.com           | ping                                     |     1 |
+| brother-printer.iwillfearnoevil.com | portsUsed                                |     1 |
+| gateway01.iwillfearnoevil.com       | portsUsed                                |     1 |
+| gateway01.iwillfearnoevil.com       | ssIndex2                                 |     1 |
+| dell-6248-home.iwillfearnoevil.com  | unmapped                                 |     1 |
+| 192.168.15.77                       | unmapped                                 |     1 |
+| 192.168.15.255                      | unmapped                                 |     1 |
+| larvel01                            | unmapped                                 |     1 |
+| webserver01.iwillfearnoevil.com     | unmapped                                 |     1 |
+| nas03.iwillfearnoevil.com           | unmapped                                 |     1 |
+| nas01.iwillfearnoevil.com           | unmapped                                 |     1 |
+| gateway01.iwillfearnoevil.com       | unmapped                                 |     1 |
++-------------------------------------+------------------------------------------+-------+
+91 rows in set (0.18 sec)

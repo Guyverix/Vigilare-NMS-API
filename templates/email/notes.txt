@@ -1,0 +1,75 @@
+Inbound files are templates that are used when a "form" email notification comes in.
+Usually these are machine generated emails from different places and can be parsed to
+create more complete events from them.
+
+1) Nagios notifications. (or any other kind of NMS out there)
+2) Partner Email Maintenance notifications.
+3) AWS Notifications
+4) SNS Notifications
+
+All of the above can be parsed with fallbacks if they deviate from a given norm.
+
+Email parsing should have a strict expiration time on the event as well in the console.
+Since these are adhoc, less trust should be placed on them than systems we know and trust.
+Overall a lower severity or even a different Mapping rule can be defined for them in the
+future.
+
+A basic set of defaults should be defined as a fallback template so adhoc emails can
+also be parsed as events assuming RULES are followed.
+Default to plain-text emails.  HTML emails will likely be run through the same template
+but will be more finicky due to the HTML code.  Hopefully the email sender sends plan
+as well as the HTML version, but we cant guarentee that.
+
+AdHoc Email Da Rulez:
+a) Event summary (subject line)
+Body:
+b) hostname = hostname or IP
+2) alarmName = alarmName from = until EOL or "dbl-quotes"// all spaces are stripped from the name!
+3) severity = severity (1-5) debug >> OMG its all burning (0) == ok/clear
+5) details = details (optional)
+
+Note this CAN be abused by someone crafting an email to clear an alarm when they dont have legit access.
+HOWEVER, we are going to store in the event the details of WHO and WHERE this came from to spank people
+who abuse the email system.
+
+This system MUST be able to consume automated events from an NMS like Nagios.  However, it will
+run through the same mapping as any other event.  This will allow us to control the severity on this
+NMS side, irrelivant to what Nagios thinks.  It will still allow us to honor Nagios severities
+however if a mapping does not change values.
+
+Template filter is defined by "from" or "subject matches".
+Basically a prefiter is appriopriate here.
+Grep for a regex of something like "nagios" or "AWS" and from there use the correct template.
+This is loosy-goosy for now, but will have more firm rules in the future.
+
+
+Template Logic:
+1) Email Daemon calls IMAP/POP
+2) New email found
+3) Go through templates until match
+4) If no match use final template
+5a) If rules followed, craft URL to send to API
+  a) check if host/ip exists, if not create
+  b) push to mapping
+  c) create event from mapping response
+    i) call event URI
+5b) Rules not followed, sloppy or spam.
+  a) Store email as a debug event only OR delete. (config options?)
+6) delete email
+7) Goto step 2 until no more email found (simple foreach loop against list)
+8) Email Daemon iteration sleep
+
+
+
+
+******************************************************************************************************
+
+Outbound email notifications should also be able to be parsed by other things as well, however
+in the event of wanting something that say a "customer" would see, being able to make a professional
+looking email from a template is also a must.  We are going to have to be able to support this POSSIBILITY
+as well.  Someone will use it.
+
+Outbound templates will have to make sure that things such as MIME/UUENCODE is set correctly as well
+as how to inject images.  Since this is going to be a "form" email system, the simpler it is the better.
+Having the ability to make it do more complex emails however will be to the admins benifit when a manager
+says this is not professional enough. :)

@@ -1,0 +1,89 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Infrastructure\Shared\InternalSnmp;
+
+//use SNMP;
+use SNMP as CSNMP;
+use App\Domain\InternalSnmp\Snmp;
+use App\Domain\InternalSnmp\SnmpNotFoundException;
+use App\Domain\InternalSnmp\SnmpRepository;
+//use \FreeDSx\Snmp\SnmpClient;
+
+class SharedSnmpRepository implements SnmpRepository {
+/*
+  private $host;
+  private $oid;
+  private $community;
+  private $version;
+  private $snmpResult;
+  private $data;
+  public $arr;
+*/
+
+
+  // Constructor for PHP internal SNMP
+//  public function __construct($arr['snmpVersion'], $arr['snmpCommunity'], $arr['hostname'] , $arr['snmpMonitorTimeout'], $arr['snmpTries'],$arr['v3level'], $arr['v3protocol'], $arr['v3password'], $arr['v3privProtocol'], $arr['v3privPassword'], $arr['v3context'], $arr['v3engineId'] ) {
+//  public function __construct($arr) {
+  public function setSNMP($arr):void {
+    if ( ! isset($arr['v3level']))        { $arr['v3level']="v3level"; }
+    if ( ! isset($arr['v3protocol']))     { $arr['v3protocol']="v3protocol"; }
+    if ( ! isset($arr['v3password']))     { $arr['v3password']="v3password"; }
+    if ( ! isset($arr['v3privProtocol'])) { $arr['v3privProtocol']="v3privProtocol"; }
+    if ( ! isset($arr['v3privPassword'])) { $arr['v3privPassword']="v3privPassword"; }
+    if ( ! isset($arr['v3context']))      { $arr['v3context']="v3context"; }
+    if ( ! isset($arr['v3engineId']))     { $arr['v3engineId']="v3engineId"; }
+    $arr['snmpMonitorTimeout']=(int)$arr['snmpMonitorTimeout'];
+    $arr['snmpTries']=(int)$arr['snmpTries'];
+    $arr['hostname']=(string)$arr['hostname'];
+    $arr['snmpCommunity']=(string)$arr['snmpCommunity'];
+//    $foo=(int)SNMP::VERSION_2c;
+    switch ($arr['snmpVersion']) {
+      case ($arr['snmpVersion'] == 1):
+//        $session = new SNMP(SNMP::VERSION_1, $arr['hostname'], $arr['snmpCommunity'], $arr['snmpMonitorTimeout'], $arr['snmpTries']);
+        $session = new CSNMP((int)1, $arr['hostname'], $arr['snmpCommunity'], $arr['snmpMonitorTimeout'], $arr['snmpTries']);
+      case ($arr['snmpVersion'] == 2):
+//        $session=new InternalSNMP((int)2, $arr['hostname'], $arr['snmpCommunity'], $arr['snmpMonitorTimeout'], $arr['snmpTries']);
+        $session=new CSNMP((int)2, $arr['hostname'], $arr['snmpCommunity']);
+      case($arr['snmpVersion'] == 3):
+        $session=new CSNMP((int)3, $arr['hostname'], $arr['snmpCommunity'], $arr['snmpMonitorTimeout'], $arr['snmpTries']);
+//        $session->setSecurity($arr['v3level'], $arr['v3protocol'], $arr['v3password'], $arr['v3privProtocol'], $arr['v3privPassword'], $arr['v3context'], $arr['v3engineId']);
+      default:
+    }
+    $session->max_oids = 40;
+    $session->oid_output_format=SNMP_OID_OUTPUT_NUMERIC;
+    $session->exceptions_enabled = SNMP::ERRNO_ANY;
+  }
+
+  public function snmpoid($arr): array {}
+  public function snmptable($arr): array {}
+
+  public function returnSnmpOid($arr): array {
+    $junk = self::setSNMP($arr) ;
+//    $oid=$arr['oid'];
+//    $hostname=$arr['hostname'];
+//    $community=$arr['community'];
+    $result = $this->session->get($arr['oid']);
+//    $result[] = $this->snmpoid($hostname, $community, $oid);
+    return $arr ;
+//    $result[] = "blah";
+    return $result ;
+  }
+
+  public function returnSnmpTable($arr): array {
+    return $arr ;
+  }
+
+  public function testSnmpOid($arr): array {
+    return $arr;
+  }
+
+  public function insertOidResult($arr): array {
+    return $arr ;
+  }
+
+  public function insertOidTableResult($arr): array {
+    return $arr ;
+  }
+}
+

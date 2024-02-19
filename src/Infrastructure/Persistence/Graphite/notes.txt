@@ -1,0 +1,6 @@
+basic class is functional
+
+there is a lot of dirty crap in there that needs removed.
+
+Also needs rework on the curl commands to use the INTERNAL curl class correctly
+

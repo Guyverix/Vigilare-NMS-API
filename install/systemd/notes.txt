@@ -1,0 +1,11 @@
+Notes and reminders for testing...
+
+add <app>.service into /etc/systemd/system/
+
+systemctl daemon-reload
+
+systemctl enable <app>.service
+
+systemctl start <app>.service
+
+Not sure on this one, I could have sworn that most of the files under systemd were symlinks to  /lib/systemd/system/ but maybe that is only OS itself and apps are real files..

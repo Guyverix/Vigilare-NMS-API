@@ -1,0 +1,15 @@
+This is simply going to be a storage area of SNMP walks against different devices.
+The goal is to assist in making sure the templates are reliable against different things.
+
+Examples:
+ARM (Pi2, Pi4) Rasbian (Debian)
+X86_64 ( Generic Linux)
+Windows 11
+Dell Swtiches
+WD NAS
+Silimech
+IBM 3755
+Asus AP
+Netgear AP
+Netgrear Switches
+

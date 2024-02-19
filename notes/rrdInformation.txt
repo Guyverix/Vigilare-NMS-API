@@ -1,0 +1,11 @@
+Looks like with testing RRD rendering we can do about 10 images per second with current config and load.
+
+Currently running average of 5% load with minimal IO wait.
+77 images takes about 7 seconds on average
+This is testing against 48 port switch with simple rrd graph command
+
+
+Current config:
+KVM: LVM 100GB partition.  KVM running on NFS mount as well.
+2 cores / 2 GB RAM
+400 MB resident LA 0.08 1 min

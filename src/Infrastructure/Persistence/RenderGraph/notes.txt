@@ -1,0 +1,167 @@
+For the graph rendering class, I am beginning to wonder if a local template file would make more sense.
+This would allow for being able to debug the template easier.  It would also allow easier modification
+of the template IE case 1, case 2, case 3...
+
+This needs to be investigated more.  I will test in the templates/render directory..
+Likely it will end up being templates/render/graphite and templates/render/rrd as they
+will need different kinds of changes to make the rendering look correct based on the type
+of data, as well as the args being passed in.
+
+
+
+spitball logic:
+if file exists in template/render/BLAH/interfaces.php that will be used as the first match.
+
+Internally, it will look at what you asked for and run through an if else, or a case but
+ALL of these will need a default block.  If nothing matches, do this...
+
+Return result of template query to begin making or displaying the graph.  This should allow us
+to make pretty graphs that look the same no matter what the source is between RRD and Graphite.
+
+We are going to want to hard code (with the ability to change later) the color scheme so both look
+at least REALLY close to each other.  Follow the old ZenoOSS color scheme that was defined so we
+have a known color standard on rendering.
+
+Example from old Observium
+
+rrdtool graph /tmp/NCzBzZoNvdUd1yYm.png 
+--alt-autoscale-max 
+--rigid 
+-E 
+--start 1685837333 
+--end 1686442133 
+--width 1159 
+--height 300 
+-c BACK#EEEEEE00 
+-c SHADEA#EEEEEE00 
+-c SHADEB#EEEEEE00 
+-c FONT#000000 
+-c CANVAS#FFFFFF00 
+-c GRID#a5a5a5 
+-c MGRID#FF9999 
+-c FRAME#5e5e5e 
+-c ARROW#5e5e5e 
+-R normal 
+--font LEGEND:8:'DejaVuSansMono' 
+--font AXIS:7:'DejaVuSansMono' 
+--font-render-mode normal 
+--alt-autoscale-max 
+--rigid 
+-E 
+--start 1685837333 
+--end 1686442133 
+--width 1159 
+--height 300 
+-c BACK#EEEEEE00 
+-c SHADEA#EEEEEE00 
+-c SHADEB#EEEEEE00 
+-c FONT#000000 
+-c CANVAS#FFFFFF00 
+-c GRID#a5a5a5 
+-c MGRID#FF9999 
+-c FRAME#5e5e5e 
+-c ARROW#5e5e5e 
+-R normal 
+--font LEGEND:8:'DejaVuSansMono' 
+--font AXIS:7:'DejaVuSansMono' 
+--font-render-mode normal COMMENT:'Degree C ' COMMENT:' Last ' COMMENT:' Avg ' COMMENT:' Min ' COMMENT:' Max ' COMMENT:'\l' 
+DEF:ds16=/opt/observium/rrd/kvm03/sensor-temperature-lmsensors-1.rrd:sensor:AVERAGE 
+DEF:ds16min=/opt/observium/rrd/kvm03/sensor-temperature-lmsensors-1.rrd:sensor:MIN 
+DEF:ds16max=/opt/observium/rrd/kvm03/sensor-temperature-lmsensors-1.rrd:sensor:MAX 
+DEF:ds17=/opt/observium/rrd/kvm03/sensor-temperature-lmsensors-2.rrd:sensor:AVERAGE 
+DEF:ds17min=/opt/observium/rrd/kvm03/sensor-temperature-lmsensors-2.rrd:sensor:MIN 
+DEF:ds17max=/opt/observium/rrd/kvm03/sensor-temperature-lmsensors-2.rrd:sensor:MAX 
+DEF:ds18=/opt/observium/rrd/kvm03/sensor-temperature-lmsensors-3.rrd:sensor:AVERAGE 
+DEF:ds18min=/opt/observium/rrd/kvm03/sensor-temperature-lmsensors-3.rrd:sensor:MIN 
+DEF:ds18max=/opt/observium/rrd/kvm03/sensor-temperature-lmsensors-3.rrd:sensor:MAX 
+DEF:ds19=/opt/observium/rrd/kvm03/sensor-temperature-lmsensors-4.rrd:sensor:AVERAGE 
+DEF:ds19min=/opt/observium/rrd/kvm03/sensor-temperature-lmsensors-4.rrd:sensor:MIN 
+DEF:ds19max=/opt/observium/rrd/kvm03/sensor-temperature-lmsensors-4.rrd:sensor:MAX 
+LINE1.25:ds16#CC0000:'temp1 ' GPRINT:ds16:LAST:%5.1lf%s GPRINT:ds16:AVERAGE:%5.1lf%s GPRINT:ds16min:MIN:%5.1lf%s GPRINT:ds16max:MAX:%5.1lf%s COMMENT:'\l' 
+LINE1.25:ds17#4096EE:'k10pci-00cb\:temp1 ' GPRINT:ds17:LAST:%5.1lf%s GPRINT:ds17:AVERAGE:%5.1lf%s GPRINT:ds17min:MIN:%5.1lf%s GPRINT:ds17max:MAX:%5.1lf%s COMMENT:'\l' 
+LINE1.25:ds18#F03F5C:'k10pci-00db\:temp1 ' GPRINT:ds18:LAST:%5.1lf%s GPRINT:ds18:AVERAGE:%5.1lf%s GPRINT:ds18min:MIN:%5.1lf%s GPRINT:ds18max:MAX:%5.1lf%s COMMENT:'\l' 
+LINE1.25:ds19#FF0084:'k10pci-00c3\:temp1 ' GPRINT:ds19:LAST:%5.1lf%s GPRINT:ds19:AVERAGE:%5.1lf%s GPRINT:ds19min:MIN:%5.1lf%s GPRINT:ds19max:MAX:%5.1lf%s COMMENT:'\l' 
+HRULE:0#555555 
+
+
+Example from Zenoss
+Zenoss uses python class for working with rrd.  These look nice..
+I am thinking fleshing out a decent full PHP class may be in order here..
+KISS!!!  the more complex it is the more likely it will have bad bugs.. :)
+
+title = 'Aggregate Network Throughput'
+label = 'Mbs'
+devices='.*'
+env = locals().copy()
+args = getArgs(REQUEST, env)
+for k, v in env.items():
+    locals()[k] = v
+fname = "%s/graph-%s.png" % (TMPDIR,name)
+files = []
+defs = []
+cdefs = []
+xdefs = []
+stacks=[]
+lcdef = ['CDEF:lcdef=']
+lcolors = len(colors)
+devicePat = re.compile('.*(' + env['devices'] + ').*')
+files = []
+n = 0
+for i, d in enumerate(dmd.Devices.getSubDevices()):
+    if not devicePat.match(d.id): continue
+    for j, interface in enumerate(d.os.interfaces()):
+        template = interface.getRRDTemplate()
+        try:
+            graph = template.graphs['Throughput']
+        except KeyError:
+            continue
+        else:
+            for ds in graph.dsnames:
+                dp = template.getRRDDataPoint(ds)
+                if not dp: continue
+                rrdfile = perf + interface.getRRDFileName(dp.id)
+                files = glob.glob(rrdfile)
+                if len(files) != 1: continue
+                rrdfile = files[0]
+                dir = 1
+                if ds.find("ifInOctets") >= 0:
+                    dir = -1
+                    color = colors[i]
+                else:
+                    color = colors[i]
+                defs.append('DEF:d%d=%s:ds0:AVERAGE' % (n, rrdfile))
+                cdefs.append('CDEF:c%d=d%d,%d,*' % (n, n, dir))
+                xdefs.append('CDEF:x%d=d%d' % (n, n))
+                stacks.append('AREA:c%d#%s::STACK' % (n, color))
+                lcdef.append('TIME,%d,GT,x%d,x%d,UN,0,x%d,IF,IF,' % (now, n, n, n))
+                n += 1
+lcdef.append('+,'*(len(cdefs) - 1))
+lcdef = ''.join(lcdef)
+args.insert(0, '--units-exponent=6')
+cmd = [fname]  + basicArgs(env) + args + defs + xdefs + cdefs + stacks + [lcdef]
+cmd.extend(['GPRINT:lcdef:LAST:Current\\:%8.2lf %s',
+            'GPRINT:lcdef:AVERAGE:Average\\:%8.2lf %s',
+            'GPRINT:lcdef:MAX:Maximum\\:%8.2lf %s'])
+cmd = [c.strip() for c in cmd if c.strip()]
+import rrdtool
+rrdtool.graph(*cmd)
+graph = open(fname, 'rb').read()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

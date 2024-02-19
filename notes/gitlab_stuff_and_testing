@@ -1,0 +1,93 @@
+gitlab:
+U chubbard
+P: PAT
+T: glpat-1P97xxQ7fqjYG6_NtXQq
+Name fucking new PAT 
+
+
+gitlab 
+U: chubbard
+P: testing using PAT (donno which PAT this is)
+T: K2UJHP4sMuTarWk2bZt6
+
+
+Application PAT seems to allow the auth that a user pat does not
+NmsApi:
+PAT: glpat-t5_6CE7Xz3sN1Kby_65H
+
+
+
+Alerting:
+https://gitlab01.iwillfearnoevil.com/monitoring/slimframework/nmsApi/alerts/notify/monitoring01/8df5598c4360afeb.json
+TOKEN: 1aa81b4d9f8c7b2e2e6a3c5272f31307
+
+alerting is a basic json post...
+
+
+https://gitlab.cern.ch/push-notifications/notifications-samples/-/tree/master/curl
+
+curl -X POST https://notifications.web.cern.ch/api/notifications \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <api-key>" \
+  --insecure \
+  --data '{
+    "notification":
+      {
+        "target": 'channel id that you can find in your browser url bar'
+        "summary":"Test notification",
+        "priority":"NORMAL",
+        "body":"<p>This is a test notification sent via the API</p>"
+      }
+  }'
+
+
+curl -X POST https://notifications.web.cern.ch/api/notifications \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <api-key>" \
+  --insecure \
+  --data '{
+    "notification":
+      {
+        "target": 'channel id that you can find in your browser url bar'
+        "summary":"Test targeted notification",
+        "priority":"NORMAL",
+        "body":"<p>This is a test targeted notification sent via the API</p>",
+        "private": true,
+        "targetUsers": [{"email": ""some-member@some.domain"}, ...],
+        "targetGroups": [{"groupIdentifier": "some-group"}, ...],
+        "targetData": ["some-member@some.domain", "some-group", ...]
+      }
+  }
+
+
+targetUser: can contain only user objects with an email address,
+
+targetGroups: can contain only group objects with a groupIdentifier containing the name,
+
+targetData: can contain mixed strings emails and group names (but degraded performance therefore not the recommended option).
+
+curl -X POST -L https://gitlab01.iwillfearnoevil.com/api/notifications \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 1aa81b4d9f8c7b2e2e6a3c5272f31307" \
+  --insecure \
+  --data '{
+    "notification":
+      {
+        "target": 'channel id that you can find in your browser url bar'
+        "summary":"Test targeted notification",
+        "priority":"NORMAL",
+        "body":"<p>This is a test targeted notification sent via the API</p>",
+        "private": true,
+        "targetUsers": [{"email": ""chubbard@iwillfearnoevil.com"}, ...],
+        "targetGroups": [{"groupIdentifier": "some-group"}, ...],
+        "targetData": ["some-member@some.domain", "some-group", ...]
+      }
+  }
+
+
+
+
+
+
+docker login:
+docker login registry.iwillfearnoevil.com:5050 -u chubbard -p glpat-1P97xxQ7fqjYG6_NtXQq

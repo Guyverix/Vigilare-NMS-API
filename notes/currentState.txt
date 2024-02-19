@@ -1,0 +1,55 @@
+Pollers are single thread, but multiple are allowed.
+
+
+Housekeeping will alarm when a daemon monitored does not update within double its 
+iteration time.
+
+snmptrap working.
+  - set and clear wrok
+  - oid map works
+
+web trap receiver working
+  - set and clear work
+  - currently there is NO pre_insert remapping or any mapping at all.
+
+Daemons can be split better into their own directory structure
+  - This includes the class include files in app/
+
+Logging works, but is a little dirty
+
+Graphite inserts non-functional currently
+  - basic class has been created
+  - create script to start inserts
+
+RRDtool inserts are completely non-functional currently
+
+Still need eventing off of metrics such as Graphite and RRDtool
+
+
+
+
+Need to build still:
+  - UI
+  - syslog
+  - export to kibana / ELK
+  - adhoc moniitor against URLs (recommend slow iteration system)
+    - see if you can leverage the curl class you just wrote
+  - create your tree database from example: db tree on 192.168.15.250
+  - email parsing and eventing
+    - set and clears
+    - should use unique oids or name values for filtering
+  - log rotation
+    - make this a housekeeping process that fires once a day
+  - shell exec nagios plugins including NRPE (critical for small businesses)
+  - leverage the Curl class to call out to things such as pager-duty, etc.
+  - setup email outbound system for users
+  - create users and authentication
+    - cookies so we do not hammer on the db all the time
+    - investigate redis to hold live creds
+
+
+  - documentation on logic and flows
+  - more scripts to test different parts better
+
+
+

@@ -1,0 +1,21 @@
+event | CREATE TABLE `event` (
+  `evid` char(36) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Event ID as a hash',
+  `hostname` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'device is monitored hostname of some kind OR IP',
+  `stateChange` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'When did this state actually change or update',
+  `startEvent` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Start or first seen event',
+  `endEvent` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'when clear message was sent of created',
+  `eventAgeOut` int(9) NOT NULL DEFAULT '0' COMMENT 'integer value used for count down timer to age event to history',
+  `eventCounter` int(11) NOT NULL DEFAULT '1' COMMENT 'How many times has this event hit the console',
+  `eventRaw` text COLLATE utf8_unicode_ci COMMENT 'Raw incomming data.  do not EVER mess with.  This needs to be untouched',
+  `eventReceiver` varchar(32) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'undefined' COMMENT 'how was the event received',
+  `eventSeverity` smallint(6) NOT NULL DEFAULT '2' COMMENT 'Event severity as an integer value',
+  `eventAddress` varchar(32) COLLATE utf8_unicode_ci NOT NULL DEFAULT '0.0.0.0' COMMENT 'The IP address of the event.  IPV6 possible',
+  `eventDetails` text COLLATE utf8_unicode_ci COMMENT 'Pretty event details via transform or changes outside of database',
+  `eventProxy` varchar(64) COLLATE utf8_unicode_ci NOT NULL DEFAULT '0.0.0.0' COMMENT 'if not source of eventing host then define here',
+  `eventName` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'undefined' COMMENT 'Unique type of event identifier.',
+  `eventType` smallint(4) NOT NULL DEFAULT '3' COMMENT 'Integer value 1 host 2 app 3 undefined',
+  `eventMonitor` smallint(4) NOT NULL DEFAULT '3' COMMENT 'DEPRECATE integer is monitored',
+  `eventSummary` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Undefined summary' COMMENT 'Short summary of event < 255 chars',
+  UNIQUE KEY `unique_index` (`hostname`,`eventSeverity`,`eventName`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci |
+

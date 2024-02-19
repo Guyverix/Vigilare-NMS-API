@@ -1,0 +1,44 @@
+The API is going to avoid using MIB's whenever possible.
+It is almost impossible to know who does or does not have the
+MIBS and due to that I feel it is better to be avoided on the
+application side.
+
+Humans however are able to make more sense out of the MIBs when
+they are present.  Due to this, in the future I may add MIB parsing into
+the system, likely on demand basically a Per oid basis, or even provide
+a basic MIB set.
+
+Problem is, if modifications are going to be shared, MIBs existing one place
+but not the other will cause all kinds of headaches.
+
+In the future, this is likley the start of doing MIB processing:
+https://www.php.net/manual/en/ref.snmp.php
+https://www.php.net/manual/en/function.snmp-read-mib.php
+
+ print_r( snmprealwalk('localhost', 'public', '.1.3.6.1.2.1.2.3.4.5') );
+ 
+ snmp_read_mib('./FOO-BAR-MIB.txt');
+ print_r( snmprealwalk('localhost', 'public', 'FOO-BAR-MIB::someTable') );
+
+
+The above example is made up but the results would look like:
+     
+Array
+(
+    [iso.3.6.1.2.1.2.3.4.5.0] => Gauge32: 6
+)
+Array
+(
+    [FOO-BAR-MIB::someTable.0] => Gauge32: 6
+)
+
+
+
+This is going to cause the need for major rewrites of SNMP APIS since
+they currently are parsing raw oid values and exploding out from there.
+Likely this should be able to be supported by additional clauses so it can
+work in both ways.
+
+Also the SNMP monitor supports templates currently.  Those templates will
+need to support both ways.  I will have to keep that in mind.
+

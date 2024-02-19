@@ -1,0 +1,59 @@
+This is the Action route that is going to add information into the following
+
+database
+databaseValue
+graphite
+rrd
+influxdb
+textFile
+? something else ?
+none
+
+Depending on which one is called, the same data can end up in multiple places
+for a variety of reasons.
+
+  Post data for this call:
+
+  $storeResults->url = $apiHost . ":" . $apiPort . "/storage";
+  $storeResults->method="post";
+  $storeResultsData['storage']  = $storage;
+  $storeResultsData['hostname'] = $hostname;
+  $storeResultsData['result']   = $result;
+  $storeResultsData['value']    = $value;
+
+
+storage: type
+hostname: FQDN(current), or id number (future)
+result: complete resultset (generally for database, or textFile
+value:  The value to save to a given storage engine
+
+
+local paths for files:
+MAIN + /src/Storage/
+  - rrd/<hostname | id>/<hostname>_<component>_<subcomponent>.rrd
+  - textFile/<hostname | id>/<hostname>_<component>_<subcomponent>.txt
+
+
+Database storage:
+table performance;
+
+Grapite Storage:
+NMS is prefixed in the class call itself.
+
+Hostnames are changed before sending to the class, as it has no concept of a hostname
+YOU must preg_replace periods with underbars for hostnames OR IP addresses.
+
+Grapite delimiters are periods, never forget that or your metric data will
+not be able to be found in searches.
+
+Example: guyver-office_iwillfearnoevil_com.component.dataName 34
+nms/<FQDN \ id>/<checkName | component>/<componentValues>
+
+
+None storage:
+This is simply a sink that can be called with the data that could go
+elsewhere.
+Calling this will return the data you sent.  
+
+
+
