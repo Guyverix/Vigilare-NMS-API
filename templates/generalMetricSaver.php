@@ -15,8 +15,9 @@
 //require __DIR__ . "/../app/Logger.php";
 require_once __DIR__ . "/generalMetricClass.php";
 require_once __DIR__ . '/../src/Infrastructure/Shared/Functions/daemonFunctions.php';
+
 if ( ! isset($logger)) {
-  global $logger;
+   global $logger;
 }
 
 // Afer RRD I suspect this will be the next most common metric storage type
@@ -75,12 +76,18 @@ function rrdExist($singleRrdFileName, $cycle, $rrdCreateDs) {
     return 0;
   }
   else {
+    $logger->debug("Filename does not exist " . pathinfo($fileName));
     $pathParts = pathinfo($fileName);
+    $logger->debug("Will attempt to create directory " . $pathParts['dirname']);
     if ( ! file_exists($pathParts['dirname'])) {
+      $logger->debug("attempting to create directory " . $pathParts['dirname']);
       mkdir($pathParts['dirname'],0777, true);
-      $logger->debug("Created directory " . $pathParts['dirname']);
+      $logger->info("Created directory " . $pathParts['dirname']);
     }
-
+    else {
+      $logger->debug("Directory should already exist  " . $pathParts['dirname']);
+    }
+ 
     if (is_null($cycle)) {
       $findCycle = explode('-',$checkName);
       $cycle = $findCycle[1];
@@ -96,12 +103,13 @@ function rrdExist($singleRrdFileName, $cycle, $rrdCreateDs) {
       // $config['rrd']['rra']  = "RRA:AVERAGE:0.5:1:2016  RRA:AVERAGE:0.5:6:2976  RRA:AVERAGE:0.5:24:1440  RRA:AVERAGE:0.5:288:1440 ";
       // $config['rrd']['rra'] .= "                         RRA:MIN:0.5:6:1440      RRA:MIN:0.5:96:360       RRA:MIN:0.5:288:1440 ";
       // $config['rrd']['rra'] .= "                         RRA:MAX:0.5:6:1440      RRA:MAX:0.5:96:360       RRA:MAX:0.5:288:1440 ";
+
       $retention="RRA:AVERAGE:0.5:1:2016 RRA:AVERAGE:0.5:6:2976 RRA:AVERAGE:0.5:24:1440 RRA:AVERAGE:0.5:288:1440 RRA:MIN:0.5:6:1440 RRA:MIN:0.5:96:360 RRA:MIN:0.5:288:1440 RRA:MAX:0.5:6:1440 RRA:MAX:0.5:96:360 RRA:MAX:0.5:288:1440 ";
       // $retention="RRA:AVERAGE:0.5:1:288 RRA:AVERAGE:0.5:3:672 RRA:AVERAGE:0.5:12:744 RRA:AVERAGE:0.5:72:1460   RRA:MIN:0.5:6:1460 RRA:MIN:0.5:96:360 RRA:MIN:0.5:72:1460  RRA:MAX:0.5:6:1460 RRA:MAX:0.5:96:360 RRA:MAX:0.5:72:1460";
     }
 
-    $cmd="rrdtool create " . $fileName . " --step " . $cycle .  " " . $rrdCreateDs . " " . $retention . " ";
-
+    $cmd="rrdtool create \"" . $fileName . "\" --step " . $cycle .  " " . $rrdCreateDs . " " . $retention . " ";
+    $logger->debug("create command defined " . $cmd);
     $result = exec($cmd, $output, $exitCode);
     if ( $exitCode == 0 ) {
       $logger->info("Execute rrdtool create output: "  . $output . " command " . $cmd . " exit code " . $exitCode . " result(array) " . json_encode($result,1) . " filename " . $fileName . " step " . $cycle  . " Create DS " . $rrdCreateDs . " retention policy " . $retention );
@@ -109,6 +117,7 @@ function rrdExist($singleRrdFileName, $cycle, $rrdCreateDs) {
     }
     else {
       $logger->error("Failed to create RRD database file " . json_encode($result,1));
+      $logger->debug("Execute rrdtool create output: "  . $output . " command " . $cmd . " exit code " . $exitCode . " result(array) " . json_encode($result,1) . " filename " . $fileName . " step " . $cycle  . " Create DS " . $rrdCreateDs . " retention policy " . $retention );
       return "Failed to create RRD database file " . json_encode($result,1);
     }
   }
