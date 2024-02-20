@@ -29,9 +29,9 @@ class RenderGraphite {
   public $logger;
 
   public function __construct() {
-    include(__DIR__ . '/../app/Logger.php');
+    include_once(__DIR__ . '/../app/Logger.php');
     $this->logger = new Logger("renderGraphite", 0, 1);
-    $this->logger->debug("logger loaded via constructor");
+//    $this->logger->debug("logger loaded via constructor");
   }
 
   public function parseRaw($checkType, $checkName, $sourceList, $sourceOptions = null) {
