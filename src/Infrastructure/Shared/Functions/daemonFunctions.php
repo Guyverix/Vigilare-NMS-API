@@ -23,7 +23,7 @@ function dumpDatabaseObject() {
 
 // Internal way to get raw values to pretty
 function convert($size) {
-    $unit=array('b','kb','mb','gb','tb','pb');
+    $unit=array('b','kb','mb','gb','tb','pb','zb');
     return @round($size/pow(1024,($i=floor(log($size,1024)))),2).' '.$unit[$i];
 }
 
@@ -218,6 +218,7 @@ print "Caught signal $signal";
 
 /* registered call back function */
 function logger($message) {
+  // This is to stdout for the daemon..
   echo "logger: " . $message . PHP_EOL;
 }
 
@@ -258,7 +259,6 @@ function job_blocking() {
   //  echo "Processing work in blocking mode\n"; // DEBUG
 
   /* process work non blocking mode */
-//  $server->process_work(false);
   $server->process_work(true);
 
   /* wait until all work allocated */
