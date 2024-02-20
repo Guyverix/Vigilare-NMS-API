@@ -81,7 +81,7 @@
          break;
         case "iso.3.6.1.2.1.31.1.1.1.14.$interface":
          if ( $v == "enabled" ) { $v = 0; } else { $v = 1; }
-         $clean[$interface]['dataToBeInserted'][] = array( 'name' => 'LinkUpDownTrapEnable', 'value' => $v, 'type' => 'GAUGE') ;
+         $clean[$interface]['dataToBeInserted'][] = array( 'name' => 'LinkUpDownTrap', 'value' => $v, 'type' => 'GAUGE') ;
          break;
         case "iso.3.6.1.2.1.31.1.1.1.15.$interface":
          $clean[$interface]['dataToBeInserted'][] = array( 'name' => 'HighSpeed', 'value' => $v, 'type' => 'GAUGE') ;
