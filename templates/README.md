@@ -1,22 +1,26 @@
-There are currently several data storage types.  Below are the ones implemented currently...
+## There are currently several data storage types.  Below are the ones implemented currently...
 
-Graphite:
+* Graphite:
+  
   This was the first graphing system that was implemented.  It is quite stable, however being older I suspect it is
   not as widely used any longer in the outside world.  This is the lightest weight graph option currently in use.
   This is all server side, and the GUI only has to display an image.  Minimal impact on the API itself.
 
-Database:
+* Database:
+
   This overall has ended up being one of the easiest ways to store data.  Duh!  Although this is simple enough to do
   I dont see overall this being very practical.  People will just throw crap in here by default since it is simple
   and we will not be able to readily graph data since inserts here are always overwrite.  This is generally used for
   simple string data and output like that where it is not generally a "metric".
 
-DatabaseMetric:
+* DatabaseMetric:
+
   Save the metric data as an array for display in the GUI.  This currently has some hard coded support but
   nothing really defined for adhoc arrays of random sizes being returned on query.  This is likely going
   to need some love in the near future.
 
-Rrd:
+* Rrd:
+
   One would think this would be the easiest way to store metric data for graphs.  However working with RRD is finicky.
   There are both gotchas, and unexpected limits in dealing with RRD.  First the DS name must be 19 chars or less.
   We also have to make very certain on how we build out the database as if it is incorrect we gotta nuke it and loose
@@ -25,21 +29,25 @@ Rrd:
   is going to have to be implemented, or watch the system IO closely and see if we need to federate saving the RRD files
   off host and use NFS for graph creation is a possibility with really large installations.
 
-Influxdb:
+* Influxdb:
+
   I have not started on this one yet.  While it is likely the most flexable and useful for really serious metrics, it
   may not be the best bulk solution.  Seeing as the function of an NMS is Fault Managment, not specifically Perf Managment
   I hesatate to write this into the initial release.  This may end up being more of a bolt on later to leverage
   existing Influx installations from other tools.
 
-Debugger:
+* Debugger:
+
   This simply dumps a debug file under files/HOSTNAME/debugger in json format.  There is a script
   in this directory which will read it out as print_r output to make things easier to understand.
 
-None:
+* None:
+
   Just what it says on the side of the box.  Dont store metrics.  Useful for NRPE service checks where
   we only care about the exit code of the NRPE check itself.
 
-Plan: as of 05-29-23(meh)
+## Plan: as of 05-29-23(meh)
+  
 I currently envison a default of the RRDtool for saving metrics, as it can more easily do future
 projections that Graphite simply is not designed to do.  Also the confidence banding on display or even
 events from it I think would be a big win when looking at data stored.
@@ -55,14 +63,16 @@ some assumptions made when I wrote them that make these values confusing for ext
 or behavior of the scripts.  Getting something standardized would be a big win when I have to change things
 six months from now for new features, etc.
 
-Plan: as of 02-20-24
+## Plan: as of 02-20-24
+  
 Right now I am simply cleaning up after the initial migration to github.  Getting rid of all references
 to hard coded paths, and getting them all relative has been a little painful, but should be done today.
 Next is going to make sure that all references to a specific database are removed and ONLY set from the
 config file.  Right now there are a couple of really early files that have values hard set as config.php
 did not exist when I wrote them.
 
-Todo:
+* Todo:
+  
   Additional examples of what parseRaw() should expect on input for testing?
   Write a skel for RRD like the ones for Graphite.
   More testing against NRPE results.  This is likely going to be with a VERY rigid rule set.
