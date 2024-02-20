@@ -4,6 +4,12 @@
   have a template defined for it.  This is the render of last resort.
 */
 
+  $this->logger->debug("default.php loaded require file");
+
+  if ( ! isset($logger)) {
+    global $logger;
+  }
+
   require_once(__DIR__ . '/../../src/Infrastructure/Shared/Functions/rrdUtilityFunctions.php');
 
   /*
@@ -14,7 +20,7 @@
   $hostname='webserver01.iwillfearnoevil.com';
   */
 
-  $imagePath='/opt/nmsApi/public/static/';        // config defined for API
+  $imagePath= __DIR__ . '/../public/static/';        // config defined for API
   if (empty($ignoreMatch)) { $ignoreMatch = ''; } // set something if not defined
   if (empty($start)) { $start='-1d'; }
   if (empty($end)) { $end='now'; }

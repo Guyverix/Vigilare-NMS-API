@@ -15,7 +15,7 @@
   //$file=__DIR__ . '/../../rrd/guyver-office.iwillfearnoevil.com/snmp/interfaces/Realtek_Semiconductor_Co___Ltd__RTL8111_8168_8411_PCI_Express_Gigabit_Ethernet_Controller_32.rrd';
   // $file=__DIR__ . '/../../rrd/guyver-office.iwillfearnoevil.com/snmp/interfaces/enp2s0_64.rrd';
 
-  $imagePath='/opt/nmsApi/public/static/';        // config defined for API
+  $imagePath=__DIR__ . '/../../public/static/';
   if (empty($start)) { $start='-1d'; }
   if (empty($end)) { $end='now'; }
 

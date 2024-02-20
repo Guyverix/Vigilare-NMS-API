@@ -9,12 +9,12 @@
 
 */
 
-  require_once('/opt/nmsApi/src/Infrastructure/Shared/Functions/rrdUtilityFunctions.php');
+  require_once(__DIR__ . '/../../src/Infrastructure/Shared/Functions/rrdUtilityFunctions.php');
 
   // Manditory parameters to call this template:
   $type='Drive Space';
 //  $hostname='guyver-office.iwillfearnoevil.com';  // DEBUG
-  $imagePath='/opt/nmsApi/public/static/';        // config defined for API This is going to have to go into a config file elsewhere
+  $imagePath=__DIR__ . '/../../public/static/';
   if (empty($start)) { $start='-1d'; }
   if (empty($end)) { $end='now'; }
 

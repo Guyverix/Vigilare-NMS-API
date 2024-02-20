@@ -112,7 +112,7 @@ class DatabaseDiscoveryRepository implements DiscoveryRepository {
         if ( $testResult !== "failure" ) { break; }  // No matter what, if we have found our working values, STOP
         // echo "COMMUNITY " . $community . "\n";
         if ( $testResult == "failure" ) {
-          $cmd='/usr/bin/php /opt/nmsApi/utilities/snmptest.php ' . $address . " " . $community . " " . $version;
+          $cmd='/usr/bin/php ' . __DIR__ . '/../../../../utilities/snmptest.php ' . $address . " " . $community . " " . $version;
           $testResult=shell_exec($cmd);
           $notes[] = $testResult . " Version " . $version . " community " . $community . " command " . $cmd;
 //return $notes;

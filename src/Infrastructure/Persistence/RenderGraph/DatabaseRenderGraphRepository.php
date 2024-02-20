@@ -66,7 +66,7 @@ class DatabaseRenderGraphRepository implements RenderGraphRepository {
 
   // List of RRD files as array
   public function findRrdDatabases($arr): array {
-    $rawPath='/opt/nmsApi/rrd/';
+    $rawPath=__DIR__ . '/../../../../rrd/';
     $hostname = $arr['hostname'];
     $dir=$rawPath . $hostname . '/';
     $results = getDirContents($dir, '/\.rrd$/');

@@ -17,28 +17,41 @@
 
 // Use this when bypassing builtin logging
 
-require __DIR__ . '/../app/Logger.php';
-$logger = new Logger("graphClass", 0, 0);
-// $logger->debug("Loaded logger object " . json_encode($logger,1));
+
+require_once __DIR__ . '/../app/Logger.php';
+if ( ! isset($logger)) {
+  $logger = new Logger("graphClass", 0, 0);
+  $logger->debug("Loaded logger object " . json_encode($logger,1));
+}
 
 class RenderGraphite {
   public $returnArrayValues;
+  public $logger;
+
+  public function __construct() {
+    include(__DIR__ . '/../app/Logger.php');
+    $this->logger = new Logger("renderGraphite", 0, 1);
+    $this->logger->debug("logger loaded via constructor");
+  }
 
   public function parseRaw($checkType, $checkName, $sourceList, $sourceOptions = null) {
     if ( ! is_array($sourceList)) { $sourceList=json_decode($sourceList,true); }
     // This WILL always be uniform, so use the array provided
     //echo "" . print_r($sourceList,true);  // DEBUG
-
+    $this->logger->debug("parseRaw");
     $filter=explode('.', $sourceList[0]['id']);
     if (file_exists(__DIR__ . "/graphite/template_" . $checkType . "_" . $checkName . ".php")) {
+      $this->logger->debug("parseRaw found template_" . $checkType . "_" . $checkName . ".php");
       require __DIR__ . "/graphite/template_" . $checkType . "_" . $checkName . ".php";
       return 0;
     }
     elseif (file_exists(__DIR__ . "/graphite/template_" . $checkType . "_default.php")) {
+      $this->logger->debug("parseRaw found template_" . $checkType . "_default.php");
       require __DIR__ . "/graphite/template_" . $checkType . "_default.php";
       return 0;
     }
     else {
+      $this->logger->debug("parseRaw Failed to load template.");
       return "Failed to load template file successfully.  Cannot find template file for " . $checkType . " " . $checkName;
     }
   }
@@ -46,9 +59,11 @@ class RenderGraphite {
   public function graphiteUrls( $checkType, $checkName, $sourceList, $sourceOptions = null) {
     if ( is_null($sourceOptions)) { $sourceOptions = ''; }
     if ( !isset($renderData)) {
+      $this->logger->debug("graphiteUrls renderData is not set yet");
       $renderData = new RenderGraphite();
     }
     if( ! is_array($sourceList)) {
+      $this->logger->debug("graphiteUrls sourceList is not an array currently");
       $sourceList = json_decode($sourceList, true);
     }
     //    echo "FUNCTION " . print_r($sourceList, true) . "\n";  // Not in the class, test outside it
@@ -56,18 +71,21 @@ class RenderGraphite {
     $returnArray = $renderData->parseRaw($checkType, $checkName, $sourceList, $sourceOptions);
     // A return of 0 is a success
     if ( $returnArray !== 0 ) {
+      $this->logger->error("graphiteUrls Failed to get a graph from parseRaw for graphiteUrls");
       return "failed to generate graph from parseRaw call for graphiteUrls";
     }
-
     $returnArray = $renderData->returnArrayValues;
     // print_r($returnArray);  // DEBUG
     if ( ! is_array($returnArray)) {
+      $this->logger->error("graphiteUrls return information is not an array");
       return "Template did not return an array " . $returnArray;
     }
     elseif ($returnArray == 1) {
+      $this->logger->error("graphiteUrls strage error in returnArray.  Dig into any templates used");
       return "Template exited in an unexpected error somehow.  This one is goofy!";
     }
     else {
+      $this->logger->debug("graphiteUrls we should be returning an array of URLs now");
       return $returnArray;
     }
   }
@@ -76,17 +94,29 @@ class RenderGraphite {
 
 class RenderRrd {
   public $returnArrayValues;
+  public $logger;
+
+  public function __construct() {
+    include_once (__DIR__ . '/../app/Logger.php');
+    $this->logger = new Logger("RenderRrd", 0, 0);
+//    $this->logger->debug("logger loaded via constructor");
+  }
 
   public function parseRaw($hostname, $file, $filter, $start, $end, $ignoreMatch = null) {
+//    $this->logger->debug("parseRaw filechecks against " . $hostname . " file " . $file . " filter " . $filter );
     if (file_exists(__DIR__ . "/render/". $filter . ".php")) {
+      $this->logger->debug("parseRaw using file " . $filter . ".php");
       require __DIR__ . "/render/" . $filter . ".php";
       return 0;
     }
     elseif (file_exists(__DIR__ . "/render/default.php")) {
-      require __DIR__ . "/render/default.php";
+  //    $this->logger->debug("parseRaw using default.php for rendering");
+      include __DIR__ . "/render/default.php";
+   //   $this->logger->debug("parseRaw completed loading default.php for filter " . $filter);
       return 0;
     }
     else {
+    //  $this->logger->debug("parseRaw did not load template correctly");
       return "Failed to load template file successfully.  Likely a PHP parsing error.";
     }
   }
@@ -95,10 +125,13 @@ class RenderRrd {
 /*
   This function really needs the filter to be sane.  If something impossible is given
   it is going to choke not finding the file.
+
+  This is RRD rendering here
 */
 
 function renderGraph($hostname, $file, $filter, $start = null, $end = null, $ignoreMatch = null) {
   global $logger;
+//  $logger->debug("generalMetricRender.php function renderGraph called for " . $hostname . " file " . $file . " filter " . $filter);
   if (! isset($renderData)) {
     $renderData = new RenderRrd();
   }
@@ -122,13 +155,14 @@ function renderGraph($hostname, $file, $filter, $start = null, $end = null, $ign
   // print_r($returnArray);  // DEBUG
   if ( ! is_array($returnArray)) {
 //    $logger->debug("generalMetricRender.php renderGraph returnArray is not an array");
-    return "Template did not return an array " . $returnArray;
+    return "Template did not return an array: " . $returnArray;
   }
   elseif ($returnArray == 1) {
-//    $logger->debug("generalMetricRender.php renderGraph returnArray returned 1 somehow.  Screwball response from parseRaw");
+  //  $logger->debug("generalMetricRender.php renderGraph returnArray returned 1 somehow.  Screwball response from parseRaw");
     return "Template exited in an unexpected error somehow.  This one is goofy!";
   }
   else {
+//    $logger->debug("generalMetricRender.php found and returned some sort of array successfully");
     return $returnArray;
   }
 }
@@ -137,6 +171,7 @@ function renderGraph($hostname, $file, $filter, $start = null, $end = null, $ign
   This function will be specific to Graphite, since it is just munging URLs
 */
 function graphiteUrls( $checkType, $checkName, $sourceList, $sourceOptions = null) {
+  global $logger;
   if ( is_null($sourceOptions)) { $sourceOptions = ''; }
   if ( !isset($renderData)) {
     $renderData = new RenderGraphite();
@@ -144,25 +179,29 @@ function graphiteUrls( $checkType, $checkName, $sourceList, $sourceOptions = nul
   if( ! is_array($sourceList)) {
     $sourceList = json_decode($sourceList, true);
   }
-//  echo "FUNCTION " . print_r($sourceList, true) . "\n";
+  //  echo "FUNCTION " . print_r($sourceList, true) . "\n";
 
-//  echo "returnArray " . print_r($returnArray, true) . "\n";
+  //  echo "returnArray " . print_r($returnArray, true) . "\n";
 
   $returnArray = $renderData->parseRaw($checkType, $checkName, $sourceList, $sourceOptions);
   // A return of 0 is a success
   if ( $returnArray !== 0 ) {
+  //  $logger->debug("generalMetricRender.php graphiteUrls failed to get graphs from parseRaw call");
     return "failed to generate graph from parseRaw call for graphiteUrls";
   }
 
   $returnArray = $renderData->returnArrayValues;
   // print_r($returnArray);  // DEBUG
   if ( ! is_array($returnArray)) {
+//    $logger->debug("generalMetricRender.php graphiteUrls did not return an array of urls");
     return "Template did not return an array " . $returnArray;
   }
   elseif ($returnArray == 1) {
+  //  $logger->debug("generalMetricRender.php graphiteUrls returned 1 instead of array for urls");
     return "Template exited in an unexpected error somehow.  This one is goofy!";
   }
   else {
+//    $logger->info("generalMetricRender.php graphiteUrls Returned an array of URLs for display");
     return $returnArray;
   }
 }

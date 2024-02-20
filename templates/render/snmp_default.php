@@ -9,11 +9,11 @@
   // $file=__DIR__ . '/../../rrd/guyver-office.iwillfearnoevil.com/snmp/interfaces/Realtek_Semiconductor_Co___Ltd__RTL8111_8168_8411_PCI_Express_Gigabit_Ethernet_Controller_32.rrd';
   // $file=__DIR__ . '/../../rrd/guyver-office.iwillfearnoevil.com/snmp/interfaces/enp2s0_64.rrd';
 
-  $hostname='webserver01.iwillfearnoevil.com';  // DEBUG
-  $file=__DIR__ . '/../../rrd/webserver01.iwillfearnoevil.com/snmp/memory/memory_64.rrd';
+//  $hostname='webserver01.iwillfearnoevil.com';  // DEBUG
+//  $file=__DIR__ . '/../../rrd/webserver01.iwillfearnoevil.com/snmp/memory/memory_64.rrd';
 
   if (empty($ignoreMatch)) { $ignoreMatch = ''; } // set something if not defined
-  $imagePath='/opt/nmsApi/public/static/';        // config defined for API
+  $imagePath= __DIR__ . '/../public/static/';        // config defined for API
   if (empty($start)) { $start='-1d'; }
   if (empty($end)) { $end='now'; }
 

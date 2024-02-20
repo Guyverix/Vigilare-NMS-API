@@ -9,10 +9,10 @@
 
 */
 
-  require_once('/opt/nmsApi/src/Infrastructure/Shared/Functions/rrdUtilityFunctions.php');
+  require_once(__DIR__ . '/../../src/Infrastructure/Shared/Functions/rrdUtilityFunctions.php');
 
   $hostname='guyver-office.iwillfearnoevil.com';  // DEBUG
-  $imagePath='/opt/nmsApi/public/static/';        // config defined for API
+  $imagePath=__DIR__ . '/../../public/static/';        // config defined for API
   if (empty($start)) { $start='-1d'; }
   if (empty($end)) { $end='now'; }
 
