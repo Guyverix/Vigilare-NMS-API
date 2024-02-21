@@ -13,7 +13,8 @@ Template will return a full URL with all parameters defined for display
 This SHOULD be able to also be manipulated to return raw metric values for things
 like javacsript to display..  FUTURE
 
-
+* this level of the directory structure is for Rendering Graphite URL's.
+* The subdirectories from here are used to save metric data into Graphite.
 
 *****************************
 
