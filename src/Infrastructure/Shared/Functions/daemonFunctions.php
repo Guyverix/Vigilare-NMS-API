@@ -473,6 +473,7 @@ function shellNrpe($nrpePath, $address, $checkValue) {
 // NRPE or nagios style results need cleaned for use in performance
 function cleanNrpeMetrics($nrpeResult) {
   global $logger;
+  if ( empty($nrpeResult)) { $nrpeResult = ''; }
   // OK - 53.5% (17552100 kB) free.|TOTAL=32780696KB;;;; USED=15228596KB;29502626;31141661;; FREE=17552100KB;;;; CACHES=15847980KB;;;;
   // First see if there are metrics Nagios style.  If there is a | then
   // there are likely metrics.  STRIP out all semicolons, for metrics we dont
@@ -527,12 +528,13 @@ function cleanNrpeMetrics($nrpeResult) {
     $nrpeResults['perf'] = "false";
   }
   //print_r($nrpeResults);  // DEBUG
-  $logger->debug("NRPE CHECK METRICS " . json_encode($nrpeResults,1));
+//  $logger->debug("NRPE CHECK METRICS " . json_encode($nrpeResults,1));
 
   return $nrpeResults;
 }
 
 function shellShell($hostname, $address, $checkValue) {
+  global $logger;
   // In theory it should take either hostname or address and add
   // to the template command in checkValue
   // $checkValue="ping $hostname -c 4 -q";
@@ -543,25 +545,29 @@ function shellShell($hostname, $address, $checkValue) {
 }
 
 function shellPing($address) {
+  global $logger;
   $cmd="ping $address -c 4 -q";
   eval("\$cmd = \"$cmd\";");
   $result=exec( $cmd, $output, $result_code);
   $data['output'] = $output;
   $data['exitCode'] = $result_code;
   $data['command'] = $cmd;
+  $logger->debug("shellPing data is " . json_encode($data,1));
   return $data;
 }
 
 // Due to what damage it can do, we are only
 // going to give it hostname and IP address
 function shellAlive($hostname, $address, $command) {
-  $cmd=$command;
+  global $logger;
+  $cmd = $command;
   eval("\$cmd = \"$cmd\";");
 
   $result=exec( $cmd, $output, $result_code);
   $data['output'] = $output;
   $data['exitCode'] = $result_code;
   $data['command'] = $cmd;
+  $logger->debug("shellAlive data is " . json_encode($data,1));
   return $data;
 }
 
@@ -717,7 +723,7 @@ function storageForward($completeResultSingle) {
       // $completeResultSingle['output'] = preg_replace('/[\x00-\x1F\x7F]/u','',$completeResultSingle['output']); // might bite in the future
       // $completeResultSingle['output'] = preg_replace('/[[:cntrl:]]/','',$completeResultSingle['output']);  // might bite in the future
       // print_r($completeResultSingle['output']); // DEBUG
-      if ( $completeResultSingle['type'] !== "nrpe" ) {
+      if ( $completeResultSingle['type'] !== "nrpe" && $completeResultSingle['type'] !== "alive") {
         foreach ($completeResultSingle['output'] as $monOutArray) {
           // $monOutArray=preg_replace('/[[:cntrl:]]/','',$monOutArray);  // might bite in the future
           $monOutArray=preg_replace('/"/','',$monOutArray);
@@ -752,9 +758,14 @@ function storageForward($completeResultSingle) {
         // echo "GRAPHITE NON NRPE JSON TYPE " . $completeResultSingle['type'] . " HOSTNAME " . $completeResultSingle['hostname'] . " VALUE " . $completeResultSingle['checkAction'] . " OUTPUT CUT TOO BIG \n"; // DEBUG
         $sent=sendMetricToGraphite($completeResultSingle['hostname'], json_encode($finalOutput,true), $completeResultSingle['checkName'],$completeResultSingle['checkAction'], $completeResultSingle['type'] , null);
       }
+      elseif ($completeResultSingle['type'] == "alive") {
+        $sent=sendMetricToGraphite($completeResultSingle['hostname'], $finalOutput, $completeResultSingle['checkName'],$completeResultSingle['checkAction'], $completeResultSingle['type'], null);
+        $logger->debug("storageForward graphite sendMetricToGraphite alive raw data " . $completeResultSingle['hostname'] . ' ' . $finalOutput . ' ' . $completeResultSingle['checkName'] . ' ' . $completeResultSingle['checkAction'] .' ' . $completeResultSingle['type'] . " null");
+      }
       else {
         // echo "GRAPHITE NON NRPE JSON TYPE " . $completeResultSingle['type'] . " HOSTNAME " . $completeResultSingle['hostname'] . " VALUE " . $completeResultSingle['checkAction'] . " OUTPUT CUT TOO BIG \n"; // DEBUG
         $sent=sendMetricToGraphite($completeResultSingle['hostname'], json_encode($finalOutput,true), $completeResultSingle['checkName'],$completeResultSingle['checkAction'], $completeResultSingle['type'], null);
+        $logger->debug("storageForward graphite sendMetricToGraphite catchall raw data " . $completeResultSingle['hostname'] . ' ' . json_encode($finalOutput,true) . ' ' . $completeResultSingle['checkName'] . ' ' . $completeResultSingle['checkAction'] .' ' . $completeResultSingle['type'] . " null");
       }
       break;
     case "databaseMetric":
@@ -842,7 +853,8 @@ function storageForward($completeResultSingle) {
       $sent=sendMetricToFile($completeResultSingle['hostname'], json_encode($finalOutput,1), $completeResultSingle['checkName'], $completeResultSingle['checkAction'], $completeResultSingle['type'], null);
       break;
    case "debugger":
-      if ( $completeResultSingle['type'] !== "nrpe" ) {
+      $logger->debug("storageForward debugger output from poller: " . $completeResultSingle['type']);
+      if ( $completeResultSingle['type'] !== "nrpe" && $completeResultSingle['type'] !== "alive") {
         foreach ($completeResultSingle['output'] as $monOutArray) {
           // $monOutArray=preg_replace('/[[:cntrl:]]/','',$monOutArray);  // might bite in the future
           $monOutArray=preg_replace('/"/','',$monOutArray);
@@ -852,7 +864,7 @@ function storageForward($completeResultSingle) {
             $cleanOid=preg_replace( '/^.1/', 'iso' , $messyOutput[0]);
             $cleanResult=strstr($messyOutput[1],': ');
             $cleanResult=preg_replace('/^:/', '', $cleanResult);
-            //echo "OID " . $cleanOid . " VALUE " . $cleanResult . "\n"; // DEBUG
+            $logger->debug("OID " . $cleanOid . " VALUE " . $cleanResult);
             $finalOutput[$cleanOid] = $cleanResult;
           }
         }
@@ -860,7 +872,12 @@ function storageForward($completeResultSingle) {
       else {
         $finalOutput = $completeResultSingle['output'];
       }
-      $sent=sendMetricToDebugger($completeResultSingle['hostname'], json_encode($finalOutput,1), $completeResultSingle['checkName'], $completeResultSingle['checkAction'], $completeResultSingle['type'], $iterationCycle);
+      if ( ! is_array($finalOutput)) {
+        $sent = sendMetricToDebugger($completeResultSingle['hostname'], $finalOutput, $completeResultSingle['checkName'], $completeResultSingle['checkAction'], $completeResultSingle['type'], $iterationCycle);
+      }
+      else { // is an array clean me
+        $sent = sendMetricToDebugger($completeResultSingle['hostname'], json_encode($finalOutput,1), $completeResultSingle['checkName'], $completeResultSingle['checkAction'], $completeResultSingle['type'], $iterationCycle);
+      }
       $logger->info("Service check " . $completeResultSingle['checkName'] ." of type " . $completeResultSingle['type'] . " raw data sent to debugger file.");
       break;
    case "none":
@@ -1118,5 +1135,17 @@ function housekeepingDatabaseClean($days) {
   }
   $logger->info("Database performance table cleanup result " . $data);
 }
+
+// Dump whatever array we are given for debugging
+// this is on the api side, so no need for HTML
+function debugger($values) {
+  echo "\n";
+  echo "print_r result\n " . print_r($values, true);
+  echo "\n";
+  echo "var_dump result\n ";
+  var_dump($values);
+  echo "\n";
+}
+
 
 ?>

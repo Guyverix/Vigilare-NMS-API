@@ -3,42 +3,48 @@
    This skeleton is going to be used to MAKE an include for pollers to consume
    and will send parsed metric data to Graphite.
 
-   Details that must be sent to file: hostname, metric array for parsing
-   All templates are standalone, as we need to make readable and sane Graphite keys
-   Example:
-   OID: 1.3.6.1.2.1.31.1.1.1 ethernet 64bit counters
-   OID: 1.3.6.1.4.1.2021.4   memory statistics
-   OID: 1.3.6.1.4.1.2021.11  CPU
-   OID: 1.3.6.1.4.1.2021.10  Load
+   this specific file is the default where we dont know ANYTHING.
+   We are going to assume a string of data that is close
+   to nagios style output.
 
-   Only these three values are critical
-   $this->returnArrayValues         // our array return for the object
-   $hostname                        // fqdn or IP of host
-   $dataToBeInserted                // The array of data to parse in json_encoded format
-
-   OID: OID we walked
-   https://oidref.com/OID we walked
-
-   The file name MUST match $oidCheck value so the main script can find this file.
-   template_1.3.6.1.4.1.30911.php (example) if we pulled metrics from that specific oid.
-
+   From there we will ATTEMPT to make something that Graphite can
+   consume..
 */
 
+  // only for testing ( needed if we are not in an object)
+  /*
+  require __DIR__ . '/../../../src/Infrastructure/Shared/Functions/daemonFunctions.php';
+
+  $hostname = "guyver-office.iwillfearnoevil.com";
+  $dataToBeInserted = '["PING OK - Packet loss = 0%, RTA = 0.78 ms|rta=0.777000ms;50.000000;100.000000;0.000000 pl=0%;10;15;0"]';
+  $checkName = 'ping';
+  $type='alive';
+  $cycle = 60;
+  */
+
+  // This is manditory for graphite  No periods in hostnames
   $hostname=preg_replace('/\./', '_', $hostname);
-  // echo "Intial insert stuff " . $dataToBeInserted; // DEBUG
 
-  $dataToBeInserted=json_decode($dataToBeInserted, true);
-  if (! is_array($dataToBeInserted)) {
-    $dataToBeInserted=json_decode($dataToBeInserted, true);
-  }
-  // echo "should be array " .  print_r($dataToBeInserted, true); // DEBUG
+  /*
+   assume we are working with something LIKE nagios returns
+   NRPE and shell like to put output in array braces
+   "[some random string | metric1=0 metric2=2]"
+   "[some random string | metric1=0;2;3 metric2=2;4;5]"
+  */
+  $dataToBeInserted = str_replace(['[', ']'],'', $dataToBeInserted);
+  // debugger($dataToBeInserted);
 
-  $dataToBeInserted=cleanNrpeMetrics($dataToBeInserted[0]);
-  // echo "Should be string " .  print_r($dataToBeInserted, true); // DEBUG
+  /*
+    This uses the daemonFunctions.php and assumes nagios
+    output type, and strips all before | then parses the result
+    into an array to be consumed
+  */
+  $dataToBeInserted=cleanNrpeMetrics($dataToBeInserted);
 
   $intCheckName= $checkName;
   if (empty($intCheckName)) { $intCheckName="unknownMonitor"; }
   $intCheckName=preg_replace('/[ .]/','_', $intCheckName); // Names must not have spaces or periods in grapite
+
   // When at all possible, make a descrete name for your keys.
   foreach ($dataToBeInserted['data'] as $k => $v) {
     // echo "RAW VALUES" . " KEY " . $k . " VALUE " . $v . "\n"; // DEBUG
@@ -46,11 +52,10 @@
     if ( is_null($v)) { $v = ''; }
     $v=rtrim(ltrim($v));                // No whitespace junk in value
     $k=preg_replace('/[ .]/','_', $k);  // Replace spaces and periods with underbar
+    $v = preg_replace('/%/','', $v);    // graphite chokes on the % character
     $mapped[$k] = "$v";
   }
-  /* Returns mapped[keys] => values for example above */
-   // print_r($mapped); // DEBUG
-   // exit(); // DEBUG
+  // debugger($mapped);
 
   /* Returns that are NOT numeric values or we specifically dont care about
      This inspects the $k value, not the $v data
@@ -58,12 +63,11 @@
   */
   $nonNumericReturns=array("DISCRETE_NAME_2", "FILTER_OUT_NAME_45", "IGNORE_KEY_BLAH");
 
-  /* The HARDWARE_NAME should be generic for what metrics we are pushing */
-  $graphiteRootKey=$hostname . ".nrpe";
+  /* The type should be generic for what metrics we are pushing based on the poller name */
+  $graphiteRootKey=$hostname . "." . $type;
 
   foreach ($mapped as $k => $v) {
     /* Match against only values that are numeric and have values to send */
-//    if ( ! in_array($k, $nonNumericReturns) && ! empty($v)) {
     if ( ! in_array($k, $nonNumericReturns) && $v !=='' ) {
       // echo "Not in suppression array and value not empty\n"; //DEBUG
       $graphiteKey1=$k;
@@ -76,6 +80,8 @@
   }
   // This is called from sendMetricToGraphite.php which has the Graphite class loaded.
   // We must simply give it the parsed and sane data to use at this point
+  // debugger($returnArrayValues);
+  // exit();
   $this->returnArrayValues=$returnArrayValues;
   return $this->returnArrayValues;
 ?>

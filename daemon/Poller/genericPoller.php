@@ -334,7 +334,7 @@ function process_child_run($data_set, $identifier = "") {
     switch ($pollerType) {
     case "alive":
       $result=shellAlive($data_set[0]['hostProperties']['hostname'], $data_set[0]['hostProperties']['address'], $data_set[0]['checkAction']);
-      $returnData['output'] = $result['output'];
+      $returnData['output'] = json_encode($result['output'],1);
       $returnData['exitCode'] = $result['exitCode'];
       $returnData['command'] = $result['command'];
       if ($result['exitCode'] !== 0) {

@@ -60,6 +60,10 @@ class MetricParsingGraphite {
         require __DIR__ . "/graphite/alive/template_" . $checkAction . ".php";
         return 0;
       }
+      elseif (file_exists(__DIR__ . "/graphite/alive/template_default.php")) {
+        require __DIR__ . "/graphite/alive/template_default.php";
+        return 0;
+      }
       else {
         return "Failed to load template file successfully";
       }
