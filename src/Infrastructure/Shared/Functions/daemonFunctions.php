@@ -672,21 +672,21 @@ function sendEvents($completeResultSingle) {
     //$cleanup01 = json_decode($cleanup01, true);
     //$logger->debug("DEBUG -- 3 --  SHELL STDOUT " . $cleanup01[0]);
     sendHostAlarm("Check Failure exit code ". $sendComplete . " ", $severity, $completeResultSingle['checkName'], $completeResultSingle['hostname'], $expire, json_encode($completeResultSingle['output'],1));
-    $logger->info("Sending set event for " . $completeResultSingle['hostname'] . " service check " . $completeResultSingle['checkName']);
+    $logger->warning("Sending set event for " . $completeResultSingle['hostname'] . " service check " . $completeResultSingle['checkName']);
   }
   elseif (preg_match('/Timeout/',$completeResultSingle['output'][0])) {
     //    sendHostAlarm("Poller command ". $completeResultSingle['command']. " failed. ", $severity, $completeResultSingle['checkName'], $completeResultSingle['hostname'], $expire,json_encode($completeResultSingle['output'],1));
     sendHostAlarm("Check Failure timeout ". $completeResultSingle['output'][0] . " failed. ", $severity, $completeResultSingle['checkName'], $completeResultSingle['hostname'], $expire,json_encode($completeResultSingle['output'],1));
-    $logger->info("Sending set event for " . $completeResultSingle['hostname'] . " service check " . $completeResultSingle['checkName']);
+    $logger->warning("Sending set event for " . $completeResultSingle['hostname'] . " service check " . $completeResultSingle['checkName']);
   }
   elseif (preg_match('/No Such Object available/',$completeResultSingle['output'][0])) {
     //    sendHostAlarm("Poller command ". $completeResultSingle['command']. " failed. ", $severity, $completeResultSingle['checkName'], $completeResultSingle['hostname'], $expire,json_encode($completeResultSingle['output'],1));
     sendHostAlarm("Check Failure no such object ". $completeResultSingle['output'][0] . " failed. ", $severity, $completeResultSingle['checkName'], $completeResultSingle['hostname'], $expire,json_encode($completeResultSingle['output'],1));
-    $logger->info("Sending set event for " . $completeResultSingle['hostname'] . " service check " . $completeResultSingle['checkName']);
+    $logger->warning("Sending set event for " . $completeResultSingle['hostname'] . " service check " . $completeResultSingle['checkName']);
   }
   elseif ( empty($completeResultSingle['output'][0]) && $completeResultSingle['type'] !== "nrpe") {
     sendHostAlarm("Poller command ". $completeResultSingle['output'][0] . " failed. No results returned.", $severity, $completeResultSingle['checkName'], $completeResultSingle['hostname'], $expire);
-    $logger->info("Sending set event for " . $completeResultSingle['hostname'] . " service check " . $completeResultSingle['checkName']);
+    $logger->warning("Sending set event for " . $completeResultSingle['hostname'] . " service check " . $completeResultSingle['checkName']);
   }
   $completeResultSingle=array(); // Clear the varaible as we are done
   return 0;
