@@ -13,10 +13,10 @@ use App\Application\Actions\Event\ListEventsAction;
 use App\Application\Actions\Event\ViewEventAction;
 use App\Application\Actions\Event\ViewTableEventAction;
 
+// Work with ECE Event Correlation Engine
+use App\Application\Actions\EventCorrelation\ManageEventCorrelationAction;
+
 // Show info from the history table
-//use App\Application\Actions\History\ListHistoryAction;
-//use App\Application\Actions\History\ViewHistoryAction;
-//use App\Application\Actions\History\ViewTableHistoryAction;
 use App\Application\Actions\History\ManageHistoryAction;
 
 // Receive new traps/ events via web interface
@@ -24,7 +24,6 @@ use App\Application\Actions\Trap\NewTrapAction;
 
 // Polling daemons
 use App\Application\Actions\Poller\ActivePollerAction;
-
 
 // SNMP info
 use App\Application\Actions\Snmp\GetSnmpTableAction;
@@ -102,20 +101,6 @@ use App\Application\Actions\Monitors\ManageMonitorsAction;
 // API for infrastructure results
 // This should be tied to DeviceFolders so we can use it for templates
 use App\Application\Actions\Infrastructure\ViewInfrastructureAction;
-
-/*  API for testing stuff
-    use App\Application\Actions\Test\CompleteTestAction;
-    TODO: possible enhancement?
-    This can be both unit testing AND modification testing by users
-    when they alter the main system for their own use
-    Tests will be fired off only on demand.
-use App\Application\Actions\Test\CreateTest;
-use App\Application\Actions\Test\UpdateTest;
-use App\Application\Actions\Test\DeleteTest;
-use App\Application\Actions\Test\ViewTest;
-use App\Application\Actions\Test\RunTest;
-use App\Application\Actions\Test\ReportTest;
-*/
 
 // API for rendering Graph data
 use \App\Application\Actions\RenderGraph\ManageRenderGraphAction;
@@ -316,7 +301,7 @@ return function (App $app) {
     $userName = $decoded2['data']['realName'];
     $userId   = $decoded2['data']['username'];
     if ( in_array("admin", $test)) {                                              // If string is in our allowed list pass on
-      $response->getBody()->write('Hello world! Token is right. admin found within accessList: ' . json_encode($decoded2,1));
+      $response->getBody()->write('Token is right. admin found within accessList: ' . json_encode($decoded2,1));
       return $response->withAddedHeader('Set-Cookie', 'userId=' . $userId . '; Path=/;')
                       ->withAddedHeader('Set-Cookie', 'userName=' . $userName . '; Path=/;')
                       ->withAddedHeader('Set-Cookie', 'domain=iwillfearnoevil.com ; Path=/;')
@@ -379,6 +364,14 @@ return function (App $app) {
         $group->post('/{action}', ManageHistoryAction::class);  // Likely not needed (ever)
   });
 
+  // ECE Event Correlation Engine
+  $app->post('/ece/{action}', ManageEventCorrelationAction::class);
+  /*
+    This is future ( if needed )
+  $app->group('/ece', function (Group $group) {
+        $group->post('/{action}', ManageEventCorrelationAction::class);
+  }
+  */
 
   /*
     This will likely need to go elsewhere long term
