@@ -20,9 +20,12 @@ class DatabaseTrapRepository implements TrapRepository {
 //    $data['eventSeverity'] = (int)$data['eventSeverity'];
     if ( is_array($data['eventRaw'])) { $data['eventRaw'] = json_encode($data['eventRaw'],1); }
     if ( is_array($data['eventDetails'])) { $data['eventDetails'] = json_encode($data['eventDetails'],1); }
+    if ( ! isset($data['application'])) { $data['application'] = "false"; }
+    if ( ! isset($data['customerVisible'])) { $data['customerVisible'] = "false"; }
+    if ( ! isset($data['osEvent'])) { $data['osEvent'] = "false"; }
     if ( $data['eventSeverity'] == 0) {
       $data['endEvent'] = gmdate("Y-m-d H:i:s");
-      $this->db->prepare("INSERT INTO event VALUES( :evid, :device, :stateChange, :startEvent, :endEvent, :eventAgeOut, :eventCounter, :eventRaw, :eventReceiver, :eventSeverity, :eventAddress, :eventDetails, :eventProxyIp, :eventName, :eventType, :eventMonitor, :eventSummary ) ON DUPLICATE KEY UPDATE eventSummary= :eventSummary1, eventDetails= :eventDetails1, eventRaw= :eventRaw1, eventName= :eventName1, stateChange= :stateChange1, endEvent= :endEvent1, evid= :evid1, eventSeverity= :eventSeverity1");
+      $this->db->prepare("INSERT INTO event VALUES( :evid, :device, :stateChange, :startEvent, :endEvent, :eventAgeOut, :eventCounter, :eventRaw, :eventReceiver, :eventSeverity, :eventAddress, :eventDetails, :eventProxyIp, :eventName, :eventType, :eventMonitor, :eventSummary, :application, :customerVisible, :osEvent ) ON DUPLICATE KEY UPDATE eventSummary= :eventSummary1, eventDetails= :eventDetails1, eventRaw= :eventRaw1, eventName= :eventName1, stateChange= :stateChange1, endEvent= :endEvent1, evid= :evid1, eventSeverity= :eventSeverity1");
       $this->db->bind('evid',           $data['evid']);
       $this->db->bind('device',         $data['device']);
       $this->db->bind('stateChange',    $data['stateChange']);
@@ -41,6 +44,10 @@ class DatabaseTrapRepository implements TrapRepository {
       $this->db->bind('eventMonitor',   $data['eventMonitor']);
       $this->db->bind('eventSummary',   $data['eventSummary']);
 
+      $this->db->bind('application',    $data['application']);
+      $this->db->bind('osEvent',        $data['osEvent']);
+      $this->db->bind('customerVisible', $data['customerVisible']);
+
       $this->db->bind('eventSummary1',  $data['eventSummary']);
       $this->db->bind('eventDetails1',  $data['eventDetails']);
       $this->db->bind('eventRaw1',      $data['eventRaw']);
@@ -51,7 +58,7 @@ class DatabaseTrapRepository implements TrapRepository {
       $this->db->bind('eventSeverity1', $data['eventSeverity']);
     }
     else {
-      $this->db->prepare("INSERT INTO event VALUES( :evid, :device, :stateChange, :startEvent, :endEvent, :eventAgeOut, :eventCounter, :eventRaw, :eventReceiver, :eventSeverity, :eventAddress, :eventDetails, :eventProxyIp, :eventName, :eventType, :eventMonitor, :eventSummary ) ON DUPLICATE KEY UPDATE eventCounter= eventCounter +1, eventSummary= :eventSummary1, eventDetails= :eventDetails1, eventRaw= :eventRaw1, eventName= :eventName1, stateChange= :stateChange1, eventSeverity= :eventSeverity1, endEvent= :endEvent1");
+      $this->db->prepare("INSERT INTO event VALUES( :evid, :device, :stateChange, :startEvent, :endEvent, :eventAgeOut, :eventCounter, :eventRaw, :eventReceiver, :eventSeverity, :eventAddress, :eventDetails, :eventProxyIp, :eventName, :eventType, :eventMonitor, :eventSummary, :application, :customerVisible, :osEvent ) ON DUPLICATE KEY UPDATE eventCounter= eventCounter +1, eventSummary= :eventSummary1, eventDetails= :eventDetails1, eventRaw= :eventRaw1, eventName= :eventName1, stateChange= :stateChange1, eventSeverity= :eventSeverity1, endEvent= :endEvent1");
       $this->db->bind('evid',           $data['evid']);
       $this->db->bind('device',         $data['device']);
       $this->db->bind('stateChange',    $data['stateChange']);
@@ -69,6 +76,10 @@ class DatabaseTrapRepository implements TrapRepository {
       $this->db->bind('eventType',      $data['eventType']);
       $this->db->bind('eventMonitor',   $data['eventMonitor']);
       $this->db->bind('eventSummary',   $data['eventSummary']);
+
+      $this->db->bind('application',    $data['application']);
+      $this->db->bind('osEvent',        $data['osEvent']);
+      $this->db->bind('customerVisible', $data['customerVisible']);
 
       $this->db->bind('eventSummary1',  $data['eventSummary']);
       $this->db->bind('eventDetails1',  $data['eventDetails']);
@@ -130,6 +141,10 @@ class DatabaseTrapRepository implements TrapRepository {
   public function useMapping($data): array {
     if ( ! empty($data['mapPreProcessing'])) {
       /* Set our current default values */
+      if ( ! isset($data['application'])) { $data['application'] = "false"; }
+      if ( ! isset($data['customerVisible'])) { $data['customerVisible'] = "false"; }
+      if ( ! isset($data['osEvent'])) { $data['osEvent'] = "false"; }
+
       $evid           = $data['evid'];
       $known_hostname = $data['device'];
       $receive_time   = $data['stateChange'];
@@ -145,6 +160,11 @@ class DatabaseTrapRepository implements TrapRepository {
       $monitor        = $data['eventMonitor'];
       $event_summary  = $data['eventSummary'];
       $event_monitor  = $data['eventMonitor'];
+
+      // New vars to support ECE and reporting
+      $osEvent        = $data['osEvent'];
+      $customerVisible = $data['customerVisible'];
+      $application    = $data['application'];
 
       /* Set defaults from trapMapping table */
       $preProcessing  = $data['mapPreProcessing'];
@@ -195,6 +215,10 @@ class DatabaseTrapRepository implements TrapRepository {
       $result['eventType'] = $event_type;
       $result['eventSummary'] = $event_summary;
       $result['eventMonitor'] = $event_monitor;
+      $result['osEvent'] = $osEvent;
+      $result['customerVisible'] = $customerVisible;
+      $result['application'] = $application;
+
 
       /* Stuff that is not allowed to be changed via mappings */
       $result['eventRaw']   = $data['eventRaw'];

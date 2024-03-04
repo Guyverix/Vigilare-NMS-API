@@ -40,6 +40,11 @@ class NewTrapAction extends TrapAction {
         if (! isset($data['eventRaw']) )      { $data['eventRaw']=json_encode($data); } /* last so it gets all data */
         // if (! isset($data['eventDetails']) )  { $data['eventDetails']="No event Details found"; } /* generally a match to raw, but can have MORE values that are appended */
         if (! isset($data['eventDetails']) )  { $data['eventDetails']=json_encode($data['eventSummary'],1); } /* generally a match to raw, but can have MORE values that are appended */
+        if ( ! isset($data['application'])) { $data['application'] = "false"; }
+        if ( ! isset($data['customerVisible'])) { $data['customerVisible'] = "false"; }
+        if ( ! isset($data['osEvent'])) { $data['osEvent'] = "false"; }
+
+
         if ( $data['eventSeverity'] == '0' && $data['endEvent'] =="0000-00-00 00:00:00") {
           /* If this is an OK (0 severity) set the endEvent to now */
           $data['endEvent']=gmdate("Y-m-d h:i:s");
