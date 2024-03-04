@@ -7,15 +7,14 @@ require __DIR__ . '/../../../app/Database.php';
 
 interface EventCorrelationRepository {
     // CREATE
-    public function newRule($arr);
+    public function createRule($arr);
 
     // RETRIEVE / VIEW
-    public function findAll(): array;
+    public function findRule();
 
     // UPDATE
-    public function changeRule($arr);
+    public function updateRule($arr);
 
     // DELETE
     public function deleteRule($id);
-
 }

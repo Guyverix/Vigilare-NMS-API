@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 
 use App\Domain\History\HistoryRepository;
-use App\Domain\EventCorrleation\EventCorrleationRepository;
+use App\Domain\EventCorrelation\EventCorrelationRepository;
 use App\Domain\Event\EventRepository;
 use App\Domain\Infrastructure\InfrastructureRepository;
 use App\Domain\User\UserRepository;
@@ -42,7 +42,7 @@ use App\Infrastructure\Shared\Snmp\SharedSnmpRepository;
 
 use App\Infrastructure\Persistence\User\DatabaseUserRepository;
 use App\Infrastructure\Persistence\Admin\DatabaseAdminRepository;
-use App\Infrastructure\Persistence\EventCorrleation\DatabaseEventCorrleationRepository;
+use App\Infrastructure\Persistence\EventCorrelation\DatabaseEventCorrelationRepository;
 use App\Infrastructure\Persistence\Event\DatabaseEventRepository;
 use App\Infrastructure\Persistence\Infrastructure\DatabaseInfrastructureRepository;
 use App\Infrastructure\Persistence\History\DatabaseHistoryRepository;
@@ -69,7 +69,7 @@ return function (ContainerBuilder $containerBuilder) {
 //        HostRepository::class => \DI\autowire(DatabaseHostRepository::class),
         HistoryRepository::class => \DI\autowire(DatabaseHistoryRepository::class),
         EventRepository::class => \DI\autowire(DatabaseEventRepository::class),
-        EventCorrleationRepository::class => \DI\autowire(DatabaseEventCorrleationRepository::class),
+        EventCorrelationRepository::class => \DI\autowire(DatabaseEventCorrelationRepository::class),
         InfrastructureRepository::class => \DI\autowire(DatabaseInfrastructureRepository::class),
         UserRepository::class => \DI\autowire(DatabaseUserRepository::class),
         AdminRepository::class => \DI\autowire(DatabaseAdminRepository::class),
