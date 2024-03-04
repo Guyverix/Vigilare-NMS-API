@@ -2,12 +2,6 @@
 declare(strict_types=1);
 
 // REPOSITORY
-// retire after device is fully active
-//use App\Domain\Host\HostRepository;
-
-// ? get rid of this soonish
-// use App\Domain\Host\TestRepository;
-
 
 use App\Domain\History\HistoryRepository;
 use App\Domain\EventCorrelation\EventCorrelationRepository;
@@ -36,10 +30,6 @@ use App\Domain\Monitors\MonitorsRepository;
 // Likely this is going away!
 use App\Infrastructure\Shared\Snmp\SharedSnmpRepository;
 
-// retire after device is fully active
-// use App\Infrastructure\Persistence\Host\DatabaseHostRepository;
-
-
 use App\Infrastructure\Persistence\User\DatabaseUserRepository;
 use App\Infrastructure\Persistence\Admin\DatabaseAdminRepository;
 use App\Infrastructure\Persistence\EventCorrelation\DatabaseEventCorrelationRepository;
@@ -66,7 +56,6 @@ use DI\ContainerBuilder;
 return function (ContainerBuilder $containerBuilder) {
     // Here we map our Repository interfaces to their database implementations
     $containerBuilder->addDefinitions([
-//        HostRepository::class => \DI\autowire(DatabaseHostRepository::class),
         HistoryRepository::class => \DI\autowire(DatabaseHistoryRepository::class),
         EventRepository::class => \DI\autowire(DatabaseEventRepository::class),
         EventCorrelationRepository::class => \DI\autowire(DatabaseEventCorrelationRepository::class),
