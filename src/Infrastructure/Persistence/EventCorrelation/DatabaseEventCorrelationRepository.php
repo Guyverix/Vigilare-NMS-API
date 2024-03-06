@@ -3,10 +3,55 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\EventCorrelation;
 
+
+  /*
+    According to ChatGPT you cannot easily make a "use" clause within a Class block
+    and need to adjust for that when using closures.  So the function will sit
+    outside of the class.  Still got it working in the class as well, but meh, keep it.
+
+    Function pulled from:
+    https://stackoverflow.com/questions/64430971/generate-nested-tree-structure-or-hierarchy-based-on-parent-child-relationship-u
+    https://pastebin.com/raw/1pAU6J5y (data for example above)
+  */
+
+  function generateTree($data) {
+    // return $data[0];
+    $arrChild = [];   // Store parent as key and its childs as array to quickly find out.
+    foreach($data as $obj){
+      $arrChild[$obj['parentId']][] = $obj['categoryId'];
+      $data[$obj['categoryId']] = $obj;
+    }
+    $final = [];
+    // return $data;
+    //return $arrChild;
+    // This is a closure function
+    $setChild = function(&$array, $parents) use (&$setChild, $data, $arrChild) {
+      // return $parents;
+      foreach($parents as $parent){
+        $temp = $data[$parent];
+        // If key is set, that means given node has direct childs, so process them too.
+        if(isset($arrChild[$parent])){
+          $temp['children'] = [];
+          $setChild($temp['children'], $arrChild[$parent]);
+        }
+        $array[] = $temp;
+      }
+    };
+    // Empty key would represent nodes with parent as `null`
+    $setChild($final, $arrChild['']);
+    return $final;
+  }
+
+/*
+  Normal configuration and logic begins here for Class
+  definition
+
+  the above function is an oddball :)
+*/
+
 use App\Domain\EventCorrelation\EventCorrelation;
 use App\Domain\EventCorrelation\EventCorrelationNotFoundException;
 use App\Domain\EventCorrelation\EventCorrelationRepository;
-
 use Database;
 
 class DatabaseEventCorrelationRepository implements EventCorrelationRepository {
@@ -14,6 +59,29 @@ class DatabaseEventCorrelationRepository implements EventCorrelationRepository {
 
   public function __construct() {
     $this->db = new Database();
+  }
+
+  private function generateTreeObj($data) {
+    $arrChild = [];   // Store parent as key and its childs as array to quickly find out.
+    foreach($data as $obj){
+        $arrChild[$obj->parentId][] = $obj->categoryId;
+        $data[$obj->categoryId] = $obj;
+    }
+    $final = [];
+    $setChild = function(&$array, $parents) use (&$setChild, $data, $arrChild) {
+        foreach($parents as $parent) {
+            $temp = $data[$parent];
+            // If key is set, that means given node has direct childs, so process them too.
+            if(isset($arrChild[$parent])) {
+                $temp->children = [];
+                $setChild($temp->children, $arrChild[$parent]);
+            }
+            $array[] = $temp;
+        }
+    };
+    // Empty key would represent nodes with parent as `null`
+    $setChild($final, $arrChild['']);
+    return $final;
   }
 
   private function searchRule($arr) {
@@ -92,5 +160,14 @@ class DatabaseEventCorrelationRepository implements EventCorrelationRepository {
     $this->db->prepare("SELECT * FROM eventCorrelationEngine ORDER BY id ASC");
     $data = $this->db->resultset();
     return array_values($data);
+  }
+
+  public function familyRule() {
+    $this->db->prepare("SELECT * FROM eceGroups");
+    $data = $this->db->resultset();
+    // $data = json_decode(json_encode($data,1), true);
+    // $result = generateTree($data);
+    $result = self::generateTreeObj($data);
+    return $result;
   }
 }

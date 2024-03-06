@@ -10,7 +10,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 
 class ManageEventCorrelationAction extends EventCorrelationAction {
   protected function action(): Response {
-    $jobType=["create", "delete", "update", "find", "test"];  // Actions used for ECE changes
+    $jobType=["create", "delete", "update", "find", "test", "family"];  // Actions used for ECE changes
 
     // How to check if resolveArg is even going to work
     // before calling it and kicking an exception
@@ -41,6 +41,9 @@ class ManageEventCorrelationAction extends EventCorrelationAction {
     }
     elseif ($action == "find") {
       $FindEventCorrelation=$this->eventCorrelationRepository->findRule();
+    }
+    elseif ($action == "family") {
+      $FindEventCorrelation=$this->eventCorrelationRepository->familyRule();
     }
     elseif ($action == "delete") {
       $id = $data['id'];

@@ -12,6 +12,12 @@ interface EventCorrelationRepository {
     // RETRIEVE / VIEW
     public function findRule();
 
+//    public function searchRule($arr);
+//    public function searchRuleAnd($arr);
+//    public function searchRuleOr($arr);
+
+    public function familyRule();
+
     // UPDATE
     public function updateRule($arr);
 
