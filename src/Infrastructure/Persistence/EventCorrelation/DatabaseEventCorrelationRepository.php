@@ -120,8 +120,21 @@ class DatabaseEventCorrelationRepository implements EventCorrelationRepository {
     return $data['count'];
   }
 
+  public function createEceGroups($arr) {
+    $this->db->prepare("INSERT INTO eceGroups VALUES('', :parentId, :categoryName, :associatedHost, :associatedCheck)");
+    $this->db->bind('parentId', $arr['parentId']);
+    $this->db->bind('categoryName', $arr['categoryName']);
+    $this->db->bind('associatedHost', $arr['associatedHost']);
+    $this->db->bind('associatedCheck', $arr['associatedCheck']);
+    $this->db->execute();
+    if (! empty($this->db->error)) {
+      return ['FAILURE - Unable to set eceGroups values.  Contact admin.', $this->db->error];
+    }
+    return "Created eceGroup value " . json_encode($arr,1);
+  }
+
   public function createRule($arr) {
-    $this->db->prepare("INSERT INTO eventCorrleationEngine SET VALUES('', :active, :appName , :appService, :appState, :serviceState, :serviceName, :appCorrelation, :eceSummary)");
+    $this->db->prepare("INSERT INTO eventCorrleationEngine VALUES('', :active, :appName , :appService, :appState, :serviceState, :serviceName, :appCorrelation, :eceSummary)");
     $this->db->bind('active', $arr['active']);
     $this->db->bind('appName', $arr['appName']);
     $this->db->bind('appService', $arr['appService']);
@@ -132,6 +145,9 @@ class DatabaseEventCorrelationRepository implements EventCorrelationRepository {
     $this->db->bind('eceSummary', $arr['eceSummary']);
     $this->db->bind('id', $arr['id']);
     $this->db->execute();
+    if (! empty($this->db->error)) {
+      return ['FAILURE - Unable to set eventCorrelationEngine values.  Contact admin.', $this->db->error];
+    }
     return "Event Corrleation Engine Rule " . $arr['id'] . " has been updated";
   }
 
@@ -146,6 +162,9 @@ class DatabaseEventCorrelationRepository implements EventCorrelationRepository {
     $this->db->bind('appCorrelation', $arr['appCorrelation']);
     $this->db->bind('id', $arr['id']);
     $this->db->execute();
+    if (! empty($this->db->error)) {
+      return ['FAILURE - Unable to set eventCorrelationEngine values.  Contact admin.', $this->db->error];
+    }
     return "Event Corrleation Engine Rule " . $arr['id'] . " has been updated";
   }
 
@@ -153,12 +172,18 @@ class DatabaseEventCorrelationRepository implements EventCorrelationRepository {
     $this->db->prepare("DELETE FROM eventCorrleationEngine WHERE id= :id");
     $this->db->bind('id', $id);
     $this->db->execute();
+    if (! empty($this->db->error)) {
+      return ['FAILURE - Unable to set eventCorrelationEngine values.  Contact admin.', $this->db->error];
+    }
     return "Event Correlation Egnine Rule " . $id . " has been deleted";
   }
 
   public function findRule() {
     $this->db->prepare("SELECT * FROM eventCorrelationEngine ORDER BY id ASC");
     $data = $this->db->resultset();
+    if (! empty($this->db->error)) {
+      return ['FAILURE - Unable to set eventCorrelationEngine values.  Contact admin.', $this->db->error];
+    }
     return array_values($data);
   }
 
@@ -168,6 +193,9 @@ class DatabaseEventCorrelationRepository implements EventCorrelationRepository {
     // $data = json_decode(json_encode($data,1), true);
     // $result = generateTree($data);
     $result = self::generateTreeObj($data);
+    if (! empty($this->db->error)) {
+      return ['FAILURE - Unable to set eventCorrelationEngine values.  Contact admin.', $this->db->error];
+    }
     return $result;
   }
 }

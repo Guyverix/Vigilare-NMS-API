@@ -8,6 +8,7 @@ require __DIR__ . '/../../../app/Database.php';
 interface EventCorrelationRepository {
     // CREATE
     public function createRule($arr);
+    public function createEceGroups($arr);
 
     // RETRIEVE / VIEW
     public function findRule();

@@ -14,7 +14,8 @@ class ManageEventCorrelationAction extends EventCorrelationAction {
 
     // How to check if resolveArg is even going to work
     // before calling it and kicking an exception
-    if ( empty($this->args["action"]) ) { $action="failure";} else { $action=$this->resolveArg("action"); }
+    if ( empty($this->args["action"]) )   { $action="failure";}  else { $action=$this->resolveArg("action"); }
+    if ( empty($this->args["relation"]) ) { $relation="orphan";} else { $relation=$this->resolveArg("relation"); }
 
     // Fail fast if we are never going to be able to do anything
     if ( ! in_array("$action", $jobType) ) {
@@ -29,15 +30,25 @@ class ManageEventCorrelationAction extends EventCorrelationAction {
       $this->logger->error("Manage EventCorrelation Action no valid action type given for requested action " . $action );
       throw new HttpBadRequestException($this->request, $job);
     }
-
-    // This can be empty, so dont get bit here if there are no posted vars
     // This will always be an array
     $data = $this->getFormData();
     $data['action'] = $action;
+    $data['relation'] = $relation;
     // return $this->respondWithData($data);
     if("$action" == "create") {
       $this->logger->debug("ManageEventCorrelationAction.php action create " . json_encode($data,1));
-      $FindEventCorrelation=$this->eventCorrelationRepository->createRule($data);
+      switch ($relation) {
+        case 'parent':
+          if ( ! array_key_exists('parentId', $data)) { $data['parentId'] = null; }
+          $FindEventCorrelation=$this->eventCorrelationRepository->createEceGroups($data);
+          break;
+        case 'child':
+          $FindEventCorrelation=$this->eventCorrelationRepository->createEceGroups($data);
+          break;
+        default:
+          $FindEventCorrelation=$this->eventCorrelationRepository->createRule($data);
+          break;
+      }
     }
     elseif ($action == "find") {
       $FindEventCorrelation=$this->eventCorrelationRepository->findRule();
@@ -58,7 +69,14 @@ class ManageEventCorrelationAction extends EventCorrelationAction {
     else { // debug is going to be the default
       $FindEventCorrelation=$data;  // this is an array returns same array
     }
-    $this->logger->info("Find eventCorrelation values for " . $action . " with values " . json_encode($data, 1));
-    return $this->respondWithData($FindEventCorrelation);
+    // Figure out if we got an error back from the DB query and return a 500 if we did
+    if ( ! is_object($FindEventCorrelation[0]) && str_contains($FindEventCorrelation[0], 'FAILURE') ) {
+      $this->logger->error("FAILURE eventCorrelation values for " . $action . " with values " . json_encode($data, 1));
+      return $this->respondWithData($FindEventCorrelation, 500);
+    }
+    else {
+      $this->logger->info("Find eventCorrelation values for " . $action . " with values " . json_encode($data, 1));
+      return $this->respondWithData($FindEventCorrelation);
+    } // end return
   } // end function
 }  // end class
