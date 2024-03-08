@@ -10,7 +10,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 
 class ManageEventCorrelationAction extends EventCorrelationAction {
   protected function action(): Response {
-    $jobType=["create", "delete", "update", "find", "test", "family"];  // Actions used for ECE changes
+    $jobType=["create", "delete", "update", "find", "test", "family", "list"];  // Actions used for ECE changes
 
     // How to check if resolveArg is even going to work
     // before calling it and kicking an exception
@@ -56,12 +56,20 @@ class ManageEventCorrelationAction extends EventCorrelationAction {
     elseif ($action == "family") {
       $FindEventCorrelation=$this->eventCorrelationRepository->familyRule();
     }
+    elseif ($action == "list") {
+      $FindEventCorrelation=$this->eventCorrelationRepository->familyList();
+    }
     elseif ($action == "delete") {
       $id = $data['id'];
       $FindEventCorrelation=$this->eventCorrelationRepository->deleteRule($id);
     }
     elseif ($action == "update") {
-      $FindEventCorrelation=$this->eventCorrelationRepository->updateRule($data);
+      if ($relation !== "orphan") {
+        $FindEventCorrelation=$this->eventCorrelationRepository->updateEce($data);
+      }
+      else {
+        $FindEventCorrelation=$this->eventCorrelationRepository->updateRule($data);
+      }
     }
     elseif ($action == "test") {
       $FindEventCorrelation="test success (I am brainless)";
@@ -70,7 +78,7 @@ class ManageEventCorrelationAction extends EventCorrelationAction {
       $FindEventCorrelation=$data;  // this is an array returns same array
     }
     // Figure out if we got an error back from the DB query and return a 500 if we did
-    if ( ! is_object($FindEventCorrelation[0]) && str_contains($FindEventCorrelation[0], 'FAILURE') ) {
+    if ( isset($FindEventCorrelation[0]) && ! is_object($FindEventCorrelation[0]) && isset($FindEventCorrelation[0]) && str_contains($FindEventCorrelation[0], 'FAILURE') ) {
       $this->logger->error("FAILURE eventCorrelation values for " . $action . " with values " . json_encode($data, 1));
       return $this->respondWithData($FindEventCorrelation, 500);
     }

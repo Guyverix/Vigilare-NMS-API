@@ -198,4 +198,27 @@ class DatabaseEventCorrelationRepository implements EventCorrelationRepository {
     }
     return $result;
   }
+
+  public function familyList() {
+    $this->db->prepare("SELECT * FROM eceGroups");
+    $data = $this->db->resultset();
+    return $data;
+  }
+
+ public function updateEce($arr) {
+    if ( empty($arr['parentId'])) { $arr['parentId'] = null; }  // going from POST seems to change the meaing on null, sigh
+    $this->db->prepare("UPDATE eceGroups SET parentId= :parentId, categoryName= :categoryName, associatedHost= :associatedHost, associatedCheck= :associatedCheck WHERE categoryId= :categoryId");
+    $this->db->bind('categoryId', $arr['categoryId']);
+    $this->db->bind('parentId', $arr['parentId']);
+    $this->db->bind('categoryName', $arr['categoryName']);
+    $this->db->bind('associatedHost', $arr['associatedHost']);
+    $this->db->bind('associatedCheck', $arr['associatedCheck']);
+    $this->db->execute();
+    if (! empty($this->db->error)) {
+      return ['FAILURE - Unable to set eceGroups values.  Contact admin.', $this->db->error];
+    }
+    return "ECE element id " . $arr['categoryId'] . " has been changed";
+  }
+
+
 }

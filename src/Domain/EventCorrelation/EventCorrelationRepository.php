@@ -18,9 +18,11 @@ interface EventCorrelationRepository {
 //    public function searchRuleOr($arr);
 
     public function familyRule();
+    public function familyList();
 
     // UPDATE
     public function updateRule($arr);
+    public function updateEce($arr);
 
     // DELETE
     public function deleteRule($id);
