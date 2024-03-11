@@ -54,8 +54,8 @@
   if ( ! is_array($sourceList)) { $sourceList=json_decode($sourceList, true); }
 
   // Hard coded for now.  Later use will be to return metrics for
-  // javascript to parse and display
-  $returnFormat='';
+  // javascript to parse and display or special values...
+  $returnFormat='&yMin=0';
 
 
   // These are all default values.  Override with the sourceOptions array!
