@@ -18,13 +18,13 @@ class DatabaseHistoryRepository implements HistoryRepository {
   }
 
   public function findAll(): array {
-    $this->db->prepare("SELECT * FROM history ORDER BY startEvent DESC");
+    $this->db->prepare("SELECT h.*, d.id FROM history h LEFT JOIN Device d ON h.device=d.hostname ORDER BY h.startEvent DESC");
     $data = $this->db->resultset();
     return array_values($data);
   }
 
   public function findLimit(int $limit): array {
-    $this->db->prepare("SELECT * FROM history ORDER BY startEvent DESC LIMIT $limit");
+    $this->db->prepare("SELECT h.*, d.id FROM history h LEFT JOIN Device d ON h.device=d.hostname ORDER BY h.startEvent DESC LIMIT $limit");
     $data = $this->db->resultset();
     return array_values($data);
   }
