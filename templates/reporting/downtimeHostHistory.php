@@ -8,7 +8,13 @@
   Odd, but seems to work and be reliable
 */
 
-if ( ! isset($arr['startEvent']) || ! isset($arr['endEvent'])) {
+if ( ! isset($arr)) {
+  $parameters = array();
+  $parameters[] = 'startEvent';
+  $parameters[] = 'endEvent';
+  echo json_encode($parameters,1);
+}
+elseif ( ! isset($arr['startEvent']) || ! isset($arr['endEvent'])) {
   return "Failure: startEvent or endEvent was not sent for the query";
 }
 else {
