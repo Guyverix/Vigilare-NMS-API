@@ -215,9 +215,9 @@ class DatabaseEventRepository implements EventRepository {
     return $data;
   }
 
-  // Yes we are limiting to 2000 events
+  // Yes we are limiting to 200 events for device
   public function findHistoryEventByDeviceId($id) {
-    $this->db->prepare("SELECT h.* FROM history h LEFT JOIN Device d ON d.hostname = h.device WHERE d.id= :id ORDER BY h.endEvent DESC LIMIT 2000 ");
+    $this->db->prepare("SELECT h.* FROM history h LEFT JOIN Device d ON d.hostname = h.device WHERE d.id= :id ORDER BY h.endEvent DESC LIMIT 200");
     $this->db->bind('id', $id);
     $data = $this->db->resultset();
     return $data;
