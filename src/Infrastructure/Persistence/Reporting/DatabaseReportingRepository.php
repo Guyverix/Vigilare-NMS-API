@@ -62,9 +62,12 @@ class DatabaseReportingRepository implements ReportingRepository {
   // return list of templates from filesystem
   public function searchTemplate() {
     $templateList = $this->getFiles(__DIR__ . '/../../../../templates/reporting/');
-    $cleanList = json_encode($templateList,1);
-    $cleanList = preg_replace('/.php/','', $cleanList);  // dumb, but we only want the name not the .php on the end
-    $returnList = json_decode($cleanList, true);
+    $returnList = array();
+    foreach ($templateList as $singleTemplate) {
+      $usedVars = shell_exec("php " . __DIR__ . '/../../../../templates/reporting/' . $singleTemplate);
+      $cleanedName = preg_replace('/.php/','',$singleTemplate);
+      $returnList[] = [ 'template' => $cleanedName , 'usedVars' => $usedVars ];
+    }
     return $returnList;
   }
 
