@@ -150,7 +150,8 @@ class DatabaseTrapRepository implements TrapRepository {
       $receive_time   = $data['stateChange'];
       $event_age_out  = $data['eventAgeOut'];
       $counter        = $data['eventCounter'];
-      $details        = $data['eventDetails'];
+      $event_details  = $data['eventDetails'];
+      $details        = $data['eventRaw'];
       $receiver       = $data['eventReceiver'];
       $event_severity = $data['eventSeverity'];
       $event_ip       = $data['eventAddress'];
