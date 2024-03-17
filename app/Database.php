@@ -127,8 +127,8 @@ class Database {
     catch(PDOException $e) {
       // Catch exception, set it to our error var for use
       $this->error = $e->getMessage();
-      return 'ERROR';
-      // return  $e->getMessage();
+       return 'ERROR: ' . $e->getMessage();
+       // return  $e->getMessage();
     }
   }
 

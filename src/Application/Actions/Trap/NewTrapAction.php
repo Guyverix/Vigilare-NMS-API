@@ -51,12 +51,12 @@ class NewTrapAction extends TrapAction {
         }
         $validator = new NewTrapValidator();
         $validator->validate($data);
-        $this->logger->debug("Web Trap validator called ", $data);
+        $this->logger->debug("NewTrapAction: Web Trap validator called ", $data);
         /* After validation, run through mapping for transforms */
         $data['oid'] = $data['eventName'];
         $preMap = $this->trapRepository->returnMap($data);          // Returns single match against trapEventMap
         $preMap = json_decode(json_encode($preMap,1), true);
-        $this->logger->debug("PreMapping results from query ", $preMap);
+        $this->logger->debug("NewTrapAction: PreMapping results from query ", $preMap);
         // return $this->respondWithData($preMap);
         $data['mapSeverity']       = $preMap[0]['severity'];
         $data['mapAgeOut']         = $preMap[0]['age_out'];
@@ -66,20 +66,33 @@ class NewTrapAction extends TrapAction {
         $data['mapDisplayName']    = $preMap[0]['display_name'];
 
         /* we now have the data needed to do transform on the event */
-        $this->logger->debug("Sending data to be mapped ", $data);
+        $this->logger->debug("NewTrapAction: Pre-Processing data to be mapped ", $data);
         $mapping = $this->trapRepository->useMapping($data);
-        $this->logger->info("Mapping result ", $mapping);
+        $this->logger->info("NewTrapAction: Pre-Processing data result ", $mapping);
 
         /* Make the object that contains all our post data */
         $trap = $this->trapRepository->createEvent($mapping);
-        $this->logger->info("Trap result ", $trap);
+        $this->logger->info("NewTrapAction: Create Event result ", $trap);
+
+        /* If defined weare going to alter the event we just now created */
+        if ( ! empty($data['mapPostProcessing'])) {
+          $this->logger->debug("NewTrapAction: Post-Processing begins against data: ", $mapping);
+//          try {
+            $postProcessing = $this->trapRepository->postMapping($mapping);
+//          }
+//          catch (Throwable $t) {
+//            $this->logger->debug("NewTrapAction: Post-Processing error: ", $e);
+//          }
+          $this->logger->debug("NewTrapAction: Post-processing end result: ", $postProcessing);
+        }
+
 
         // DEBUGGING ONLY FOR API KEY
         $header = $this->request->getHeaders();
-        $this->logger->debug("API KEY TESTING" , $header);
+        $this->logger->debug("NewTrapAction: API KEY USED" , $header);
 
         /* if using $trap it uses the jsonserialize function from Trap */
-        $this->logger->info("Web Trap received via web interface for evid " . $data['evid'] . "." . "Hostname: " . $data['device'] . " Severity: " . $data['eventSeverity'] ,$data);
+        $this->logger->info("NewTrapAction: Web Trap received via web interface for evid " . $data['evid'] . "." . "Hostname: " . $data['device'] . " Severity: " . $data['eventSeverity'] ,$data);
         return $this->respondWithData($trap);
   }
 }

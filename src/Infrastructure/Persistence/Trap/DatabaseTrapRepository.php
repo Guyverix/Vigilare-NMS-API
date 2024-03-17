@@ -16,6 +16,32 @@ class DatabaseTrapRepository implements TrapRepository {
     $this->db = new Database();
   }
 
+  private function updateEvent($data) { // This should not be able to be called except internally
+    if ( is_array($data['eventRaw'])) { $data['eventRaw'] = json_encode($data['eventRaw'],1); }
+    if ( is_array($data['eventDetails'])) { $data['eventDetails'] = json_encode($data['eventDetails'],1); }
+//    return $data;
+
+    $this->db->prepare("UPDATE event SET device= :device, eventAddress= :eventAddress, eventAgeOut= :eventAgeOut, eventCounter= :eventCounter, eventReceiver= :eventReceiver, eventSeverity= :eventSeverity, eventDetails= :eventDetails, eventProxyIp= :eventProxyIp, eventName= :eventName, eventType= :eventType, eventMonitor= :eventMonitor, eventSummary= :eventSummary, application= :application, customerVisible= :customerVisible, osEvent= :osEvent WHERE evid= :evid");
+    $this->db->bind('device',         $data['device']);
+    $this->db->bind('eventAddress',   $data['eventAddress']);
+    $this->db->bind('eventAgeOut',    $data['eventAgeOut']);
+    $this->db->bind('eventCounter',   $data['eventCounter']);
+    $this->db->bind('eventReceiver',  $data['eventReceiver']);
+    $this->db->bind('eventSeverity',  $data['eventSeverity']);
+    $this->db->bind('eventDetails',   $data['eventDetails']);
+    $this->db->bind('eventProxyIp',   $data['eventProxyIp']);
+    $this->db->bind('eventName',      $data['eventName']);
+    $this->db->bind('eventType',      $data['eventType']);
+    $this->db->bind('eventMonitor',   $data['eventMonitor']);
+    $this->db->bind('eventSummary',   $data['eventSummary']);
+    $this->db->bind('application',    $data['application']);
+    $this->db->bind('osEvent',        $data['osEvent']);
+    $this->db->bind('customerVisible', $data['customerVisible']);
+    $this->db->bind('evid',           $data['evid']);
+    $updateDb = $this->db->execute();
+    return [ "Update success for evid " . $data['evid'] ];
+  }
+
   public function createEvent($data):array { // Better name for what it is doing
 //    $data['eventSeverity'] = (int)$data['eventSeverity'];
     if ( is_array($data['eventRaw'])) { $data['eventRaw'] = json_encode($data['eventRaw'],1); }
@@ -175,8 +201,6 @@ class DatabaseTrapRepository implements TrapRepository {
       $event_name     = $data['mapDisplayName'];
 
       if ( ! is_array($details)) { $details = json_decode(json_encode($details,1), true); }
-      //      if ( ! is_array($details)) { json_decode(json_encode($details,1), true); }
-      //      if ( ! is_array($details)) { json_decode($details, true); } // check twice as sometimes it has been double encoded??  WTF?!?
       $details_array = $details;                                  // Having a second copy might be useful if manipulation is done to $details
       if (is_null($details)) { $details = array(); }
       $result['preMappingChanges'] = get_defined_vars();
@@ -234,7 +258,7 @@ class DatabaseTrapRepository implements TrapRepository {
       $data['eventAgeOut'] = $data['mapAgeOut'];
       $data['eventType']   = $data['mapType'];
       $data['origionalSeverity'] = $data['eventSeverity'];
-      if ( !empty($data['mapDisplayName'])) { $data['eventName'] = $data['mapDisplayName']; }
+      if ( ! empty($data['mapDisplayName'])) { $data['eventName'] = $data['mapDisplayName']; }
       //      $data['eventName'] = $data['mapDisplayName'];
       if ( $data['eventSeverity'] > 0 ) {                 // Mappings cannot make a clear event a set event
         $data['eventSeverity'] = $data['mapSeverity'];
@@ -243,5 +267,85 @@ class DatabaseTrapRepository implements TrapRepository {
       return $data;
     }
   }
+
+  public function postMapping($initial):array {
+    // First get our event from the database
+
+    // return [ $initial['preMappingChanges']['data']['mapPostProcessing'] ] ;
+    $this->db->prepare("SELECT * FROM event WHERE device= :device AND eventAddress= :eventAddress AND eventName= :eventName");
+    $this->db->bind('device', $initial['device']);
+    $this->db->bind('eventAddress', $initial['eventAddress']);
+    $this->db->bind('eventName', $initial['eventName']);
+    $data2 = $this->db->resultset();
+    $data2 = json_decode(json_encode($data2,1), true);
+    $data = $data2[0];
+//return [ $data['device'] ];
+
+    // Make variables we can alter now
+    $evid           = $data['evid'];
+    $known_hostname = $data['device'];
+    $receive_time   = $data['stateChange'];
+    $event_age_out  = $data['eventAgeOut'];
+    $counter        = $data['eventCounter'];
+    $event_details  = $data['eventDetails'];
+    $details        = $data['eventRaw'];
+    $receiver       = $data['eventReceiver'];
+    $event_severity = $data['eventSeverity'];
+    $event_ip       = $data['eventAddress'];
+    $event_source   = $data['eventProxyIp'];
+    $event_name     = $data['eventName'];
+    $event_type     = $data['eventType'];
+    $monitor        = $data['eventMonitor'];
+    $event_summary  = $data['eventSummary'];
+    $event_monitor  = $data['eventMonitor'];
+    $osEvent        = $data['osEvent'];
+    $customerVisible = $data['customerVisible'];
+    $application    = $data['application'];
+
+
+    // Grab what we need to eval now
+    $postProcessing = $initial['preMappingChanges']['data']['mapPostProcessing'];
+
+    // Additional boilerplate to confirm we have some of the ugly info if users need it
+    if ( ! is_array($details)) {
+      $details = json_decode(json_encode($details,1), true);
+    }
+    $details_array = $details;  // Having a second copy might be useful if manipulation is done to $details
+    if (is_null($details)) {
+      $details = array();
+    }
+    try {
+      eval($postProcessing);     // In theory this should be able to change our defined values
+    }
+    catch (Throwable $t) {
+     return [ $t ];
+    }
+    //return $postProcessing;
+    $result['eventSeverity']   = $event_severity;
+    $result['evid']            = $evid;
+    $result['device']          = $known_hostname;
+    $result['stateChange']     = $receive_time;
+    $result['eventAgeOut']     = $event_age_out;
+    $result['eventCounter']    = $counter;
+    $result['eventDetails']    = $details;
+    $result['eventReceiver']   = $receiver;
+    $result['eventAddress']    = $event_ip;
+    $result['eventProxyIp']    = $event_source;
+    $result['eventName']       = $event_name;
+    $result['eventType']       = $event_type;
+    $result['eventSummary']    = $event_summary;
+    $result['eventMonitor']    = $event_monitor;
+    $result['osEvent']         = $osEvent;
+    $result['customerVisible'] = $customerVisible;
+    $result['application']     = $application;
+    $result['eventRaw']        = $data['eventRaw'];    // Dont allow manipulation of these values
+    $result['startEvent']      = $data['startEvent'];  // Dont allow manipulation of these values
+    $result['endEvent']        = $data['endEvent'];    // Dont allow manipulation of these values
+
+    $finalResult = $this->updateEvent($result);
+    return $finalResult;
+  }
+
 }
+
 

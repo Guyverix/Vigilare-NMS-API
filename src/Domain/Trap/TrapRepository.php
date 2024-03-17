@@ -20,6 +20,7 @@ interface TrapRepository {
 
     // update
     public function useMapping($arr): array;
+    public function postMapping($arr): array;
 
-    // delete
+    // delete (never actually delete an event? Only move to history)
 }
