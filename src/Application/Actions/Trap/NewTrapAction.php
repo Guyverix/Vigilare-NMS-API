@@ -77,19 +77,14 @@ class NewTrapAction extends TrapAction {
         /* If defined weare going to alter the event we just now created */
         if ( ! empty($data['mapPostProcessing'])) {
           $this->logger->debug("NewTrapAction: Post-Processing begins against data: ", $mapping);
-//          try {
-            $postProcessing = $this->trapRepository->postMapping($mapping);
-//          }
-//          catch (Throwable $t) {
-//            $this->logger->debug("NewTrapAction: Post-Processing error: ", $e);
-//          }
+          $postProcessing = $this->trapRepository->postMapping($mapping);
           $this->logger->debug("NewTrapAction: Post-processing end result: ", $postProcessing);
         }
 
 
         // DEBUGGING ONLY FOR API KEY
         $header = $this->request->getHeaders();
-        $this->logger->debug("NewTrapAction: API KEY USED" , $header);
+        $this->logger->debug("NewTrapAction: Headers and api keys " , $header);
 
         /* if using $trap it uses the jsonserialize function from Trap */
         $this->logger->info("NewTrapAction: Web Trap received via web interface for evid " . $data['evid'] . "." . "Hostname: " . $data['device'] . " Severity: " . $data['eventSeverity'] ,$data);
