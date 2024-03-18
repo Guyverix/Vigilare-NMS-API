@@ -80,12 +80,13 @@ class DatabaseReportingRepository implements ReportingRepository {
 
   // View a specific completed report
   public function viewReport($arr) {
-    $this->db->prepare("SELECT reportResult FROM Reporting WHERE id= :id");
+    $this->db->prepare("SELECT * FROM Reporting WHERE id= :id");
     $this->db->bind('id', $arr['id']);
     $data = $this->db->resultset();
     $data = json_decode(json_encode($data,1), true);  // convert from obj to array
-    $data = json_decode($data[0]['reportResult'], true);  // convert from json to array
-    return $data;
+    $data2['reportResult'] = json_decode($data[0]['reportResult'], true);  // convert from json to array
+    $data2['filterValues'] = json_decode($data[0]['filterValues'], true);  // convert from json to array
+    return $data2;
   }
 
   // Nuke a completed report
