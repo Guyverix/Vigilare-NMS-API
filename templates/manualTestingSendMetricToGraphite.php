@@ -31,15 +31,15 @@ class MetricParsing {
   // Define the template we are using here
   public function parseRaw($hostname, $dataToBeInserted, $checkName, $checkAction = null, $type = null, $cycle = null) {
     if ( ! is_null($type) && $type == "nrpe" ) {
-      if (file_exists(__DIR__ . "/template_" . $type . ".php")) {
+      if (file_exists(__DIR__ . "/graphite/nrpe/template_" . $type . ".php")) {
         // This should return our array
-        echo "Found template file: " . __DIR__ . "/template_" . $type . ".php\n";
-        require_once __DIR__ . "/template_" . $type . ".php";
+        echo "Found template file: " . __DIR__ . "/graphite/nrpe/template_" . $type . ".php\n";
+        require_once __DIR__ . "/graphite/nrpe/template_" . $type . ".php";
         return 0;
       }
       else {
         // Return that we failed to find a template file
-        echo "No template file found at: " . __DIR__ . "/template_" . $type . ".php\n";
+        echo "No template file found at: " . __DIR__ . "/graphite/nrpe/template_" . $type . ".php\n";
         return 1;
       }
     }
@@ -263,11 +263,15 @@ sendMetricToGraphite( $hostname1, $dataToBeInserted1, $checkAction1);
 
 //{"HAPROXY":" 1\/1) gitlab (Active: 1\/1) bbs (Active: 1\/1) wiki (Active: 1\/1) proxy (Active: 1\/1) default (Active: 1\/1) dirty (Active: 1\/1) grafana (Active: 1\/1) letsencrypt-backend (Active: 0\/1) nms (Active: 1\/1) speedtest (Active: 1\/1) newznab (Active: 1\/1) observium (Active: 1\/1) graphite (Active: 1\/1) sonarr (Active: 1\/1) sabnzbd (Active: 1\/1) radarr (Active: 1\/1) mario (Active: 1\/1) games (Active: 1\/1) registry (Active: 1\/1) passbolt (Active: 1\/1) calibre (Active: 1\/1) | t=0.226615s;2;10;0; sess_zoneminder=0;;;0;0 sess_gitlab=0;;;0;0 sess_bbs=0;;;0;0 sess_wiki=0;;;0;0 sess_proxy=0;;;0;0 sess_default=0;;;0;0 sess_dirty=0;;;0;0 sess_grafana=0;;;0;0 sess_letsencrypt-backend=0;;;0;0 sess_nms=0;;;0;0 sess_speedtest=0;;;0;0 sess_newznab=0;;;0;0 sess_observium=0;;;0;0 sess_graphite=0;;;0;0 sess_sonarr=0;;;0;0 sess_sabnzbd=0;;;0;0 sess_radarr=0;;;0;0 sess_mario=0;;;0;0 sess_games=0;;;0;0 sess_registry=0;;;0;0 sess_passbolt=0;;;0;0 sess_calibre=0;;;0;0"}
 
-$type='shell';
+
+
+
+$type='nrpe';
 $cycle=3000;
 $checkName="randomCheckName";
 $hostname='test.foo.bar.iwillfearnoevil.com';
-$metric = ["HAPROXY OK -  gitlab (Active: 1/1) calibre (Active: 1/1) sonarr (Active: 1/1) registry (Active: 1/1) speedtest (Active: 1/1) passbolt (Active: 1/1) mario (Active: 1/1) nms (Active: 1/1) newznab (Active: 1/1) wiki (Active: 1/1) dirty (Active: 1/1) grafana (Active: 1/1) zoneminder (Active: 1/1) graphite (Active: 1/1) observium (Active: 1/1) proxy (Active: 1/1) games (Active: 1/1) letsencrypt-backend (Active: 0/1) bbs (Active: 1/1) sabnzbd (Active: 1/1) radarr (Active: 1/1) default (Active: 1/1) | t=0.241012s;2;10;0; sess_gitlab=0;;;0;0 sess_calibre=0;;;0;0 sess_sonarr=0;;;0;0 sess_registry=0;;;0;0 sess_speedtest=0;;;0;0 sess_passbolt=0;;;0;0 sess_mario=0;;;0;0 sess_nms=0;;;0;0 sess_newznab=0;;;0;0 sess_wiki=0;;;0;0 sess_dirty=0;;;0;0 sess_grafana=0;;;0;0 sess_zoneminder=0;;;0;0 sess_graphite=0;;;0;0 sess_observium=0;;;0;0 sess_proxy=0;;;0;0 sess_games=0;;;0;0 sess_letsencrypt-backend=0;;;0;0 sess_bbs=0;;;0;0 sess_sabnzbd=0;;;0;0 sess_radarr=0;;;0;0 sess_default=0;;;0;0"];
+$metric = ["OK - 96.8% (7908112 kB) free.|TOTAL=8167552KB;;;; USED=259440KB;7350796;7759174;; FREE=7908112KB;;;; CACHES=3786768KB;;;;"];
+//$metric = ["HAPROXY OK -  gitlab (Active: 1/1) calibre (Active: 1/1) sonarr (Active: 1/1) registry (Active: 1/1) speedtest (Active: 1/1) passbolt (Active: 1/1) mario (Active: 1/1) nms (Active: 1/1) newznab (Active: 1/1) wiki (Active: 1/1) dirty (Active: 1/1) grafana (Active: 1/1) zoneminder (Active: 1/1) graphite (Active: 1/1) observium (Active: 1/1) proxy (Active: 1/1) games (Active: 1/1) letsencrypt-backend (Active: 0/1) bbs (Active: 1/1) sabnzbd (Active: 1/1) radarr (Active: 1/1) default (Active: 1/1) | t=0.241012s;2;10;0; sess_gitlab=0;;;0;0 sess_calibre=0;;;0;0 sess_sonarr=0;;;0;0 sess_registry=0;;;0;0 sess_speedtest=0;;;0;0 sess_passbolt=0;;;0;0 sess_mario=0;;;0;0 sess_nms=0;;;0;0 sess_newznab=0;;;0;0 sess_wiki=0;;;0;0 sess_dirty=0;;;0;0 sess_grafana=0;;;0;0 sess_zoneminder=0;;;0;0 sess_graphite=0;;;0;0 sess_observium=0;;;0;0 sess_proxy=0;;;0;0 sess_games=0;;;0;0 sess_letsencrypt-backend=0;;;0;0 sess_bbs=0;;;0;0 sess_sabnzbd=0;;;0;0 sess_radarr=0;;;0;0 sess_default=0;;;0;0"];
 //$metric=[ '{"HAPROXY":" 1\/1) gitlab (Active: 1\/1) bbs (Active: 1\/1) wiki (Active: 1\/1) proxy (Active: 1\/1) default (Active: 1\/1) dirty (Active: 1\/1) grafana (Active: 1\/1) letsencrypt-backend (Active: 0\/1) nms (Active: 1\/1) speedtest (Active: 1\/1) newznab (Active: 1\/1) observium (Active: 1\/1) graphite (Active: 1\/1) sonarr (Active: 1\/1) sabnzbd (Active: 1\/1) radarr (Active: 1\/1) mario (Active: 1\/1) games (Active: 1\/1) registry (Active: 1\/1) passbolt (Active: 1\/1) calibre (Active: 1\/1) | t=0.226615s;2;10;0; sess_zoneminder=0;;;0;0 sess_gitlab=0;;;0;0 sess_bbs=0;;;0;0 sess_wiki=0;;;0;0 sess_proxy=0;;;0;0 sess_default=0;;;0;0 sess_dirty=0;;;0;0 sess_grafana=0;;;0;0 sess_letsencrypt-backend=0;;;0;0 sess_nms=0;;;0;0 sess_speedtest=0;;;0;0 sess_newznab=0;;;0;0 sess_observium=0;;;0;0 sess_graphite=0;;;0;0 sess_sonarr=0;;;0;0 sess_sabnzbd=0;;;0;0 sess_radarr=0;;;0;0 sess_mario=0;;;0;0 sess_games=0;;;0;0 sess_registry=0;;;0;0 sess_passbolt=0;;;0;0 sess_calibre=0;;;0;0"}' ];
 //$metric="[\"TCP OK - 0.000 second response time on localhost port 22|time=0.000228s;;;0.000000;10.000000\"]";
 //$metric="[\"DRIVE OK - 0.000 second response time on localhost port 22| /=123456KB\"]";
