@@ -22,6 +22,10 @@ class MetricParsingGraphite {
         require __DIR__ . "/graphite/nrpe/template_" . $type . ".php";
         return 0;
       }
+      elseif (file_exists(__DIR__ . "/graphite/nrpe/template_default.php")) {
+        require __DIR__ . "/graphite/nrpe/template_default.php";
+        return 0;
+      }
       else {
         return "Failed to load template file successfully";
       }
@@ -49,6 +53,23 @@ class MetricParsingGraphite {
         return "Failed to load template file successfully";
       }
     }
+    elseif ( $type == "shell" ) {
+      if (file_exists(__DIR__ . "/graphite/shell/template_" . $checkName . ".php")) {
+        require __DIR__ . "/graphite/shell/template_" . $checkName . ".php";
+        return 0;
+      }
+      elseif (file_exists(__DIR__ . "/graphite/shell/template_" . $checkAction . ".php")) {
+        require __DIR__ . "/graphite/shell/template_" . $checkAction . ".php";
+        return 0;
+      }
+      elseif (file_exists(__DIR__ . "/graphite/shell/template_default.php")) {
+        require __DIR__ . "/graphite/shell/template_default.php";
+        return 0;
+      }
+      else {
+        return "Failed to load template file successfully";
+      }
+    }
     // alive is kinda loosy goosey.  checkName should define the filename
     // however there may be odd checks where it is more accurate to use checkAction
     elseif ( $type == "alive" ) {
@@ -68,6 +89,9 @@ class MetricParsingGraphite {
         return "Failed to load template file successfully";
       }
     }
+
+
+
     // For graphite we have exhausted all options..  Error out
     else {
       return "Failed to load template file successfully";

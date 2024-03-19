@@ -34,7 +34,7 @@ class MetricParsing {
       if (file_exists(__DIR__ . "/template_" . $type . ".php")) {
         // This should return our array
         echo "Found template file: " . __DIR__ . "/template_" . $type . ".php\n";
-        require __DIR__ . "/template_" . $type . ".php";
+        require_once __DIR__ . "/template_" . $type . ".php";
         return 0;
       }
       else {
@@ -45,7 +45,7 @@ class MetricParsing {
     }
     elseif ( ! is_null($type) && $type == "poller" ) {
       if (file_exists(__DIR__ . "/template_" . $type . ".php")) {
-        require __DIR__ . "/template_" . $type . ".php";
+        require_once __DIR__ . "/template_" . $type . ".php";
         return 0;
       }
       else {
@@ -59,7 +59,7 @@ class MetricParsing {
       if (file_exists(__DIR__ . "/template_" . $checkName . ".php")) {
         // This should return our array
         echo "Found template file: " . __DIR__ . "/template_" . $checkName . ".php\n";
-        require __DIR__ . "/template_" . $checkName . ".php";
+        require_once __DIR__ . "/template_" . $checkName . ".php";
         return 0;
       }
       else {
@@ -73,7 +73,7 @@ class MetricParsing {
       if (file_exists(__DIR__ . "/template_" . $checkAction . ".php")) {
         // This should return our array
         echo "Found template file: " . __DIR__ . "/template_" . $checkAction . ".php\n";
-        require __DIR__ . "/template_" . $checkAction . ".php";
+        require_once __DIR__ . "/template_" . $checkAction . ".php";
         return 0;
       }
       else{
@@ -85,7 +85,7 @@ class MetricParsing {
   }
 }
 
-function sendMetricToGraphite($hostname, $dataToBeInserted, $checkName, $checkAction = null, $type = null, $cycle = null) {
+function sendMetricToGraphiteTest($hostname, $dataToBeInserted, $checkName, $checkAction = null, $type = null, $cycle = null) {
   if (! isset($metricData)) {
     // This should make an object to use for metrics
     $metricData=new MetricParsing();
@@ -248,7 +248,7 @@ sendMetricToGraphite( $hostname1, $dataToBeInserted1, $checkAction1);
 // TESTING NRPE against the template system
 //parseRaw($hostname, $dataToBeInserted, $checkName, $checkAction = null, $cycle = null, $type = null)
 
-$type='nrpe';
+$type='shell';
 $cycle=3000;
 $checkName="randomCheckName";
 $hostname='test.foo.bar.iwillfearnoevil.com';
@@ -257,7 +257,7 @@ $metric="[\"TCP OK - 0.000 second response time on localhost port 22|time=0.0002
 echo "sending metric " . $metric . "\n";
 echo "SENT TO FUNCTION\n";
 $checkAction = null;
-$res=sendMetricToGraphite($hostname, json_encode($metric,1), $checkName, $checkAction , $type, $cycle);
+$res=sendMetricToGraphiteTest($hostname, json_encode($metric,1), $checkName, $checkAction , $type, $cycle);
 //$res=sendMetricToGraphite($hostname, $metric, $type);
 echo "RESULT 0 or 1 " . $res . "\n";
 //$test=json_decode($dataToBeInserted1, true);
