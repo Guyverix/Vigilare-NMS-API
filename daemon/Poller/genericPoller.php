@@ -370,7 +370,7 @@ function process_child_run($data_set, $identifier = "") {
       break;
     case "shell":
       $result=shellShell($data_set[0]['hostProperties']['hostname'], $data_set[0]['hostProperties']['address'], $data_set[0]['checkAction']);
-      $returnData['output'] = $result['output'];
+      $returnData['output'] = json_encode($result['output'],1);
       $returnData['exitCode'] = $result['exitCode'];
       $returnData['command'] = $result['command'];
       $logger->debug("Shell: " . json_encode($returnData,1));

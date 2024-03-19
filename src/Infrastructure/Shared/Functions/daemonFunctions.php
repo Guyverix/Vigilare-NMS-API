@@ -727,7 +727,7 @@ function storageForward($completeResultSingle) {
       // $completeResultSingle['output'] = preg_replace('/[\x00-\x1F\x7F]/u','',$completeResultSingle['output']); // might bite in the future
       // $completeResultSingle['output'] = preg_replace('/[[:cntrl:]]/','',$completeResultSingle['output']);  // might bite in the future
       // print_r($completeResultSingle['output']); // DEBUG
-      if ( $completeResultSingle['type'] !== "nrpe" && $completeResultSingle['type'] !== "alive") {
+      if ( $completeResultSingle['type'] !== "nrpe" && $completeResultSingle['type'] !== "alive"  && $completeResultSingle['type'] !== "shell") {
         foreach ($completeResultSingle['output'] as $monOutArray) {
           // $monOutArray=preg_replace('/[[:cntrl:]]/','',$monOutArray);  // might bite in the future
           $monOutArray=preg_replace('/"/','',$monOutArray);

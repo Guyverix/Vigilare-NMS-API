@@ -52,6 +52,19 @@ class MetricParsing {
         return 1;
       }
     }
+    elseif ( $type = "shell") {
+      if (file_exists(__DIR__ . "/graphite/shell/template_default.php")) {
+        // This should return our array
+        echo "Found template file: " . __DIR__ . "/graphite/shell/template_default.php\n";
+        require_once __DIR__ . "/graphite/shell/template_default.php";
+        return 0;
+      }
+      else {
+        // Return that we failed to find a template file
+        echo "No template file found at: " . __DIR__ . "/graphite/shell/template_default.php\n";
+        return 1;
+      }
+    }
     elseif (null == $checkAction) {
       // $checkAction is NOT defined.
       // we should NOT be dealing with SNMP OID values in the normal SNMP way (if at all).
@@ -248,11 +261,15 @@ sendMetricToGraphite( $hostname1, $dataToBeInserted1, $checkAction1);
 // TESTING NRPE against the template system
 //parseRaw($hostname, $dataToBeInserted, $checkName, $checkAction = null, $cycle = null, $type = null)
 
+//{"HAPROXY":" 1\/1) gitlab (Active: 1\/1) bbs (Active: 1\/1) wiki (Active: 1\/1) proxy (Active: 1\/1) default (Active: 1\/1) dirty (Active: 1\/1) grafana (Active: 1\/1) letsencrypt-backend (Active: 0\/1) nms (Active: 1\/1) speedtest (Active: 1\/1) newznab (Active: 1\/1) observium (Active: 1\/1) graphite (Active: 1\/1) sonarr (Active: 1\/1) sabnzbd (Active: 1\/1) radarr (Active: 1\/1) mario (Active: 1\/1) games (Active: 1\/1) registry (Active: 1\/1) passbolt (Active: 1\/1) calibre (Active: 1\/1) | t=0.226615s;2;10;0; sess_zoneminder=0;;;0;0 sess_gitlab=0;;;0;0 sess_bbs=0;;;0;0 sess_wiki=0;;;0;0 sess_proxy=0;;;0;0 sess_default=0;;;0;0 sess_dirty=0;;;0;0 sess_grafana=0;;;0;0 sess_letsencrypt-backend=0;;;0;0 sess_nms=0;;;0;0 sess_speedtest=0;;;0;0 sess_newznab=0;;;0;0 sess_observium=0;;;0;0 sess_graphite=0;;;0;0 sess_sonarr=0;;;0;0 sess_sabnzbd=0;;;0;0 sess_radarr=0;;;0;0 sess_mario=0;;;0;0 sess_games=0;;;0;0 sess_registry=0;;;0;0 sess_passbolt=0;;;0;0 sess_calibre=0;;;0;0"}
+
 $type='shell';
 $cycle=3000;
 $checkName="randomCheckName";
 $hostname='test.foo.bar.iwillfearnoevil.com';
-$metric="[\"TCP OK - 0.000 second response time on localhost port 22|time=0.000228s;;;0.000000;10.000000\"]";
+$metric = ["HAPROXY OK -  gitlab (Active: 1/1) calibre (Active: 1/1) sonarr (Active: 1/1) registry (Active: 1/1) speedtest (Active: 1/1) passbolt (Active: 1/1) mario (Active: 1/1) nms (Active: 1/1) newznab (Active: 1/1) wiki (Active: 1/1) dirty (Active: 1/1) grafana (Active: 1/1) zoneminder (Active: 1/1) graphite (Active: 1/1) observium (Active: 1/1) proxy (Active: 1/1) games (Active: 1/1) letsencrypt-backend (Active: 0/1) bbs (Active: 1/1) sabnzbd (Active: 1/1) radarr (Active: 1/1) default (Active: 1/1) | t=0.241012s;2;10;0; sess_gitlab=0;;;0;0 sess_calibre=0;;;0;0 sess_sonarr=0;;;0;0 sess_registry=0;;;0;0 sess_speedtest=0;;;0;0 sess_passbolt=0;;;0;0 sess_mario=0;;;0;0 sess_nms=0;;;0;0 sess_newznab=0;;;0;0 sess_wiki=0;;;0;0 sess_dirty=0;;;0;0 sess_grafana=0;;;0;0 sess_zoneminder=0;;;0;0 sess_graphite=0;;;0;0 sess_observium=0;;;0;0 sess_proxy=0;;;0;0 sess_games=0;;;0;0 sess_letsencrypt-backend=0;;;0;0 sess_bbs=0;;;0;0 sess_sabnzbd=0;;;0;0 sess_radarr=0;;;0;0 sess_default=0;;;0;0"];
+//$metric=[ '{"HAPROXY":" 1\/1) gitlab (Active: 1\/1) bbs (Active: 1\/1) wiki (Active: 1\/1) proxy (Active: 1\/1) default (Active: 1\/1) dirty (Active: 1\/1) grafana (Active: 1\/1) letsencrypt-backend (Active: 0\/1) nms (Active: 1\/1) speedtest (Active: 1\/1) newznab (Active: 1\/1) observium (Active: 1\/1) graphite (Active: 1\/1) sonarr (Active: 1\/1) sabnzbd (Active: 1\/1) radarr (Active: 1\/1) mario (Active: 1\/1) games (Active: 1\/1) registry (Active: 1\/1) passbolt (Active: 1\/1) calibre (Active: 1\/1) | t=0.226615s;2;10;0; sess_zoneminder=0;;;0;0 sess_gitlab=0;;;0;0 sess_bbs=0;;;0;0 sess_wiki=0;;;0;0 sess_proxy=0;;;0;0 sess_default=0;;;0;0 sess_dirty=0;;;0;0 sess_grafana=0;;;0;0 sess_letsencrypt-backend=0;;;0;0 sess_nms=0;;;0;0 sess_speedtest=0;;;0;0 sess_newznab=0;;;0;0 sess_observium=0;;;0;0 sess_graphite=0;;;0;0 sess_sonarr=0;;;0;0 sess_sabnzbd=0;;;0;0 sess_radarr=0;;;0;0 sess_mario=0;;;0;0 sess_games=0;;;0;0 sess_registry=0;;;0;0 sess_passbolt=0;;;0;0 sess_calibre=0;;;0;0"}' ];
+//$metric="[\"TCP OK - 0.000 second response time on localhost port 22|time=0.000228s;;;0.000000;10.000000\"]";
 //$metric="[\"DRIVE OK - 0.000 second response time on localhost port 22| /=123456KB\"]";
 echo "sending metric " . $metric . "\n";
 echo "SENT TO FUNCTION\n";

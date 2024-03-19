@@ -34,7 +34,7 @@
 
   /* Returns that are NOT numeric values or we specifically dont care about
      This inspects the $k value, not the $v data
-     This is unused in NRPE
+     This is unused in NRPE and SHELL
   */
   $nonNumericReturns=array("DISCRETE_NAME_2", "FILTER_OUT_NAME_45", "IGNORE_KEY_BLAH");
 
