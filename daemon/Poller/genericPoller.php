@@ -373,6 +373,7 @@ function process_child_run($data_set, $identifier = "") {
       $returnData['output'] = $result['output'];
       $returnData['exitCode'] = $result['exitCode'];
       $returnData['command'] = $result['command'];
+      $logger->debug("Shell: " . json_encode($returnData,1));
       break;
     case "snmp":
       $output=array();  // reset your output array after each use

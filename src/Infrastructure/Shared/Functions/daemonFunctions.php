@@ -540,7 +540,11 @@ function shellShell($hostname, $address, $checkValue) {
   // $checkValue="ping $hostname -c 4 -q";
   $cmd=$checkValue;
   eval("\$cmd = \"$cmd\";");
+  $logger->debug("Shell: " . json_encode($cmd,1));
   $result=exec( $cmd, $output, $result_code);
+  $data['output'] = $output;
+  $data['exitCode'] = $result_code;
+  $data['command'] = $cmd;
   return $data;
 }
 
@@ -665,7 +669,7 @@ function sendEvents($completeResultSingle) {
 
     // $logger->debug("DEBUG SHELL STDOUT " . json_encode($completeResultSingle['output'],1));
     //    sendHostAlarm("Poller command ". $completeResultSingle['command']. " ", $severity, $completeResultSingle['checkName'], $completeResultSingle['hostname'], $expire, json_encode($completeResultSingle['output'],1));
-    if ( ! is_array($completeResultSingle['output'][0]) || empty($completeResultSingle['output'][0])|| ! isset($completeResultSingle['output'][0])) { $sendComplete = json_encode($completeResultSingle['output'],1) ; }
+    if ( ! is_array($completeResultSingle['output'][0]) || empty($completeResultSingle['output'][0])|| ! isset($completeResultSingle['output'][0])|| is_null($completeResultSingle['output'][0])) { $sendComplete = json_encode($completeResultSingle['output'],1) ; }
     else { $sendComplete = $completeResultSingle['output'][0]; }
     //$logger->debug("DEBUG -- 2 --  SHELL STDOUT " . $sendComplete);
     //$cleanup01 = json_decode($sendComplete, true);
@@ -674,17 +678,17 @@ function sendEvents($completeResultSingle) {
     sendHostAlarm("Check Failure exit code ". $sendComplete . " ", $severity, $completeResultSingle['checkName'], $completeResultSingle['hostname'], $expire, json_encode($completeResultSingle['output'],1));
     $logger->warning("Sending set event for " . $completeResultSingle['hostname'] . " service check " . $completeResultSingle['checkName']);
   }
-  elseif (preg_match('/Timeout/',$completeResultSingle['output'][0])) {
+  elseif (! is_null($completeResultSingle['output'][0]) && preg_match('/Timeout/',$completeResultSingle['output'][0])) {
     //    sendHostAlarm("Poller command ". $completeResultSingle['command']. " failed. ", $severity, $completeResultSingle['checkName'], $completeResultSingle['hostname'], $expire,json_encode($completeResultSingle['output'],1));
     sendHostAlarm("Check Failure timeout ". $completeResultSingle['output'][0] . " failed. ", $severity, $completeResultSingle['checkName'], $completeResultSingle['hostname'], $expire,json_encode($completeResultSingle['output'],1));
     $logger->warning("Sending set event for " . $completeResultSingle['hostname'] . " service check " . $completeResultSingle['checkName']);
   }
-  elseif (preg_match('/No Such Object available/',$completeResultSingle['output'][0])) {
+  elseif (! is_null($completeResultSingle['output'][0]) && preg_match('/No Such Object available/',$completeResultSingle['output'][0])) {
     //    sendHostAlarm("Poller command ". $completeResultSingle['command']. " failed. ", $severity, $completeResultSingle['checkName'], $completeResultSingle['hostname'], $expire,json_encode($completeResultSingle['output'],1));
     sendHostAlarm("Check Failure no such object ". $completeResultSingle['output'][0] . " failed. ", $severity, $completeResultSingle['checkName'], $completeResultSingle['hostname'], $expire,json_encode($completeResultSingle['output'],1));
     $logger->warning("Sending set event for " . $completeResultSingle['hostname'] . " service check " . $completeResultSingle['checkName']);
   }
-  elseif ( empty($completeResultSingle['output'][0]) && $completeResultSingle['type'] !== "nrpe") {
+  elseif (is_null($completeResultSingle['output'][0]) || ( empty($completeResultSingle['output'][0]) && $completeResultSingle['type'] !== "nrpe")) {
     sendHostAlarm("Poller command ". $completeResultSingle['output'][0] . " failed. No results returned.", $severity, $completeResultSingle['checkName'], $completeResultSingle['hostname'], $expire);
     $logger->warning("Sending set event for " . $completeResultSingle['hostname'] . " service check " . $completeResultSingle['checkName']);
   }

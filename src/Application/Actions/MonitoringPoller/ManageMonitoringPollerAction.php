@@ -10,7 +10,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 
 class ManageMonitoringPollerAction extends MonitoringPollerAction {
   protected function action(): Response {
-    $jobType=["isAlive", "savePerformance", "deletePerformance", "heartbeat", "hostname", "hostgroup", "walk", "get", "snmp", "nrpe", "ping", "housekeeping", "disable", "all", "alive", "checkName"]; // sanity check that we only are doing what we expect here
+    $jobType=["isAlive", "savePerformance", "deletePerformance", "heartbeat", "hostname", "hostgroup", "walk", "get", "snmp", "nrpe", "ping", "housekeeping", "disable", "all", "alive", "checkName", "shell"]; // sanity check that we only are doing what we expect here
 
     // How to check if resolveArg is even going to work
     // before calling it and kicking an exception
