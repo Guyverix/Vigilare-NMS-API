@@ -18,7 +18,7 @@ class DatabaseEventRepository implements EventRepository {
   }
 
   public function findAll(): array {
-    $this->db->prepare("SELECT * FROM event ORDER BY startEvent DESC");
+    $this->db->prepare("SELECT e.*, d.id FROM event e  LEFT JOIN Device d ON e.device=d.hostname ORDER BY startEvent DESC");
     $data = $this->db->resultset();
     return array_values($data);
   }
