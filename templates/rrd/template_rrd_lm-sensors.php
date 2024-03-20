@@ -46,10 +46,13 @@
 
   // When at all possible, make a descrete name for your values.
   foreach ($list as $temp) {
+    //echo "TEMP INDEX " . $temp;
     foreach ($cleanUp as $k => $v) {
+      // strpos cant match on 10 when we use 1, so add a space so we get something to filter with
+      $k2 = $k . " ";
       // echo "VALUE TEMP " . $temp . " KEY " . $k . " VALUE " . $v . "\n";
-      switch ($k) {
-        case strpos($k,"16.2.1.2.$temp" ) !== false:
+      switch ($k2) {
+        case strpos($k2,"16.2.1.2.$temp " ) !== false:
          $v=preg_replace('/\ /', '_', $v); // change spaces to _
          $v=preg_replace('/\:/', '_', $v); // change colon to _
          $v=preg_replace('/\./', '_', $v); // change period to _
@@ -57,7 +60,7 @@
          if ($v[0] === "_") { $v = substr($v, 1); } // Strip leading _ off of name
          $clean[$temp]['Name']= "temp.$v" ;
          break;
-        case strpos($k,"16.2.1.3.$temp" ) !== false:
+        case strpos($k2,"16.2.1.3.$temp " ) !== false:
          // Many manufacturers give a large value and we have to / 1000 to get real values
          $v=$v / 1000;
          $v=rtrim(ltrim($v));
