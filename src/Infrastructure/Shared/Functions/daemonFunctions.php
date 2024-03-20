@@ -432,6 +432,7 @@ function cleanStringUnique($inputString) {
 }
 
 function shellSnmpGet($address, $version, $community, $checkValue) {
+  global $logger;
   if ( $version == '2' ) { $version = '2c'; }
   $cmd="snmpget -Ovq -v " . $version . " -c " . $community . " " . $address . " " . $checkValue . " -t 5 -r 2 2>&1";
   // echo "CMD " . $cmd . "\n";  // DEBUG
@@ -439,14 +440,16 @@ function shellSnmpGet($address, $version, $community, $checkValue) {
   $data['output'] = $output;
   $data['exitCode'] = $result_code;
   $data['command'] = $cmd;
+  $logger->debug("shellSnmpGet " . json_encode($data,1));
   return $data;
 }
 
 // One will return raw oid numeric, and raw values without things like (enabled) 1 in the results
 function shellSnmpWalk($address, $version, $community, $checkValue) {
-if ( empty ($version) ) {
-  echo "FAIL " . $address . " " . $checkValue . "\n";
-}
+  global $logger;
+  if ( empty ($version) ) {
+    echo "FAIL " . $address . " " . $checkValue . "\n";
+  }
   if ( $version == '2' ) { $version = '2c'; }
   $cmd="snmpwalk -Onq -v " . $version . " -c " . $community . " " . $address . " " . $checkValue  . " -t 5 -r 2 2>&1";
   // echo "CMD " . $cmd . "\n"; // DEBUG
@@ -455,6 +458,7 @@ if ( empty ($version) ) {
   $data['output'] = $output;
   $data['exitCode'] = $result_code;
   $data['command'] = $cmd;
+  $logger->debug("shellSnmpWalk " . json_encode($data,1));
   return $data;
 }
 
@@ -466,7 +470,7 @@ function shellNrpe($nrpePath, $address, $checkValue) {
   $data['output'] = $output;
   $data['exitCode'] = $result_code;
   $data['command'] = $cmd;
-  $logger->debug("NRPE CHECK " . json_encode($data,1));
+  $logger->debug("shellNrpe " . json_encode($data,1));
   return $data;
 }
 
@@ -528,7 +532,7 @@ function cleanNrpeMetrics($nrpeResult) {
     $nrpeResults['perf'] = "false";
   }
   //print_r($nrpeResults);  // DEBUG
-//  $logger->debug("NRPE CHECK METRICS " . json_encode($nrpeResults,1));
+//  $logger->debug("cleanNrpeMetrics " . json_encode($nrpeResults,1));
 
   return $nrpeResults;
 }
@@ -540,7 +544,7 @@ function shellShell($hostname, $address, $checkValue) {
   // $checkValue="ping $hostname -c 4 -q";
   $cmd=$checkValue;
   eval("\$cmd = \"$cmd\";");
-  $logger->debug("Shell: " . json_encode($cmd,1));
+  $logger->debug("shellShell: " . json_encode($cmd,1));
   $result=exec( $cmd, $output, $result_code);
   $data['output'] = $output;
   $data['exitCode'] = $result_code;
@@ -556,7 +560,7 @@ function shellPing($address) {
   $data['output'] = $output;
   $data['exitCode'] = $result_code;
   $data['command'] = $cmd;
-  $logger->debug("shellPing data is " . json_encode($data,1));
+  $logger->debug("shellPing " . json_encode($data,1));
   return $data;
 }
 
@@ -571,7 +575,7 @@ function shellAlive($hostname, $address, $command) {
   $data['output'] = $output;
   $data['exitCode'] = $result_code;
   $data['command'] = $cmd;
-  $logger->debug("shellAlive data is " . json_encode($data,1));
+  $logger->debug("shellAlive " . json_encode($data,1));
   return $data;
 }
 
@@ -616,6 +620,7 @@ function sendPerformanceDatabase($hostname, $action, $value) {
     return 0;
   }
   else {
+    $logger->debug("sendPerformanceDatabase " . print_r($sendPerformance) );
     return "Did not recieve a 200 response when calling method sendPerformanceDatabase in daemonFuctions.php" . print_r($sendPerformance);
   }
   unset($sendPerformance);
