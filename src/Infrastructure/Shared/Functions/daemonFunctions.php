@@ -29,6 +29,7 @@ function convert($size) {
 
 // Send event via API call
 function sendAlarm ( ?string $alarmEventSummary = "Oops.  Someone forgot to set the event summary for information", ?int $alarmEventSeverity = 2, ?string $alarmEventName = "smartSnmpPoller" ) {
+  global $logger;
   global $apiUrl;
   global $apiHost;
   global $apiPort;
@@ -48,12 +49,14 @@ function sendAlarm ( ?string $alarmEventSummary = "Oops.  Someone forgot to set 
   $alarm->send();
   $alarm->close();
   // No need to keep this in RAM, as object should be rarely used
+  $logger->debug("sendAlarm " . json_encode($alarm,1));
   unset ($alarm);
   return "ok";
 }
 
 // Send event via API call
 function sendHostAlarm ( $alarmEventSummary, $alarmEventSeverity , $alarmEventName , $hostname, ?int $ageOut = 600, $details = null ) {
+  global $logger;
   global $apiUrl;
   global $apiHost;
   global $apiPort;
@@ -86,12 +89,14 @@ function sendHostAlarm ( $alarmEventSummary, $alarmEventSeverity , $alarmEventNa
   $alarm2->send();
   $alarm2->close();
   // No need to keep this in RAM, as object should be rarely used
+  $logger->debug("sendHostAlarm " . json_encode($alarm2,1));
   unset ($alarm2);
   return "ok";
 }
 
 // Define the API destination since this is not an event
 function heartBeat( $pollerName, $pollerCycle, $pollerPid = null ) {
+  global $logger;
   global $apiHost;
   global $apiPort;
   global $apiKey;
@@ -109,14 +114,17 @@ function heartBeat( $pollerName, $pollerCycle, $pollerPid = null ) {
   $heartBeat->data($heartBeatValues);
   $heartBeat->send();
   $heartBeat->close();
+  $logger->debug("heartBeat " . json_encode($heartBeat,1));
   unset($heartBeat);
   return "ok";
 }
 
 // Define the API destination for aliveness results
 function isAlive( $hostname, $address, $isAliveResult = null ) {
+  global $logger;
   global $apiHost;
   global $apiPort;
+  global $apiKey;
 
   if ( null === $isAliveResult ) {
     // assume death unless explicitly stating it is alive
@@ -130,9 +138,11 @@ function isAlive( $hostname, $address, $isAliveResult = null ) {
   $isAliveValues['address']  = $address;
   $isAliveValues['isAlive']  = $isAliveResult;
 
+  $isAlive->headers = ["X-Api-Key: $apiKey"];
   $isAlive->data($isAliveValues);
   $isAlive->send();
   $isAlive->close();
+  $logger->debug("isAlive " . json_encode($isAlive,1));
   unset($isAlive);
   return "ok";
 }
@@ -142,9 +152,12 @@ function isAlive( $hostname, $address, $isAliveResult = null ) {
 function pullActiveEvents() {
   global $apiHost;
   global $apiPort;
+  global $apiKey;
 
   $pullEvents = new Curl();
   $pullEvents->url = $apiHost . ":" . $apiPort . "/events/monitorList";
+  $pullEvents->headers = ["X-Api-Key: $apiKey"];
+
   $pullEvents->send();
   $data = $pullEvents->content();
   // echo "DATA: " . print_r($pullEvents); // DEBUG
@@ -157,9 +170,12 @@ function pullActiveEvents() {
 function pullMonitors( $monitorType, $monitorCycle ) {
   global $apiHost;
   global $apiPort;
+  global $apiKey;
 
   $pullMonitors = new Curl();
   $pullMonitors->url = $apiHost . ":" . $apiPort . "/monitoringPoller/" . $monitorType . "?cycle=" . $monitorCycle;
+  $pullMonitors->headers = ["X-Api-Key: $apiKey"];
+
   $pullMonitors->send();
   $data = $pullMonitors->content();
   $pullMonitors->close();
@@ -172,6 +188,7 @@ function pullMonitors( $monitorType, $monitorCycle ) {
 function storeResults($storage, $hostname, $result, $value) {
   global $apiHost;
   global $apiPort;
+  global $apiKey;
 
   $storeResults = new Curl();
   $storeResults->url = $apiHost . ":" . $apiPort . "/storage";
@@ -181,6 +198,8 @@ function storeResults($storage, $hostname, $result, $value) {
   $storeResultsData['result']   = $result;
   $storeResultsData['value']    = $value;
   $storeResults->data = $storeResultsData;
+  $storeResults->headers = ["X-Api-Key: $apiKey"];
+
   $storeResults->send();
   $storeResults->close();
   return "ok";
@@ -605,6 +624,7 @@ function sendPollerPerformance($hostname, $metricData, $metricName, $type, $metr
 function sendPerformanceDatabase($hostname, $action, $value) {
   global $apiHost;
   global $apiPort;
+  global $apiKey;
 
   $sendPerformance = new Curl();
   $sendPerformance->url = $apiHost . ":" . $apiPort . "/monitoringPoller/savePerformance";
@@ -613,6 +633,8 @@ function sendPerformanceDatabase($hostname, $action, $value) {
   $sendPerformanceValues['checkName']   = $action;
   $sendPerformanceValues['value']    = $value;
   $sendPerformance->data($sendPerformanceValues);
+  $sendPerformance->headers = ["X-Api-Key: $apiKey"];
+
   $sendPerformance->send();
   $sendPerformance->close();
   $sendPerformanceResult=json_decode(json_encode($sendPerformance,1),1);
@@ -992,9 +1014,12 @@ function verifyPid($pid) {
 function findAllEvents() {
   global $apiHost;
   global $apiPort;
+  global $apiKey;
   $findAllEvents = new Curl();
   $findAllEvents->url = $apiHost . ":" . $apiPort . "/events";
   $findAllEvents->method = "get";
+  $findAllEvents->headers = ["X-Api-Key: $apiKey"];
+
   $findAllEvents->send();
   $data = $findAllEvents->content();
   $findAllEvents->close();
@@ -1006,9 +1031,11 @@ function findAllEvents() {
 function findAgeOutEvents() {
   global $apiHost;
   global $apiPort;
+  global $apiKey;
   $ageOutEvents = new Curl();
   $ageOutEvents->url = $apiHost . ":" . $apiPort . "/events/ageOut";
   $ageOutEvents->method = "get";
+  $ageOutEvents->headers = ["X-Api-Key: $apiKey"];
   $ageOutEvents->send();
   $data = $ageOutEvents->content();
   $ageOutEvents->close();
@@ -1020,12 +1047,15 @@ function findAgeOutEvents() {
 function moveToHistory($id, $reason) {
   global $apiHost;
   global $apiPort;
+  global $apiKey;
+
   $moveEvents = new Curl();
   $moveEvents->url = $apiHost . ":" . $apiPort . "/events/moveToHistory";
   $moveEvents->method = "post";
   $sendMoveEvents['reason']    = $reason;
   $sendMoveEvents['id']    = $id;
   $moveEvents->data($sendMoveEvents);
+  $moveEvents->headers = ["X-Api-Key: $apiKey"];
   $moveEvents->send();
   $data = $moveEvents->content();
   $moveEvents->close();
@@ -1037,9 +1067,12 @@ function moveToHistory($id, $reason) {
 function getHeartbeats() {
   global $apiHost;
   global $apiPort;
+  global $apiKey;
+
   $getHeartbeat = new Curl();
   $getHeartbeat->url = $apiHost . ":" . $apiPort . "/monitoringPoller/housekeeping";
   $getHeartbeat->method = "post";
+  $getHeartbeat->headers = ["X-Api-Key: $apiKey"];
   $getHeartbeat->send();
   $data = $getHeartbeat->content();
   $getHeartbeat->close();
