@@ -46,7 +46,7 @@
   // Define the UGLY array of vars to make the graph
   $renderOptions = array( "--start", $start, "--end", $end, "-w 800", "--alt-autoscale-max", "--rigid", "--vertical-label=voltage", "--title=\"$title\"",
                  "DEF:fan=".$file.":".$metricName.":AVERAGE",
-                 'AREA:fan' .colorList(0) . ' LINE1:fan' . colorList(0) . ':"RPM " GPRINT:fan:LAST:%6.2lf%s\\\n',
+                 'AREA:fan' .colorList(0) . ' LINE1:fan' . colorList(0) . ':"VDC " GPRINT:fan:LAST:%6.2lf%s\\\n',
                );
   // Really the array is not needed, but damn!  We need some way to read this mess
   $renderDetails = implode(' ',$renderOptions);
