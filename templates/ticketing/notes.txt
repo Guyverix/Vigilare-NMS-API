@@ -1,0 +1,44 @@
+This is going to be called via API..
+
+There can be only one active ticketing system at a time.  Cant see a reason for more than one, TBH..
+
+The event being ticketed will the evid
+
+If we want to APPEND to a ticket, we will have to give the ticket number
+
+Dont forget most ticketing systems require auth of some kind..  We have to have that set.
+
+path (todo): POST
+ticket/create/{evid}
+ticket/update/{evid}/{ticket}
+
+POST data will consist of the userid from the cookie
+Optional: ack event when ticketed.
+
+Database will query and get all columns for row matching evid
+
+Template will be used to create a pretty ticket and put in as much data as the template asks for.
+
+Proposed:
+  * subject  $event_summary
+  * body     $event_details
+  * userid   $_COOKIE['userid']
+
+temlate can have logic internal to it that will be specific to the ticketing system.  Much like the mapping, we can do case or if
+clauses based on the values returned and set additional values to be sent to the ticketing system.
+
+This will be highly reliant on what the filters do in the template.  The template can NEVER alter an event.
+
+It WILL append in the additional table the ticket number and trigger the additional flag
+
+The additional table consists of
+notes
+ack
+ticket
+evid
+
+this can only be appended to, not changed normally....
+This will require use of a new api likely event/additional/???
+
+
+this is just spitball right now
