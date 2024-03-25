@@ -74,7 +74,7 @@
   $rawData  = 'no';
   $prepend  = null;
   $postpend = null;
-  $returnFormat='';                       // default is return a graph url
+  $returnFormat='&minY=0';                       // default is return a graph url
   $customOptions ='';                     // Ability to add something custom from the calling page.  Maybe minY=0 or things like that
 
   if (! empty($sourceOptions) && $sourceOptions !== '') {
