@@ -83,8 +83,14 @@ class DatabaseReportingRepository implements ReportingRepository {
     $this->db->prepare("SELECT * FROM Reporting WHERE id= :id");
     $this->db->bind('id', $arr['id']);
     $data = $this->db->resultset();
+//    $data = json_decode($data, true);
+//    $data = json_decode($data, true);
     $data = json_decode(json_encode($data,1), true);  // convert from obj to array
-    $data2['reportResult'] = json_decode($data[0]['reportResult'], true);  // convert from json to array
+//return $data[0]['reportResult'];
+    $data2['reportResult'] = $data[0]['reportResult'];  // convert from json to array
+//    $data2['reportResult'] = json_decode($data[0]['reportResult'], true);  // convert from json to array
+//return json_decode($data[0]['reportResult'], true);
+//return $data2['reportResult'];
     $data2['filterValues'] = json_decode($data[0]['filterValues'], true);  // convert from json to array
     return $data2;
   }
@@ -181,7 +187,9 @@ class DatabaseReportingRepository implements ReportingRepository {
         if ( ! isset($query)) {
           return "Failed to set manditory paramters to run report";
         }
+        //return $query;
         $data = $this->db->resultset();
+        //return $data;
         $filterArgs = json_encode($arr,1);
         $this->db->prepare("INSERT INTO Reporting VALUES('', :reportName , :data , now(), :filterArgs, 'complete')");
         $this->db->bind('reportName', $arr['template']);

@@ -343,7 +343,14 @@ class DatabaseMonitorsRepository implements MonitorsRepository {
       $query2="SELECT id, checkName, type, iteration, storage, hostId, hostGroup FROM monitoringDevicePoller WHERE find_in_set(" . $arr['id'] .", hostId) GROUP BY id";
     }
     else {
-      $query2="SELECT id, checkName, type, iteration, storage, hostId, hostGroup FROM monitoringDevicePoller WHERE find_in_set(" . $arr['id'] .", hostId) OR INSTR(hostGroup, " . $cleanDeviceGroup . ") GROUP BY id";
+      $group = '';
+      $groupList = explode(',', $cleanDeviceGroup);
+      foreach ($groupList as $singleGroup) {
+        $singleGroup = preg_replace('/"/', '', $singleGroup);
+        $group .= ' OR INSTR(hostGroup, "' . $singleGroup . '")';
+      }
+      // $query2="SELECT id, checkName, type, iteration, storage, hostId, hostGroup FROM monitoringDevicePoller WHERE find_in_set(" . $arr['id'] .", hostId) OR INSTR(hostGroup, " . $cleanDeviceGroup . ") GROUP BY id"; // bad, cannot take n+1 INSTR values
+      $query2='SELECT id, checkName, type, iteration, storage, hostId, hostGroup FROM monitoringDevicePoller WHERE find_in_set(' . $arr['id'] .', hostId) ' . $group . ' GROUP BY id';
     }
     $this->db->prepare("$query2");
     $finalData = $this->db->resultset();
