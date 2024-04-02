@@ -287,4 +287,14 @@ $sourceList='[{"text":"hrStorageSize","id":"nms.guyver-office_iwillfearnoevil_co
 var_dump(graphiteUrls($checkType, $checkName, $sourceList, null));
 */
 
+/*
+$hostname='larvel01.iwillfearnoevil.com';
+$file='/opt/Vigilare-NMS-API/rrd/larvel01.iwillfearnoevil.com/snmp/cpu/load/Load_15_32.rrd';
+$filter='default';
+$start='-1d';
+$end='';
+$ignoreMatch=[];
+var_dump(renderGraph($hostname, $file, $filter, $start, $end, $ignoreMatch));
+*/
+
 ?>

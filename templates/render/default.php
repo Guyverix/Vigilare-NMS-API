@@ -20,7 +20,7 @@
   $hostname='webserver01.iwillfearnoevil.com';
   */
 
-  $imagePath= __DIR__ . '/../public/static/';        // config defined for API
+  $imagePath= __DIR__ . '/../../public/static/';        // config defined for API
   if (empty($ignoreMatch)) { $ignoreMatch = ''; } // set something if not defined
   if (empty($start)) { $start='-1d'; }
   if (empty($end)) { $end='now'; }
@@ -74,8 +74,13 @@
     $mergeInfo += array('image' => '/static/' . $fullImageName);
     $rrdReturnData[] = $mergeInfo;
     // Use the Method Luke
+    //echo "Image Path " . $imagePath . "\n";
+    //echo "Full Image Name " . $fullImageName . "\n";
+    //echo "Rendering Details " . $renderDetails . "\n";
+
     $create = manualGraphMe($imagePath . $fullImageName, $renderDetails);
     if ( $create !== 0) {  // Any errs at all, return the errors as best we can
+      //echo "Create " . json_encode($create,1) . "\n";
       $this->returnArrayValues=$create;
       return $this->returnArrayValues;
     }
