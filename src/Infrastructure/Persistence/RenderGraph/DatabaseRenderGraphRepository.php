@@ -46,8 +46,8 @@ class DatabaseRenderGraphRepository implements RenderGraphRepository {
     $returnMatch = array();
     // Iterate through our filenames and see if we can find a match
     foreach ($arr as $fileList) {
-//      $matcher = 'no_template';
-      $matcher = 'default';
+       $matcher = 'no_template';
+      //$matcher = 'default';
       $fileList = str_replace(array("\r", "\n", '"'), '',$fileList);  // Clean out cruft from filename
       $fileList = trim($fileList);                                    // remove leading whitespace
       foreach ($templateList as $singleTemplate) {
@@ -58,8 +58,8 @@ class DatabaseRenderGraphRepository implements RenderGraphRepository {
           array_push ($returnMatch , [$fileList => $matcher] );
         }
       }
-//      if ( $matcher == 'no_template' ) {
-      if ( $matcher == 'default' ) {
+       if ( $matcher == 'no_template' ) {
+      //if ( $matcher == 'default' ) {
         array_push ($returnMatch , [$fileList => $matcher] );
       }
     }

@@ -54,7 +54,8 @@
   foreach ($metric as $singleMetric) {
     $mergeInfo = array();
     // Define the UGLY array of vars to make the graph
-    $renderOptions = array( "--start", $start, "--end", $end, "-w 800", "--alt-autoscale-max", "--rigid", "--vertical-label=count", "--title=\"" . $singleMetric['title'] . "\"",
+//    $renderOptions = array( "--start", $start, "--end", $end, "-w 800", "--alt-autoscale-max", "--rigid", "--vertical-label=count", "--title=\"" . $singleMetric['title'] . "\"",
+    $renderOptions = array( "--start", $start, "--end", $end, "-w 800", "--alt-autoscale-max", "--rigid", "--vertical-label=value", "--title=\"" . $singleMetric['title'] . "\" -l 0",
                             "DEF:" . $singleMetric['metricName'] . "=" . $file . ":" . $singleMetric['metricName'] . ":AVERAGE",
                             'AREA:' . $singleMetric['metricName'] . colorList(0) . ' LINE1:' . $singleMetric['metricName']  . colorList(0) . ':"' . $singleMetric['metricName'] . '" GPRINT:' . $singleMetric['metricName'] . ':LAST:%6.2lf%s\\\n', );
 
