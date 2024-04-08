@@ -222,7 +222,8 @@ if ( isset($resultFindDevice['data'][0]['hostname'])) {
   $logger->info("Found hostname in Device table " . $known_hostname);
 }
 else {
-  $known_hostname = $event_ip;
+  $known_hostname = gethostbyaddr($event_ip);  // Reverse DNS lookup.   Returns IP if no DNS set
+  // $known_hostname = $event_ip;              // old catchall.  Not as good as line above
   $monitor = 0;
   $logger->info("Hostname not found in Device table.  Assuming new device seen " . $known_hostname);
 
