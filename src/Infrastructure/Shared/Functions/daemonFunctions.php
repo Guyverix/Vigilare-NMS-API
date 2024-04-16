@@ -489,6 +489,9 @@ function shellNrpe($nrpePath, $address, $checkValue) {
   $data['output'] = $output;
   $data['exitCode'] = $result_code;
   $data['command'] = $cmd;
+  // if ( is_array($data['output'])) {  // Shell output should be a string not an array FUTURE
+  //  $data['output'] = $data['output'][0];
+  // }
   $logger->debug("shellNrpe " . json_encode($data,1));
   return $data;
 }
@@ -568,6 +571,9 @@ function shellShell($hostname, $address, $checkValue) {
   $data['output'] = $output;
   $data['exitCode'] = $result_code;
   $data['command'] = $cmd;
+  if ( is_array($data['output'])) {  // Shell output should be a string not an array
+    $data['output'] = $data['output'][0];
+  }
   return $data;
 }
 
@@ -579,6 +585,9 @@ function shellPing($address) {
   $data['output'] = $output;
   $data['exitCode'] = $result_code;
   $data['command'] = $cmd;
+  if ( is_array($data['output'])) {  // Shell output should be a string not an array
+    $data['output'] = $data['output'][0];
+  }
   $logger->debug("shellPing " . json_encode($data,1));
   return $data;
 }
@@ -594,6 +603,10 @@ function shellAlive($hostname, $address, $command) {
   $data['output'] = $output;
   $data['exitCode'] = $result_code;
   $data['command'] = $cmd;
+  $logger->debug("shellAlive " . json_encode($data,1));
+  if ( is_array($data['output'])) {  // Shell output should be a string not an array
+    $data['output'] = $data['output'][0];
+  }
   $logger->debug("shellAlive " . json_encode($data,1));
   return $data;
 }

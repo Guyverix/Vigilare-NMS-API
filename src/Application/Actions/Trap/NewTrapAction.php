@@ -67,10 +67,16 @@ class NewTrapAction extends TrapAction {
 
         /* we now have the data needed to do transform on the event */
         $this->logger->debug("NewTrapAction: Pre-Processing data to be mapped ", $data);
-        $mapping = $this->trapRepository->useMapping($data);
+        try {
+          $mapping = $this->trapRepository->useMapping($data);
+        }
+        catch (Throwable $t) {
+          $this->logger->error("NewTrapAction: Pre-Processing data result ", $t);
+        }
         $this->logger->info("NewTrapAction: Pre-Processing data result ", $mapping);
 
         /* Make the object that contains all our post data */
+        $this->logger->debug("NewTrapAction: Attempt to create Event ", $mapping);
         $trap = $this->trapRepository->createEvent($mapping);
         $this->logger->info("NewTrapAction: Create Event result ", $trap);
 

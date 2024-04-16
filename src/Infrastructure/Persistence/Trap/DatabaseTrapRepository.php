@@ -304,7 +304,12 @@ class DatabaseTrapRepository implements TrapRepository {
 
 
     // Grab what we need to eval now
-    $postProcessing = $initial['preMappingChanges']['data']['mapPostProcessing'];
+    if ( ! empty( $initial['preMappingChanges']['data']['mapPostProcessing']) ) {
+      $postProcessing = $initial['preMappingChanges']['data']['mapPostProcessing'];
+    }
+    else {
+      $postProcessing = '';
+    }
 
     // Additional boilerplate to confirm we have some of the ugly info if users need it
     if ( ! is_array($details)) {
