@@ -15,7 +15,6 @@ popd
 
 # stop general daemon controls
 pushd daemon/Poller/
-#  nohup php ./genericPoller.php -i 300 -t alive -s stop 2>&1 >/dev/null &
   ./genericPoller.php -i 300 -t nrpe -s stop
   ./genericPoller.php -i 300 -t snmp -s stop
   ./genericPoller.php -i 60 -t alive -s stop
