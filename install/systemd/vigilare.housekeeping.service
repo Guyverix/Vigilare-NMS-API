@@ -4,8 +4,9 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=${PTH}/daemon/housekeepingPoller.php -i 60 -s start
-ExecStop=${PTH}/daemon/housekeepingPoller.php -i 60 -s stop
+WorkingDirectory=${PTH}/daemon/housekeepingPoller
+ExecStart=${PTH}/daemon/housekeepingPoller/housekeepingPoller.php -i 60 -s start
+ExecStop=${PTH}/daemon/housekeepingPoller/housekeepingPoller.php -i 60 -s stop
 User=www-data
 Group=www-data
 Restart=on-failure
