@@ -571,9 +571,9 @@ function shellShell($hostname, $address, $checkValue) {
   $data['output'] = $output;
   $data['exitCode'] = $result_code;
   $data['command'] = $cmd;
-  if ( is_array($data['output'])) {  // Shell output should be a string not an array
-    $data['output'] = $data['output'][0];
-  }
+//  if ( is_array($data['output'])) {  // Shell output should be a string not an array
+//    $data['output'] = $data['output'][0];
+//  }
   return $data;
 }
 
