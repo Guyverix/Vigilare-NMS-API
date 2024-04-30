@@ -59,4 +59,4 @@ UNLOCK TABLES;
 
 -- Dump completed on 2024-04-29 10:43:21
 
-INSERT INTO `versionUpdates` VALUE(002, '002_trapEventMap.sql', NOW());
+INSERT INTO `versionUpdates` VALUE(002, '002_trapEventMap.sql', NOW()) ON DUPLICATE KEY UPDATE date=NOW() ;

@@ -121,7 +121,7 @@ checkExist() {
   local INT=$(echo ${1} | awk -F '_' '{print $1}')
   logger "DEBUG" "Attempting to check if ${INT} already set for file ${1}"
   if [[ "${INT}" = "001" ]]; then
-    logger "WARNING" "File 001 will always be run, it IS the database schema"
+    logger "CAUTION" "File 001 will always be run, it IS the database schema after all."
     EXIST=0
   else
     RESULT=$(export MYSQL_PWD="${PASS}" ; mysql -u ${USER} -h ${HOST} -P ${PORT} --skip-column-names -D ${DB} -se "select count(*) as count from versionUpdates WHERE sequence = ${INT}" 2>&1)

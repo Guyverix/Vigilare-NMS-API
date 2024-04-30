@@ -471,4 +471,4 @@ CREATE TABLE `versionUpdates` (
 -- Dump completed on 2024-04-29 10:31:24
 -- Current state as of commit 8daf414100ee4d459e62b255ad3e3e13b3819341
 
-INSERT INTO `versionUpdates` VALUE(001, '001_base_schema_and_triggers.sql', NOW());
+INSERT INTO `versionUpdates` VALUE(001, '001_base_schema_and_triggers.sql', NOW()) ON DUPLICATE KEY UPDATE date=NOW();
