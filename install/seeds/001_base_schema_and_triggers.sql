@@ -33,7 +33,7 @@ CREATE TABLE `Device` (
   UNIQUE KEY `hostname_Address` (`hostname`,`address`),
   UNIQUE KEY `hostname_2` (`hostname`,`address`),
   KEY `hostname` (`hostname`(128))
-) ENGINE=InnoDB AUTO_INCREMENT=95 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Start of the tree is the host itself';
+) ENGINE=InnoDB AUTO_INCREMENT=107 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Start of the tree is the host itself';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -81,7 +81,7 @@ CREATE TABLE `DeviceProperties` (
   `Properties` text COMMENT 'JSON of al the properties associated with the Device',
   PRIMARY KEY (`Id`),
   UNIQUE KEY `Address` (`DeviceId`)
-) ENGINE=InnoDB AUTO_INCREMENT=89 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=95 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -94,117 +94,67 @@ DROP TABLE IF EXISTS `Reporting`;
 CREATE TABLE `Reporting` (
   `id` int(9) NOT NULL AUTO_INCREMENT,
   `reportName` varchar(200) NOT NULL,
-  `reportResult` text,
+  `reportResult` longtext,
   `reportDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `filterValues` text NOT NULL,
   `status` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `nameAndDate` (`reportName`,`reportDate`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `__host`
+-- Table structure for table `activeMonitors`
 --
 
-DROP TABLE IF EXISTS `__host`;
+DROP TABLE IF EXISTS `activeMonitors`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `__host` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `hostname` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'undefined.hostname.domain' COMMENT 'FQDN',
-  `address` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'IP address should match DNS',
-  `firstSeen` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date entered into Database',
-  `monitor` tinyint(1) DEFAULT '0' COMMENT 'will this host be monitored 1 is NO!',
+CREATE TABLE `activeMonitors` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'just an id value',
+  `address` varchar(32) NOT NULL COMMENT 'IP address for filtering which poller will be running the check',
+  `checkName` varchar(255) NOT NULL COMMENT 'checkName duh',
+  `checkAction` text NOT NULL COMMENT 'Action to perform or OID',
+  `type` varchar(20) NOT NULL COMMENT 'nrpe shell curl snmp, etc',
+  `iteration` int(5) NOT NULL DEFAULT '300' COMMENT 'iteration cycle as integer',
+  `storage` varchar(25) NOT NULL COMMENT 'storage type for results',
+  `hostid` text NOT NULL COMMENT 'csv of hosts',
+  `visible` varchar(4) NOT NULL DEFAULT 'no' COMMENT 'yes no (unused)',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `hostname_Address` (`hostname`,`address`),
-  UNIQUE KEY `hostname_2` (`hostname`,`address`),
-  KEY `hostname` (`hostname`(128))
-) ENGINE=InnoDB AUTO_INCREMENT=61 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Start of the tree is the host itself';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `__hostAttribute`
---
-
-DROP TABLE IF EXISTS `__hostAttribute`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `__hostAttribute` (
-  `id` int(7) NOT NULL AUTO_INCREMENT,
-  `hostname` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'undefined.hostname.domain' COMMENT 'hostname for FK constraint',
-  `component` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'undefinedComponent' COMMENT 'high level generic name of component type',
-  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'undefinedName' COMMENT 'specific name of the component',
-  `value` text COLLATE utf8_unicode_ci COMMENT 'raw text for the above compoent',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `hostname` (`hostname`,`component`,`name`),
-  UNIQUE KEY `hostname_2` (`hostname`,`component`,`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='This should tie directly to the host table';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `__hostGroup`
---
-
-DROP TABLE IF EXISTS `__hostGroup`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `__hostGroup` (
-  `id` int(6) NOT NULL AUTO_INCREMENT,
-  `hostgroupName` varchar(90) NOT NULL,
-  `hostname` text NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1 COMMENT='list of hostgroups mapped to hostnames all json';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `__monitoringPoller`
---
-
-DROP TABLE IF EXISTS `__monitoringPoller`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `__monitoringPoller` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `checkName` varchar(128) NOT NULL COMMENT 'monitoring name.  Camel case, do not use spaces',
-  `checkAction` text CHARACTER SET utf8 NOT NULL COMMENT 'command args needed.  oids, nrpe args, shell args, etc...  Variables allowed in here match hostname and IP address only ',
-  `type` varchar(20) CHARACTER SET utf8 NOT NULL COMMENT 'nrpe shell curl (snmp)get (snmp)walk  (snmp)future: bulk',
-  `iteration` int(5) NOT NULL DEFAULT '300',
-  `storage` varchar(25) NOT NULL DEFAULT 'graphite' COMMENT 'database ( raw save) databaseMetric (json) graphite (curl push)',
-  `hostname` text NOT NULL COMMENT 'This is simply a list of hostnames that we are going to run against.  This is a JSON save.  Decode it internally at runtime for list.',
-  `hostGroup` text NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `checkName` (`checkName`,`type`,`iteration`,`storage`)
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `__oidNameMap`
---
-
-DROP TABLE IF EXISTS `__oidNameMap`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `__oidNameMap` (
-  `oid` varchar(255) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL
+  UNIQUE KEY `address` (`address`,`checkName`,`type`,`iteration`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `__shellPoller`
+-- Table structure for table `eceGroups`
 --
 
-DROP TABLE IF EXISTS `__shellPoller`;
+DROP TABLE IF EXISTS `eceGroups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `__shellPoller` (
-  `id` int(6) NOT NULL AUTO_INCREMENT,
-  `checkName` varchar(255) NOT NULL DEFAULT 'undefined',
-  `checkCommand` text NOT NULL,
-  `host` varchar(255) NOT NULL DEFAULT 'unknonwn',
-  `iteration` int(6) NOT NULL DEFAULT '0',
+CREATE TABLE `eceGroups` (
+  `categoryId` int(6) NOT NULL AUTO_INCREMENT COMMENT 'auto increment on new row',
+  `parentId` int(6) DEFAULT NULL COMMENT 'associate with categoryId',
+  `categoryName` varchar(255) NOT NULL COMMENT 'General Service or public name',
+  `associatedHost` text NOT NULL COMMENT 'list of id values from device id number',
+  `associatedCheck` text NOT NULL COMMENT 'list of service checks associated with a given category name',
+  PRIMARY KEY (`categoryId`)
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `eceRules`
+--
+
+DROP TABLE IF EXISTS `eceRules`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `eceRules` (
+  `id` int(7) NOT NULL AUTO_INCREMENT,
+  `ruleName` varchar(255) NOT NULL,
+  `ruleValue` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -232,6 +182,9 @@ CREATE TABLE `event` (
   `eventType` smallint(4) NOT NULL DEFAULT '3',
   `eventMonitor` smallint(4) NOT NULL DEFAULT '3',
   `eventSummary` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Undefined summary',
+  `application` varchar(5) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'false',
+  `customerVisible` varchar(5) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'false',
+  `osEvent` varchar(5) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'false',
   PRIMARY KEY (`device`,`eventName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -261,6 +214,27 @@ DELIMITER ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
+-- Table structure for table `eventCorrelationEngine`
+--
+
+DROP TABLE IF EXISTS `eventCorrelationEngine`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `eventCorrelationEngine` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `active` varchar(6) NOT NULL DEFAULT 'false',
+  `appName` varchar(255) NOT NULL,
+  `appRuleOrder` int(6) NOT NULL DEFAULT '0',
+  `serviceName` varchar(255) NOT NULL,
+  `raw` varchar(6) NOT NULL DEFAULT 'false',
+  `appCorrelation` text NOT NULL,
+  `eceSummary` text NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `appService with serviceName` (`appName`,`serviceName`,`appRuleOrder`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `heartbeat`
 --
 
@@ -283,7 +257,7 @@ CREATE TABLE `heartbeat` (
 DROP TABLE IF EXISTS `history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `2history` (
+CREATE TABLE `history` (
   `evid` char(36) COLLATE utf8_unicode_ci NOT NULL,
   `device` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
   `stateChange` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -300,7 +274,10 @@ CREATE TABLE `2history` (
   `eventName` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'undefined',
   `eventType` smallint(4) NOT NULL DEFAULT '3',
   `eventMonitor` smallint(4) NOT NULL DEFAULT '3',
-  `eventSummary` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Undefined summary'
+  `eventSummary` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Undefined summary',
+  `application` varchar(5) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'false',
+  `customerVisible` varchar(5) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'false',
+  `osEvent` varchar(5) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'false'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -370,7 +347,7 @@ CREATE TABLE `monitoringDevicePoller` (
   `visible` varchar(4) NOT NULL DEFAULT 'no',
   UNIQUE KEY `id` (`id`),
   UNIQUE KEY `checkName` (`checkName`,`type`,`iteration`)
-) ENGINE=InnoDB AUTO_INCREMENT=105 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=127 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -387,22 +364,6 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-
---
--- Table structure for table `oldGraphiteMap`
---
-
-DROP TABLE IF EXISTS `oldGraphiteMap`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `oldGraphiteMap` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `mapValue` varchar(255) NOT NULL,
-  `begin` text NOT NULL,
-  `end` text NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `performance`
@@ -480,12 +441,23 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `userId` (`userId`),
   UNIQUE KEY `userId_2` (`userId`,`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=139 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=140 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping routines for database 'event'
+-- Table structure for table `versionUpdates`
 --
+
+DROP TABLE IF EXISTS `versionUpdates`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `versionUpdates` (
+  `sequence` int(6) NOT NULL,
+  `file` varchar(255) NOT NULL DEFAULT 'missingFileName.php' COMMENT 'filename by itself, no paths.  foo.php\r\n',
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `fileName` (`file`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -496,4 +468,7 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-02-08 14:28:53
+-- Dump completed on 2024-04-29 10:31:24
+-- Current state as of commit 8daf414100ee4d459e62b255ad3e3e13b3819341
+
+INSERT INTO `versionUpdates` VALUE(001, '001_base_schema_and_triggers.sql', NOW());

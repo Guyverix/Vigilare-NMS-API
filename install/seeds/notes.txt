@@ -1,0 +1,13 @@
+This is really simple..
+
+###_someName.sql
+
+The database tracks the ### value, and will not reinstall something that has already been installed.
+
+This is a safety net so that you do not clobber existing values by running the installer again.
+
+If you DO need to manually do this, then delete the ### from the database, or leverage the -F switch in the
+installer script with a specific filename given.
+
+
+
