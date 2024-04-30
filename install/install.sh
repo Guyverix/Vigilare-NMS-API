@@ -13,15 +13,15 @@
 #       VERSION: 0.0.1
 #===============================================================================
 
-# In theory this can be deployed on Mac, so disable parts that make Mac choke
-#canonicalpath=`readlink -f $0`
+# This will NOT be installed on a Mac, so we can use readlink and dirname correctly
+canonicalpath=`readlink -f $0`
 #canonicaldirname=`dirname ${canonicalpath}`/..
-#samedirname=`dirname ${canonicalpath}`
+samedirname=`dirname ${canonicalpath}`
 
 #==============================================================================
 # Define a base useage case for a -h option
 #==============================================================================
-usage(){
+usage() {
 cat<<EOF
 Usage: $0 options
 
@@ -48,9 +48,12 @@ Options:
 -h  show this help system
 -x  enable debugger mode
 -b  bypass apt install of packages. (implies you have done it manually)
+-f  shim file with sane default values
 
 Example:
 ./$0
+./$0 -f ./someRandomFile
+
 EOF
 }
 
@@ -92,7 +95,7 @@ set +e
 }
 
 verify_deps() {
-needed="awk grep sed uuidgen"
+needed="mysql awk grep sed uuidgen"
 for i in `echo $needed`; do
   type $i >/dev/null 2>&1
   if [[ $? -eq 1 ]]; then
@@ -224,28 +227,26 @@ configureApache() {
 }
 
 installDatabase() {
+  logger "INFO" "Attempting to create database"
+  DB_DB_CREATE=$(export MYSQL_PWD="{DB_INSTALL_PASS}"; mysql -h ${DB_IP} -P ${DB_PORT} -u ${DB_INSTALL_USER} mysql -e "CREATE DATABASE ${DB_NAME}")
+  if {{ $? -ne 0 ]]; then
+    logger "FATAL" "Unable to create database ${DB_NAME}" "${DB_DB_CREATE}"
+  else
+    logger "INFO" "Database ${DB_NAME} created"
+  fi
   logger "INFO" "Creating application user for database vigilare"
-  DB_USER_CREATE=$(mysql -h ${DB_IP} -P ${DB_PORT} -u ${DB_INSTALL_USER} -p$"{DB_INSTALL_PASS}" mysql -e "CREATE USER ${DB_USER}@% IDENTIFIED BY \"${DB_PASS}\"")
+  DB_USER_CREATE=$(export MYSQL_PWD="{DB_INSTALL_PASS}"; mysql -h ${DB_IP} -P ${DB_PORT} -u ${DB_INSTALL_USER} mysql -e "CREATE USER ${DB_USER}@% IDENTIFIED BY \"${DB_PASS}\"")
   if {{ $? -ne 0 ]]; then
     logger "FATAL" "Unable to create user ${DB_USER}" "${DB_USER_CREATE}"
   else
-    logger "INFO" "Databae user ${DB_USER} created"
+    logger "INFO" "Database user ${DB_USER} created"
   fi
-  DB_GRANT=$(mysql -h ${DB_IP} -P ${DB_PORT} -u ${DB_INSTALL_USER} -p$"{DB_INSTALL_PASS}" mysql -e "GRANT ALL PRIVILEGES on vigilare.* TO \"${DB_USER}\"@\"%\"")
+  DB_GRANT=$(export MYSQL_PWD="{DB_INSTALL_PASS}"; mysql -h ${DB_IP} -P ${DB_PORT} -u ${DB_INSTALL_USER} mysql -e "GRANT ALL PRIVILEGES on ${DB_NAME}.* TO \"${DB_USER}\"@\"%\"")
   if {{ $? -ne 0 ]]; then
     logger "FATAL" "Unable to grant privileges for ${DB_USER}" "${DB_GRANT}"
   else 
     logger "INFO" "Databae grant for user ${DB_USER} created"
   fi
-  for LIST in $( ls seeds/*.sql); do
-    logger "INFO" "Mysql inserting SQL from file ${LIST}"
-    INSERT=$(mysql -h ${DB_IP} -P ${DB_PORT} -u ${DB_USER} -p"${DB_PASS}" vigilare < ${LIST})
-    if [[ $? -ne 0 ]]; then
-      logger "FATAL" "Unable to configure database.  Failed on file ${LIST}.  Please correct and insert manually" "${INSERT}"
-    else
-      logger "INFO" "Insert of file ${LIST} successful'
-    fi
-  done
 }
 
 # Set DEFAULTS here
@@ -269,6 +270,7 @@ while getopts "hxbf:" OPTION; do
     x) export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'; set -x     ;;
     b) APT='true';;
     f) FILE="${OPTARG}" ; INCLUDE_SET='true' ;;
+    *) logger "FATAL" "Unknown or unexpected argument given $[@]" ;;
   esac
 done
 
@@ -281,7 +283,7 @@ verify_deps
 # check if Debian
 confirmDeb
 
-if [[ $DEBIAN == 'true' ]] && [[ ${APT} == 'false' ]] ; then
+if [[ ${DEBIAN} == 'true' ]] && [[ ${APT} == 'false' ]] ; then
   installPackages
 else
   logger "WARNING" "Either this is not a Debian based OS, or the apt bypass was used."
@@ -297,17 +299,17 @@ else
 fi
 
 if [[ $(uname) == "Darwin" ]]; then
-  logger "WARNING" "You appear to be attempting this on a Mac.  YMMV"
+  logger "FATAL" "You appear to be attempting this on a Mac. The install script will not work on a Mac, sorry"
 else
-  logger "INFO" "Changing into script directory so all work is relative to here"
-  cd "$(dirname "$0")"
+  logger "INFO" "Changing into install script directory so all work is relative to here"
+  cd ${samedirname}
   pushd ../ 2>&1 >/dev/null
     INSTALL_PATH=$(pwd)
     logger "INFO" "Setting install path to $(pwd)"
   popd 2>&1 >/dev/null
 fi
 
-# run composer install now
+# run composer install now?
 #installComposer
 # enough boilerplate!  Get our info here
 if [[ ${INCLUDE_SET} == 'false' ]]; then
@@ -321,7 +323,7 @@ if [[ ${INCLUDE_SET} == 'false' ]]; then
   getInfoDb
 else
   if [[ -e ${FILE} ]]; then
-    logger "INFO" "Loaded values from variable file"
+    logger "INFO" "Loading values from variable file"
     . ${FILE}
   else
     logger "FATAL" "Unable to find file ${FILE}"

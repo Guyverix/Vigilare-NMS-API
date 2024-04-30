@@ -12,9 +12,10 @@ GUI_HOSTNAME="vigilare"
 GUI_PORT="443"
 GUI_URL="${GUI_HOSTNAME}.${DOMAIN}"
 
-# System is designed only for a single instance with V1
-DB_IP="10.1.0.255"
+# System is designed only for a single db instance with V1
+DB_IP="10.1.0.250"
 DB_PORT="3306"
+DB_NAME="vigilare"
 
 # What the API will talk with the db as
 DB_USER="vigilare"
