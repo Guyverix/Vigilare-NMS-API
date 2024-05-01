@@ -247,6 +247,10 @@ installDatabase() {
   else 
     logger "INFO" "Databae grant for user ${DB_USER} created"
   fi
+  logger 'INFO' "Starting main database installation"
+  pushd seeds/ 2>&1 >/dev/null
+    ./installDatabase.sh -H ${DB_IP} -u ${DB_USER} -p \"${DB_PASS}\" -d ${DB_NAME}
+  popd 2>&1 >/dev/null
 }
 
 # Set DEFAULTS here
@@ -333,10 +337,19 @@ fi
 # declare -p
 
 # Our vars are set, now create our config.php, settings.php and Database.php files for app/
+logger "INFO" "Creating the config.php file which contains passwords, etc."
 #runTemplate "config"
+
+logger "INFO" "Creating the settings.php file which contains secrets usable by the API for auth, etc."
 #runTemplate "settings"
+
+logger "INFO" "Creating the Database.php file which contains the database settings (one less filesystem read needed this way)"
 #runTemplate "Database"
+
+logger "INFO" "Beginning the Database creation now"
 #installDatabase
+
+logger "INFO" "Attempting to configure Apache"
 #configureApache
 
 
