@@ -9,6 +9,9 @@ The Poller repository is going to be the last to be updated.  Currently the poll
 
 Notes and information on the application do currently reside on **[wiki.iwillfearnoevil.com](https://wiki.iwillfearnoevil.com/mediawiki)**
 
+Right now, I am considering the application to be at the start of Beta type software.  It runs stable, but minor issues have been seen when we have high device counts and high monitor counts within the polling daemons.  While this is being addressed, I dont believe this can be considered anything beyond Beta level software.
+
+
 ## Features
 
 - **Real-Time Monitoring:** Continuous surveillance of system performance and health.
