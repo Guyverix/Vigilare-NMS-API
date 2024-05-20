@@ -128,6 +128,7 @@ class ManageAdminAction extends AdminAction {
       case "updatePassword":       // Admin path
         $validator->updatePassword($data);
         $this->logger->debug("validation called for ", $data);
+        // $this->passwordFailure($reserved, $forbidden, $data);  // This enforces complexity requirements even for admins
         // NOTE: admins can set passwords that do not have special characters (IE for some kind of automation) but still must be minimum character count
         $UserValues = $this->adminRepository->updatePassword($data['username'], $data['password'], $this->pepper);
         break;
