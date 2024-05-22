@@ -76,6 +76,11 @@ interface UserRepository {
      * @param array $createUser
      * @return array
     */
+    public function adminUpdateUser(array $updateUser);
+    /**
+     * @param array $createUser
+     * @return array
+    */
     public function createUser(array $username, string $pepper);
     /**
      * @param string $username

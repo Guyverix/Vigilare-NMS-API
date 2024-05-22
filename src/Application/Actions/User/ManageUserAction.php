@@ -100,6 +100,9 @@ class ManageUserAction extends UserAction {
       case "update":
         $UserValues = $this->userRepository->updateUser($data);
         break;
+      case "adminUpdate":
+        $UserValues = $this->userRepository->adminUpdateUser($data);
+        break;
       case "delete":
         if ( ! isset($data['id'])) {
           $this->logger->error("Invalid delete called without an account id.  ", $data);

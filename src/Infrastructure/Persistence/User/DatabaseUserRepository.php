@@ -382,6 +382,20 @@ class DatabaseUserRepository implements UserRepository {
 
   // Cannot update password filtered by id
   public function updateUser($updateUser) {
+    $this->db->prepare("UPDATE users SET email= :email, realName= :realName, userId= :userId  WHERE id= :id");
+    $this->db->bind('userId', $updateUser['userId']);
+    $this->db->bind('email', $updateUser['email']);
+    $this->db->bind('realName', $updateUser['realName']);
+    $this->db->bind('id', $updateUser['id']);
+    $this->db->execute();
+    if ( ! empty($this->db->error)) {
+      return ['FAILURE - Unable to update user values.', $this->db->error];
+    }
+    return ["User id " . $updateUser['id'] . " values were updated"];
+  }
+
+  // A user cannot change their own accessList level
+  public function adminUpdateUser($updateUser) {
     $this->db->prepare("UPDATE users SET email= :email, realName= :realName, userId= :userId, accessList= :accessList, enable= :enable  WHERE id= :id");
     $this->db->bind('userId', $updateUser['userId']);
     $this->db->bind('email', $updateUser['email']);
