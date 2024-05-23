@@ -9,9 +9,13 @@
 #nohup php -S 0.0.0.0:8002 -t public 2>&1 >> ./logs/app.log &
 
 # stop housekeeping watchdog
-pushd daemon/housekeepingPoller/
-  ./housekeepingPoller.php -i 60 -s stop
-popd
+# Converted to systemd as of 03-16-2024
+
+#pushd daemon/housekeepingPoller/
+#  ./housekeepingPoller.php -i 60 -s stop
+#popd
+
+service vigilare.housekeeping stop
 
 # stop general daemon controls
 pushd daemon/Poller/

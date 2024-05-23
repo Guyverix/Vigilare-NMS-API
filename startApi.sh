@@ -5,13 +5,17 @@
 
 # All use php-cli ini values.  Keep in mind different than php web ini values
 
-# Start debug API system Slim4
+# Start debug API system Slim4 (really early days of dev)
 #nohup php -S 0.0.0.0:8002 -t public 2>&1 >> ./logs/app.log &
 
 # Start housekeeping watchdog
-pushd daemon/housekeepingPoller/
-  nohup ./housekeepingPoller.php -i 60 -s start 2>&1 >/dev/null &
-popd
+# Converted to systemd and stable as of 03-16-2024
+
+#pushd daemon/housekeepingPoller/
+#  nohup ./housekeepingPoller.php -i 60 -s start 2>&1 >/dev/null &
+#popd
+
+# Future, housekeeping will control daemons as part of its duties
 
 # Start general daemon controls
 pushd daemon/Poller/
