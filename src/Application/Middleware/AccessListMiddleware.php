@@ -31,6 +31,7 @@ class AccessListMiddleware implements Middleware
      */
     public function __construct(string $table_name)
     {
+        // poor naming convention, this is what we match against for access levels
         $this->table_name = $table_name;  // Passed from route.php as a string version of the template name.  {foo} would be sent here as "foo"
     }
 
@@ -59,13 +60,54 @@ class AccessListMiddleware implements Middleware
         else {
           $createArray = array();                                                     // return empty array if user is not set at all
         }
-        $jwt_public_data["accessList"] = $createArray;                                // Add array back into jwt_public_data..
-        if (in_array($this->table_name, $jwt_public_data["accessList"])) {            // compare string from routeArguments to our array of strings we have access to
-          return $handler->handle($request);
+
+        // BAD if (is_integer((int)$this->table_name)) {                                     // We are only working with number here.  >= all good, else fail
+        if (filter_var($this->table_name, FILTER_VALIDATE_INT)) {                     // We are only working with number here.  >= all good, else fail
+          foreach ($createArray as $validAccessLevels) {
+            if (is_integer((int)$validAccessLevels)) {
+              if ($validAccessLevels >= (int)$this->table_name) {
+                return $handler->handle($request);
+              }
+            }
+          }
         }
+        else {                                                                        // We have a mix or string as CSV  (0,admin) (100,foobar)
+          // First test string Match
+          $jwt_public_data["accessList"] = $createArray;
+          foreach ($createArray as $checkAccess) {
+            $checkAccess = trim($checkAccess); // remove any spaces in string
+            if (in_array($checkAccess, $jwt_public_data["accessList"])) {
+              return $handler->handle($request);
+            }
+          }
+          // Attempt then attempt integer aval
+          foreach ($createArray as $checkAccess) {
+            if ( filter_var($checkAccess, FILTER_VALIDATE_INT) ) {
+              foreach ($createArray as $userAccess) {
+                if ( filter_var($userAccess, FILTER_VALIDATE_INT) ) {
+                  if ( $userAccess >= $checkAccess ) {
+                    return $handler->handle($request);
+                  }
+                }
+              }
+            }
+          }
+        }
+/*
+        Anything below this point is a failure.  We either have access above, or at this point we fail
+
 
         $response = new Response();
-        $response->getBody()->write('Additional access required.  Contact admin.');
+        $response->getBody()->write('TESTING ' . json_encode($createArray,1));
+        return $response->withStatus(418);
+
+        $jwt_public_data["accessList"] = $createArray;                                // Add array back into jwt_public_data..
+        if (in_array($this->table_name, $jwt_public_data["accessList"])) {            // compare string from routeArguments to our array of strings we have access to
+          return $handler->handle($request);                                          // SUCCESS route, script ends here on success
+        }
+*/
+        $response = new Response();
+        $response->getBody()->write('Additional access required.  Contact admin.');   // FAILURE route, script ends here on failure
         return $response->withStatus(418);
     }
 }
