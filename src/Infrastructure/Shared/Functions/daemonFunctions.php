@@ -655,6 +655,7 @@ function sendPerformanceDatabase($hostname, $action, $value) {
     return 0;
   }
   else {
+    if ( empty($sendPerformance)) { $sendPerformance = [" empty data result from post data sent "]; }
     $logger->debug("sendPerformanceDatabase " . print_r($sendPerformance) );
     return "Did not recieve a 200 response when calling method sendPerformanceDatabase in daemonFuctions.php" . print_r($sendPerformance);
   }
