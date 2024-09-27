@@ -96,6 +96,7 @@ if ( ! isset($logger)) {
 //    $logger->debug("function debugging filter " . json_encode($filter,1));
     if (empty($filter['hrStorageSize'])) { $filter['hrStorageSize'] = 0; }
     if (empty($filter['hrStorageUsed'])) { $filter['hrStorageUsed'] = 0; }
+    if (empty($filter['hrStorageAllocationUnits'])) { $filter['hrStorageAllocationUnits'] = 0; }
     $origSize = trim($filter['hrStorageSize']);
     $origUsed = trim($filter['hrStorageUsed']);
     $origUnit = trim($filter['hrStorageAllocationUnits']);

@@ -44,6 +44,12 @@ class Graphite {
         if (!empty($errno)) echo $errno;
         if (!empty($errstr)) echo $errstr;
         $message = "$this->prefix.$metric $value ".time().PHP_EOL;
+        if ( is_bool($fp)) {
+          return "fsockopen error.  Cannot send " . $message;
+        }
+        elseif ( is_bool($message)) {
+          return "message error.  Set as true or false instead of message";
+        }
         $bytes = fwrite($fp, $message);
         return "graphite response: " . $message;
       }

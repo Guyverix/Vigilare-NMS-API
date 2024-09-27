@@ -32,11 +32,12 @@ class Logger {
     // Clean our application names to make a nice logfile name
     // Never assume we will have a .php in the filename however
     $this->appName=(preg_replace('/.php/','',$this->app));
-    $this->loggerFile=__DIR__ . '/../logs/' . $this->appName . '.log';
-    $this->appName .=$this->iterationCycle;
+    $this->loggerFile= __DIR__ . '/../logs/' . $this->appName . '.log';
+    $this->appName .= $this->iterationCycle;
     // Touch file
+    echo "loggerFile " . $this->loggerFile . "\n";
     if (! touch($this->loggerFile)) {
-      $this->error="Unable to touch logfile $loggerFile";
+      $this->error="Unable to touch logfile: $this->loggerFile";
       return;
     }
   }
