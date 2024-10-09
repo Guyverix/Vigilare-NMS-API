@@ -261,8 +261,8 @@ class DatabaseEventRepository implements EventRepository {
       $minus30 = strtotime('-30 days', time());
       $arr['startEvent'] =  gmdate('Y-m-d H:i:s', $minus30);
     }
-    // Query 1 from event
-    $this->db->prepare("SELECT SUM(downtime) AS totalDowntime FROM (SELECT TIMESTAMPDIFF(minute, startEvent, now()) AS downtime FROM event e LEFT JOIN Device d ON d.hostname = e.device WHERE d.id= :id AND e.startEvent >= :startEvent AND eventName='ping') t1");
+    // Query 1 from event table only
+    $this->db->prepare("SELECT SUM(downtime) AS totalDowntime FROM (SELECT TIMESTAMPDIFF(minute, startEvent, now()) AS downtime FROM event e LEFT JOIN Device d ON d.hostname = e.device WHERE d.id= :id AND e.startEvent >= :startEvent AND e.eventName LIKE '%ping') t1");
     $this->db->bind('id', $arr['id']);
     $this->db->bind('startEvent', $arr['startEvent']);
     $data = $this->db->resultset();
@@ -271,7 +271,7 @@ class DatabaseEventRepository implements EventRepository {
      $data[0]['totalDowntime'] = 0;
     }
     // Query logic for timeband history
-    $this->db->prepare("SELECT count(*) AS count FROM history h LEFT JOIN Device d ON d.hostname = h.device WHERE d.id= :id3 AND h.endEvent >= :startEvent3 AND eventName='ping'");
+    $this->db->prepare("SELECT count(*) AS count FROM history h LEFT JOIN Device d ON d.hostname = h.device WHERE d.id= :id3 AND h.endEvent >= :startEvent3 AND h.eventName LIKE '%ping'");
     $this->db->bind('id3', $arr['id']);
     $this->db->bind('startEvent3', $arr['startEvent']);
     $data3 = $this->db->resultset();
@@ -283,7 +283,7 @@ class DatabaseEventRepository implements EventRepository {
      $count = $data3[0]['count'];
     }
     // Band check
-    $this->db->prepare("SELECT count(*) AS count FROM history h LEFT JOIN Device d ON d.hostname = h.device WHERE d.id= :id4 AND (h.endEvent >= :startEvent4 AND h.startEvent >= :startEvent5 AND eventName='ping')");
+    $this->db->prepare("SELECT count(*) AS count FROM history h LEFT JOIN Device d ON d.hostname = h.device WHERE d.id= :id4 AND (h.endEvent >= :startEvent4 AND h.startEvent >= :startEvent5 AND h.eventName LIKE '%ping')");
     $this->db->bind('id4', $arr['id']);
     $this->db->bind('startEvent4', $arr['startEvent']);
     $this->db->bind('startEvent5', $arr['startEvent']);
@@ -296,7 +296,7 @@ class DatabaseEventRepository implements EventRepository {
      $countBand = $data4[0]['count'];
     }
     if ( $count > 0 && $countBand == 0) {  // We have X events, with none within band so we set start of event as our band limit
-      $this->db->prepare("SELECT SUM(downtime) AS totalDowntime FROM (SELECT TIMESTAMPDIFF(minute, :startEvent7, endEvent) AS downtime FROM history h LEFT JOIN Device d ON d.hostname = h.device WHERE d.id= :id6 AND h.endEvent >= :startEvent6 AND eventName='ping') t1");
+      $this->db->prepare("SELECT SUM(downtime) AS totalDowntime FROM (SELECT TIMESTAMPDIFF(minute, :startEvent7, endEvent) AS downtime FROM history h LEFT JOIN Device d ON d.hostname = h.device WHERE d.id= :id6 AND h.endEvent >= :startEvent6 AND h.eventName LIKE '%ping') t1");
       $this->db->bind('id6', $arr['id']);
       $this->db->bind('startEvent6', $arr['startEvent']);
       $this->db->bind('startEvent7', $arr['startEvent']);
@@ -308,7 +308,7 @@ class DatabaseEventRepository implements EventRepository {
     }
     else {  // We are within band, so a generic check is all we need
       // Query 2 from history (basic)
-      $this->db->prepare("SELECT SUM(downtime) AS totalDowntime FROM (SELECT TIMESTAMPDIFF(minute, startEvent, endEvent) AS downtime FROM history h LEFT JOIN Device d ON d.hostname = h.device WHERE d.id= :id2 AND h.startEvent >= :startEvent2 AND eventName='ping') t1");
+      $this->db->prepare("SELECT SUM(downtime) AS totalDowntime FROM (SELECT TIMESTAMPDIFF(minute, startEvent, endEvent) AS downtime FROM history h LEFT JOIN Device d ON d.hostname = h.device WHERE d.id= :id2 AND h.startEvent >= :startEvent2 AND h.eventName LIKE '%ping') t1");
       $this->db->bind('id2', $arr['id']);
       $this->db->bind('startEvent2', $arr['startEvent']);
       $data2 = $this->db->resultset();
@@ -320,6 +320,10 @@ class DatabaseEventRepository implements EventRepository {
     }
     $results = $data[0]['totalDowntime'] + $data2[0]['totalDowntime'];
     $data3[0]['totalDowntime'] = $results;
+    $data3[0]['startEvent'] = $arr['startEvent'];
+    $data3[0]['id'] = $arr['id'];
+    $data3[0]['raw_totalDowntime'] = $data[0]['totalDowntime'];
+    $data3[0]['raw_totalDowntime2'] = $data2[0]['totalDowntime'];
     return $data3;
   }
 }
