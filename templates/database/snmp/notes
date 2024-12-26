@@ -1,0 +1,12 @@
+All that should happen in here is to make the result set pretty as possible for storage within the database
+
+All returns should be a k => v array and it will get converted to JSON before insertion
+
+What we DO try to do  here is make sure the k string is something that makes sense for the UI to display
+
+Strongly encourage a camelCase key name for this.  It is more universal in making sure stuff does not break.
+
+You CAN use spaces, but I would discourage it as quotes and other junk can sneak  with raw data and cause headaches
+
+
+SO KEEP THIS AS CLEAN AS POSSIBLE, SO YOUR GUI LOOKS GOOD WITH THE DATA RETURNED

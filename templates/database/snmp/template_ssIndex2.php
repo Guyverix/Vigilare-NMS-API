@@ -13,19 +13,18 @@
    This is service check ssIndex2 result set
 */
 
-
-//    if ( empty($hostname)) { $hostname='undefinedInTemplate'; }
-
-//    $hostname=preg_replace('/\./', '_', $hostname);
     $dataToBeInserted=json_decode($dataToBeInserted, true);
 
     /* Create empty array to fill with mapped values */
     $clean=array();
     foreach ($dataToBeInserted as $k => $v) {
-      // echo "VALUE KEY " . $k . " VALUE " . $v . "\n";
+      /* Dont get sloppy!  Make the result set as clean as possible */
       if (empty($v)) { $v='';}
+      $v = trim($v);
+
       switch ($k) {
         case "iso.3.6.1.4.1.2021.11.2.0":
+          $v = str_replace(array("\r", "\n"), "", $v);
           $clean["ssErrorName"]= "$v";
           break;
         case "iso.3.6.1.4.1.2021.11.3.0":
@@ -108,24 +107,20 @@
           break;
       } // end switch
     } // end foreach
+
   /* Returns clean[keys] => values for example above */
   // echo "JSON encoded array: " . json_encode($clean) . "\n"; // useful to see what we are going to return
-  /* Returns that are NOT numeric values or we specifically dont care about */
-//  $nonNumericReturns=array("ssErrorName","laErrorMessage");
-  $nonNumericReturns = array();
+  $nonNumericReturns = array();  // Emmpty array of stuff to ignore
+
   $returnArrayValues=array();
-//  $graphiteRootKey=$hostname . ".snmp.cpu.";
   $graphiteRootKey = '';
   foreach ($clean as $k => $v) {
-    // echo "Key " . $k . " Value " . $v . "\n";
-    // Match against only values that are numeric AND are datafilled
     if ( ! in_array($k, $nonNumericReturns) && ! $v == '') {
       $graphiteKey1=$k;
       $graphiteValue=$v;
       // At this point we have all data needed to send to Graphite
       $graphiteKey=$graphiteRootKey . $graphiteKey1;
-      //echo $graphiteRootKey.".".$graphiteKey." ". $graphiteValue. "\n";
-      $returnArrayValues[$graphiteKey]= $graphiteValue;
+      $returnArrayValues[$graphiteKey] = $graphiteValue;
     } // end if
   }  // end foreach
   $this->returnArrayValues=$returnArrayValues;
