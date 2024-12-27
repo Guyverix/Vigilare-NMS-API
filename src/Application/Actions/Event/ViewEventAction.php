@@ -28,7 +28,7 @@ class ViewEventAction extends EventAction {
       throw new HttpBadRequestException($this->request, $job);
     }
     $data = $this->getFormData();
-
+    $data['action'] = $action;
     switch ($action) {
 
     case 'view':
@@ -77,7 +77,7 @@ class ViewEventAction extends EventAction {
       break;
     case 'viewAll':
       $event = $this->eventRepository->findAll();
-      $this->logger->info("Find all events called");
+      $this->logger->debug("Find all events called");
       break;
     case 'countEventAllHostsSeen':
       $event = $this->eventRepository->countEventAllHostsSeen();
@@ -111,7 +111,7 @@ class ViewEventAction extends EventAction {
       $id = $data['id'];
       $reason = $data['reason'];
       $event = $this->eventRepository->moveToHistory($id,$reason);
-      $this->logger->debug("Move " . $id . " to history because: " . $reason);
+      $this->logger->info("Move " . $id . " to history because: " . $reason);
       break;
     case 'moveFromHistory':
       $id = $data['id'];

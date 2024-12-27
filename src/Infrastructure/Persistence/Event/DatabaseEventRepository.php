@@ -225,7 +225,10 @@ class DatabaseEventRepository implements EventRepository {
 
   public function findHistoryTime($arr) {
     if ( empty($arr['startEvent'])) {
-      $minus30 = strtotime('-30 days', time());
+      $current = time();
+      // $minus30 = strtotime('-30 days', time());
+      $minus30 = $current - (30 * 24 * 60 * 60);
+      $arr['delta'] = $minus30;
       $arr['startEvent'] =  gmdate('Y-m-d H:i:s', $minus30);
     }
     $this->db->prepare("SELECT SUM(downtime) AS totalDowntime FROM (SELECT TIMESTAMPDIFF(minute, startEvent, endEvent) AS downtime FROM history h LEFT JOIN Device d ON d.hostname = h.device WHERE d.id= :id AND h.startEvent >= :startEvent) t1");
