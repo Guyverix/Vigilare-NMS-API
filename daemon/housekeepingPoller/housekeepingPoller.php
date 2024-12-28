@@ -151,10 +151,15 @@ while (true) {
   $logger->info("Found " . count($ageOutEvents) . " active events to move to history");
   if ( count($ageOutEvents) > 0 ) {
     foreach ($ageOutEvents as $ageOut) {
-      $cleanOut = $ageOut['evid'];
-      $reason = "Event has aged out of the system.  Removed by housekeeping";
-      $logger->info("Age Out of evid " . $cleanOut);
-      moveToHistory($cleanOut,$reason);
+      if (empty($ageOut['evid'])) {
+        $logger->error("Array did not pass an evid " . json_encode($ageOut,true));
+      }
+      else {
+        $cleanOut = $ageOut['evid'];
+        $reason = "Event has aged out of the system.  Removed by housekeeping";
+        $logger->info("Age Out of evid " . $cleanOut);
+        moveToHistory($cleanOut,$reason);
+      }
     }
   }
 
