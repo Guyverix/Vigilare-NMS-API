@@ -215,7 +215,6 @@ class DatabaseTrapRepository implements TrapRepository {
       unlink "$file";
       $result['file'] = $file;
       */
-
       /* Now eval() will change values */
       eval($preProcessing);                               // In theory this should be able to change our defined values
       if ( $data['eventSeverity'] == 0 ) {                // Mappings cannot make a clear event a set event
@@ -278,9 +277,9 @@ class DatabaseTrapRepository implements TrapRepository {
     $this->db->bind('eventName', $initial['eventName']);
     $data2 = $this->db->resultset();
     $data2 = json_decode(json_encode($data2,1), true);
+// return $data2;
     $data = $data2[0];
 //return [ $data['device'] ];
-
     // Make variables we can alter now
     $evid           = $data['evid'];
     $known_hostname = $data['device'];
@@ -326,6 +325,8 @@ class DatabaseTrapRepository implements TrapRepository {
      return [ $t ];
     }
     //return $postProcessing;
+    // if ( empty($data['endEvent'])) { $data['endEvent']=''; }
+
     $result['eventSeverity']   = $event_severity;
     $result['evid']            = $evid;
     $result['device']          = $known_hostname;
