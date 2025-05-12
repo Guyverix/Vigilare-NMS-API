@@ -18,7 +18,8 @@ class DatabaseHistoryRepository implements HistoryRepository {
   }
 
   public function findAll(): array {
-    $this->db->prepare("SELECT h.*, d.id FROM history h LEFT JOIN Device d ON h.device=d.hostname ORDER BY h.startEvent DESC");
+    // We are going to hard limit this so it does not crash on large history sizes
+    $this->db->prepare("SELECT h.*, d.id FROM history h LEFT JOIN Device d ON h.device=d.hostname ORDER BY h.startEvent DESC LIMIT 4000");
     $data = $this->db->resultset();
     return array_values($data);
   }
