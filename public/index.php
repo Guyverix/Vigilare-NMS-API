@@ -13,8 +13,11 @@ require __DIR__ . '/../vendor/autoload.php';
 
 
 /* Testing beginning of auth */
-session_start();
+// CSH session_start();
 // Session lifetime in seconds
+
+/*
+CSH
 $inactividad = 300;
 if (isset($_SESSION["timeout"])){
     $sessionTTL = time() - $_SESSION["timeout"];
@@ -23,8 +26,9 @@ if (isset($_SESSION["timeout"])){
         header("Location: /");
     }
 }
+*/
 // Start timeout for later check
-$_SESSION["timeout"] = time();
+// CSH $_SESSION["timeout"] = time();
 /* Testing end of changes for auth */
 
 
