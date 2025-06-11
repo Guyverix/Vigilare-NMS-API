@@ -30,6 +30,39 @@ use App\Application\Validation\User\UserValidator as UserValidator;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Exception\HttpBadRequestException;
 
+/**
+ * @OA\Post(
+ *     path="/user/{job}",
+ *     summary="Manage user operations",
+ *     tags={"User"},
+ *     @OA\Parameter(
+ *         name="job",
+ *         in="path",
+ *         required=true,
+ *         description="Action to perform (e.g. create, delete)",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(property="username", type="string"),
+ *             @OA\Property(property="email", type="string")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="User job completed"
+ *     ),
+ *     @OA\Response(
+ *         response=401,
+ *         description="Unauthorized"
+ *     )
+ * )
+ */
+
+
+
+
 class ManageUserAction extends UserAction {
 
   // Check only when needed if we have the correct password complexity

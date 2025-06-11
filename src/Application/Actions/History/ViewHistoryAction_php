@@ -18,7 +18,7 @@ class ViewHistoryAction extends HistoryAction {
       $direction = (string) $this->resolveArg('direction');
       $filter = (string) $this->resolveArg('filter');
       $event = $this->historyRepository->findColumnDirectionOfHistory($column, $direction, $filter);
-      $this->logger->info("Events retrieved where db column ${column} ${direction} $filter were retrieved.");
+      $this->logger->info("Events retrieved where db column ${column} ${direction} ${filter} were retrieved.");
       return $this->respondWithData($event);
     }
     elseif ($action == "findId") {

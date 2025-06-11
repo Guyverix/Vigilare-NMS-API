@@ -21,23 +21,19 @@ class DatabaseSnmpRepository2 implements SnmpRepository {
   private $snmpResult;
 
   public function getOid($host, $oid) {
-
-  return $result
+    return $result;
   }
 
   public function getTable($host, $oid) {
-
-  return $result
+  return $result;
   }
 
   public function insertOidResult($host, $snmpResult) {
-
-  return $result
+  return $result;
   }
 
   public function insertOidTableResult($host, $snmpResult) {
-
-  return $result
+  return $result;
   }
 }
 

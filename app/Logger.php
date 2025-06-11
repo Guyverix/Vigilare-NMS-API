@@ -3,7 +3,7 @@
 
 // https://gist.github.com/bradtraversy/a77931605ba9b7cf3326644e75530464
 // Using example for PDO class to make new generic logger class
-class Logger {
+class ExternalLogger {
   private $fatal;
   private $critical;
   private $error;

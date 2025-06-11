@@ -65,7 +65,7 @@ class DatabaseHousekeepingRepository implements HousekeepingRepository {
     $iterationList = json_decode($iterationList, true);
     foreach ($iterationList as $iteration) {
 //      $cmd="('nohup nice -n 10 /usr/bin/php ./housekeeping.php -i ' . $iteration['iteration'] . ' -s start > /opt/nmsApi/logs/housekeeping.log & printf "%u" $!') ";
-      $cmd='nohup nice -n 10 /usr/bin/php ./housekeeping.php -i ' . $iteration['iteration'] . ' -s start > /opt/nmsApi/logs/housekeeping.log & printf "%u" $!';
+      $cmd='nohup nice -n 10 /usr/bin/php ./housekeeping.php -i ' . $iteration['iteration'] . ' -s start > /opt/Vigilare-NMS-API/logs/housekeeping.log & printf "%u" $!';
       chdir($this->path);
       $proc=shell_exec($cmd);
       $status[]="Iteration " . $iteration['iteration'] . " housekeeping started with pid: $proc";
@@ -93,7 +93,7 @@ class DatabaseHousekeepingRepository implements HousekeepingRepository {
     foreach ($iterationList as $iteration) {
 //      $cmd="('/usr/bin/php ./housekeeping.php -i ' . $iteration['iteration'] .' -s stop 2>\&1 > /opt/nmsApi/logs/housekeeping.log')";
 //      $cmd="('/usr/bin/php ./housekeeping.php -i ' . $iteration['iteration'] .' -s stop > /opt/nmsApi/logs/housekeeping.log')";
-      $cmd='/usr/bin/php ./housekeeping.php -i ' . $iteration['iteration'] .' -s stop > /opt/nmsApi/logs/housekeeping.log';
+      $cmd='/usr/bin/php ./housekeeping.php -i ' . $iteration['iteration'] .' -s stop > /opt/Vigilare-NMS-API/logs/housekeeping.log';
       chdir($this->path);
       $proc=shell_exec($cmd);
       $status[]="Iteration " . $iteration['iteration'] . " housekeeping stopped";

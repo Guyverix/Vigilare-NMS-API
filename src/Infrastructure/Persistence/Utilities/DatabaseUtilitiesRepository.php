@@ -185,31 +185,33 @@ class DatabaseUtilitiesRepository implements UtilitiesRepository {
       $query=$arr['address'];
     }
 
-    if ( !empty($query) {
-      $sh_command"dig +short " . $query;
-      exec("$sh_command", $digShortResult, $returns)
+    if ( !empty($query)) {
+      $sh_command="dig +short " . $query;
+      exec("$sh_command", $digShortResult, $returns);
     }
     else {
       $digShortResult="";
     }
     return $digShortResult;
+  }
 
   public function FindIpAddressDigTrace($arr) {
     if ( !empty($arr['hostname'])) {
       $query=$arr['hostname'];
     }
-    if (! empty($arr['address'])) {
+    if (!empty($arr['address'])) {
       $query=$arr['address'];
     }
 
-    if ( !empty($query) {
-      $sh_command"dig +trace " . $query;
-      exec("$sh_command", $digShortResult, $returns)
+    if ( !empty($query)) {
+      $sh_command= "dig +trace " . $query;
+      exec("$sh_command", $digShortResult, $returns);
     }
     else {
       $digShortResult="";
     }
     return $digShortResult;
+  }
 
   public function FindIpAddressDigAny($arr) {
     if ( !empty($arr['hostname'])) {
@@ -219,9 +221,9 @@ class DatabaseUtilitiesRepository implements UtilitiesRepository {
       $query=$arr['address'];
     }
 
-    if ( !empty($query) {
-      $sh_command"dig " . $query . " ANY";
-      exec("$sh_command", $digShortResult, $returns)
+    if ( !empty($query)) {
+      $sh_command="dig " . $query . " ANY";
+      exec("$sh_command", $digShortResult, $returns);
     }
     else {
       $digShortResult="";

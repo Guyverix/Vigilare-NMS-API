@@ -68,6 +68,6 @@ class Monitors implements JsonSerializable {
         'eventMonitor' => $this->eventMonitor,
         'eventSummary' => $this->eventSummary,
         ];
-*/
     }
+*/
 }
