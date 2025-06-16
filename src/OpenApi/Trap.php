@@ -5,7 +5,11 @@ namespace App\OpenApi;
  * @OA\Post(
  *     path="/trap",
  *     summary="Submit a new trap event",
- *     description="Receives a new trap via multipart form-data and processes it through validation and mapping.",
+ *     description="Receives a new trap via multipart form-data and processes it through validation and mapping.
+- Common use case is for the SNMP trap receiver to forward formatted SNMP traps to something that can be stored in the database
+- Generally the final mappings will take place from this point.
+- There are some mappings that are done at the SNMP trap level.
+",
  *     tags={"Trap"},
  *     @OA\RequestBody(
  *         required=true,
