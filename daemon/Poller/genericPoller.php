@@ -70,7 +70,7 @@ $cycle=$iterationCycle;
 
 // Enable logging system (filename, and minimum sev to log, iterationCycle)
 require __DIR__ . '/../../app/Logger.php';
-$logger = new Logger($monitorType."Poller", $logSeverity, $iterationCycle);
+$logger = new ExternalLogger($monitorType."Poller", $logSeverity, $iterationCycle);
 
 
 /*
