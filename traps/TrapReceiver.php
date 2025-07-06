@@ -13,7 +13,7 @@ require __DIR__ . '/../app/Curl.php';
 require __DIR__ . '/../app/Logger.php';
 date_default_timezone_set("UTC");
 
-$logger = new Logger(basename(__FILE__), 0);
+$logger = new ExternalLogger(basename(__FILE__), 0);
 
 // Recieve the trap data
 $f = fopen( 'php://stdin', 'r' );
