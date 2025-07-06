@@ -346,7 +346,12 @@ class DatabaseTrapRepository implements TrapRepository {
     $result['application']     = $application;
     $result['eventRaw']        = $data['eventRaw'];    // Dont allow manipulation of these values
     $result['startEvent']      = $data['startEvent'];  // Dont allow manipulation of these values
-    $result['endEvent']        = $data['endEvent'];    // Dont allow manipulation of these values
+    if (empty($data['endEvent'])) {
+      $result['endEvent'] = '';
+    }
+    else {
+      $result['endEvent']     = $data['endEvent'];    // Dont allow manipulation of these values
+    }
 
     $finalResult = $this->updateEvent($result);
     return $finalResult;

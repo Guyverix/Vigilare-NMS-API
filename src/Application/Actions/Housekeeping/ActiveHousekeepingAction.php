@@ -28,6 +28,7 @@ class ActiveHousekeepingAction extends HousekeepingAction {
     }
     elseif ($state == 'cleanPerformanceTable') {
       $housekeeping = $this->housekeepingRepository->cleanPerformanceTable(30);
+    }
     else {
       $this->logger->error("Housekeeping daemon called with unknown argument.", ["unknown args"]);
       $housekeeping = "Unknown argument given to route.  Only start, status, stop, iteration are supported for all iteration cycles";

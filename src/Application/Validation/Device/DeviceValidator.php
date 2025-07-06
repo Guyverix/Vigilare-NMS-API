@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Validation\Device;
 
-require '/opt/nmsApi/app/Logger.php';
-use Logger;
+require '/opt/Vigilare-NMS-API/app/Logger.php';
+use ExternalLogger ;
 use Exception;
 
 use App\Application\Validation\Validator;
@@ -31,8 +31,8 @@ class DeviceValidator extends Validator {
     public $logger;
 
     public function __construct() {
-       $logger = new Logger("validationError", 0, 0);
-       $logger->loggerFile='/opt/nmsApi/logs/validationError.log';
+       $logger = new ExternalLogger("validationError", 0, 0);
+       $logger->loggerFile='/opt/Vigilare-NMS-API/logs/validationError.log';
        $this->logger=$logger;
     }
 

@@ -1,0 +1,1415 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Vigilare NMS API",
+        "description": "OpenAPI documentation for the Vigilare Network Monitoring System",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://larvel01.iwillfearnoevil.com:8002",
+            "description": "Live server API list with https"
+        },
+        {
+            "url": "http://192.168.15.99:8002",
+            "description": "Testing server API list by IP with http"
+        }
+    ],
+    "paths": {
+        "/admin/{job}": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Manage user accounts and administrative actions",
+                "description": "Performs administrative user actions like creating, updating, deleting accounts, resetting passwords, and activating or deactivating users. Actions include: create, register, adminRegister, review, resendMail, update, delete, resetPassword, resetPasswordConfirm, setPassword, updatePassword, updatePasswordUsers, activate, deactivate, validate, test, findUsersAll.",
+                "operationId": "a0f8c38e3990a39487d1ec7537e15528",
+                "parameters": [
+                    {
+                        "name": "job",
+                        "in": "path",
+                        "description": "Action to perform (e.g. create, update, setPassword, delete)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 101
+                                    },
+                                    "username": {
+                                        "type": "string",
+                                        "example": "adminuser"
+                                    },
+                                    "password": {
+                                        "description": "Plain-text password. Complexity rules enforced.",
+                                        "type": "string",
+                                        "example": "SecureP@ssw0rd!"
+                                    },
+                                    "oldPassword": {
+                                        "description": "Used for user-initiated password updates",
+                                        "type": "string",
+                                        "example": "OldPass123!"
+                                    },
+                                    "tpw": {
+                                        "description": "Temporary password or token",
+                                        "type": "string",
+                                        "example": "temporary-token"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@example.com"
+                                    },
+                                    "role": {
+                                        "description": "User role or group",
+                                        "type": "string",
+                                        "example": "admin"
+                                    },
+                                    "frontendUrl": {
+                                        "type": "string",
+                                        "format": "uri",
+                                        "example": "https://example.com/reset"
+                                    },
+                                    "active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Operation completed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request (e.g. missing fields, failed validation)"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/access_token": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Authenticate and retrieve a JWT token",
+                "description": "Accepts multipart form data with username and password\n- API server should be in HTTPS mode if any part can be reached from public internet in ANY way\n- Always avoid straight HTTP mode.  It is supported but a horrible idea\n- Never ever use HTTP mode even when behind a proxy if you can help it\n- Are you sensing a pattern?",
+                "operationId": "59fe175d5a98cbf49ae4a6adf2accdbc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "username",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "username": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Authentication successful - returns JWT"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                }
+            }
+        },
+        "/device/{action}": {
+            "post": {
+                "tags": [
+                    "Device"
+                ],
+                "summary": "Manage devices and device groups",
+                "description": "Manages device records via multiple sub-actions: view, create, update, delete, test, find, debug, properties, performance.",
+                "operationId": "d8e9889b7119a1d942064be877a286b2",
+                "parameters": [
+                    {
+                        "name": "action",
+                        "in": "path",
+                        "description": "Action to perform. Options: view, create, update, delete, test, find, debug, properties, performance",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "hostname": {
+                                        "type": "string",
+                                        "example": "host01.example.com"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "format": "ipv4",
+                                        "example": "192.168.0.10"
+                                    },
+                                    "productionState": {
+                                        "type": "string",
+                                        "example": "1"
+                                    },
+                                    "deviceGroup": {
+                                        "type": "string",
+                                        "example": "web-servers"
+                                    },
+                                    "component": {
+                                        "type": "string",
+                                        "example": "eth0"
+                                    },
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 123
+                                    },
+                                    "deviceInDeviceGroup": {
+                                        "type": "string",
+                                        "example": "yes"
+                                    },
+                                    "deviceGroupMonitors": {
+                                        "type": "string",
+                                        "example": "cpu,mem"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Result of the device operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid action or missing required parameters"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/discovery/{action}": {
+            "post": {
+                "tags": [
+                    "Discovery"
+                ],
+                "summary": "Perform discovery-related operations",
+                "description": "Handles discovery logic such as creating devices, folders, or templates, discovering SNMP data, pinging, and searching for templates. Requires a valid 'action' path parameter and optional POST form fields depending on the action type.",
+                "operationId": "412af4d7f3875f97a085f3344f7a8008",
+                "parameters": [
+                    {
+                        "name": "action",
+                        "in": "path",
+                        "description": "Discovery action to perform. Valid values: create, discover, test, debug, ping, search.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "create"
+                                ],
+                                "properties": {
+                                    "create": {
+                                        "description": "Specifies what to create: Device, DeviceFolder, or DevicePropertiesTemplate",
+                                        "type": "string",
+                                        "example": "Device"
+                                    },
+                                    "id": {
+                                        "description": "Device ID (required for 'discover')",
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "hostname": {
+                                        "type": "string",
+                                        "example": "core-router"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "192.168.1.1"
+                                    },
+                                    "productionState": {
+                                        "type": "integer",
+                                        "example": 1000
+                                    },
+                                    "Class": {
+                                        "type": "string",
+                                        "example": "Device"
+                                    },
+                                    "Name": {
+                                        "type": "string",
+                                        "example": "A_Default"
+                                    },
+                                    "snmpVersions": {
+                                        "type": "string",
+                                        "example": "2c"
+                                    },
+                                    "snmpCommunities": {
+                                        "type": "string",
+                                        "example": "public"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or missing parameters"
+                    },
+                    "501": {
+                        "description": "Not implemented"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/events/{action}": {
+            "get": {
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Perform an event action (GET)",
+                "description": "Retrieves event data for the specified action.",
+                "operationId": "3480646a6db5505c88307e9415ac3467",
+                "parameters": [
+                    {
+                        "name": "action",
+                        "in": "path",
+                        "description": "The event action to execute.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "view",
+                                "viewAll",
+                                "viewTable",
+                                "findId",
+                                "findAliveTime",
+                                "findEventTime",
+                                "findHistoryTime",
+                                "countEventAllHostsSeen",
+                                "activeEventCount",
+                                "activeEventCountList",
+                                "historyEventCount",
+                                "countEventEventHostsSeen",
+                                "monitorList",
+                                "ageOut",
+                                "moveToHistory",
+                                "moveFromHistory",
+                                "findActiveEventByHostname",
+                                "findClosedEventByHostname",
+                                "findActiveEventByDeviceId",
+                                "findHistoryEventByDeviceId"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response"
+                    },
+                    "400": {
+                        "description": "Invalid request"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Perform an event action (POST)",
+                "description": "Executes an event action. Supports both multipart form and JSON input.",
+                "operationId": "c14b447d33e0f3a283716d3220da3919",
+                "parameters": [
+                    {
+                        "name": "action",
+                        "in": "path",
+                        "description": "The event action to execute.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "view",
+                                "viewAll",
+                                "viewTable",
+                                "findId",
+                                "findAliveTime",
+                                "findEventTime",
+                                "findHistoryTime",
+                                "countEventAllHostsSeen",
+                                "activeEventCount",
+                                "activeEventCountList",
+                                "historyEventCount",
+                                "countEventEventHostsSeen",
+                                "monitorList",
+                                "ageOut",
+                                "moveToHistory",
+                                "moveFromHistory",
+                                "findActiveEventByHostname",
+                                "findClosedEventByHostname",
+                                "findActiveEventByDeviceId",
+                                "findHistoryEventByDeviceId"
+                            ]
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer"
+                                    },
+                                    "reason": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer"
+                                    },
+                                    "reason": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Event action completed"
+                    },
+                    "400": {
+                        "description": "Bad request"
+                    }
+                }
+            }
+        },
+        "/history/{action}": {
+            "get": {
+                "tags": [
+                    "History"
+                ],
+                "summary": "Perform various history queries",
+                "description": "This endpoint handles multiple history actions like `view`, `viewAll`, `viewLimit`, `viewTable`, `findId`, `countHistoryAllHostsSeen`, and `historyEventCount`.",
+                "operationId": "dcd26bb79cabf9e2276ff7d6cbe0a2ef",
+                "parameters": [
+                    {
+                        "name": "action",
+                        "in": "path",
+                        "description": "The history action to perform. Options: view, viewAll, viewLimit, viewTable, findId, countHistoryAllHostsSeen, historyEventCount",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "column",
+                        "in": "path",
+                        "description": "Column value or ID, depending on action (used with view, findId, viewTable, viewLimit)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "direction",
+                        "in": "path",
+                        "description": "Sort direction for column (used with 'view' action)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "path",
+                        "description": "Optional filter for the view query (used with 'view' action)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful result for the requested history operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request (invalid action or argument)"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/infrastructure/{action}": {
+            "post": {
+                "tags": [
+                    "Infrastructure"
+                ],
+                "summary": "Perform infrastructure-related operations",
+                "description": "Handles a variety of infrastructure management tasks based on the 'action' parameter, such as creating, updating, deleting, and listing hosts and categories.",
+                "operationId": "79ffb4d0b9ca92eb36b88481a23098ec",
+                "parameters": [
+                    {
+                        "name": "action",
+                        "in": "path",
+                        "description": "The action to perform. Options: findChildren, findChildrenOfParent, findOrphans, newHost, updateHost, deleteHost, findCategory, newCategory, updateCategory, validateCategoryBeforeDelete, validateHostBeforeDelete, deleteCategory.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "hostname": {
+                                        "type": "string",
+                                        "example": "server01"
+                                    },
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "parent_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "product_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "category_name": {
+                                        "type": "string",
+                                        "example": "Datacenter 1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful infrastructure action",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input or missing fields"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/monitoringpoller/{action}": {
+            "post": {
+                "tags": [
+                    "MonitoringPoller"
+                ],
+                "summary": "Perform monitoring poller actions",
+                "description": "Used by pollers or backend systems to push or pull monitoring data. Valid actions include: isAlive, savePerformance, deletePerformance, heartbeat, hostname, hostgroup, walk, get, snmp, nrpe, ping, housekeeping, disable, all, alive, checkName, shell.",
+                "operationId": "22c4a377c3ecc831fedf400bbdec6d29",
+                "parameters": [
+                    {
+                        "name": "action",
+                        "in": "path",
+                        "description": "The monitoring poller action to perform",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "hostgroup": {
+                                        "type": "string",
+                                        "example": "web-servers"
+                                    },
+                                    "monitor": {
+                                        "type": "string",
+                                        "example": "ping_check"
+                                    },
+                                    "cycle": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "hostname": {
+                                        "type": "string",
+                                        "example": "host01.example.com"
+                                    },
+                                    "idList": {
+                                        "type": "string",
+                                        "example": "101,102,103"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "ok"
+                                    },
+                                    "performance": {
+                                        "type": "string",
+                                        "example": "rta=0.45ms;100;200"
+                                    },
+                                    "timestamp": {
+                                        "type": "string",
+                                        "example": "2025-06-15 14:33:00"
+                                    },
+                                    "heartbeat": {
+                                        "type": "string",
+                                        "example": "alive"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Monitoring poller operation completed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid action or malformed input"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/monitors/{action}": {
+            "post": {
+                "tags": [
+                    "Monitors"
+                ],
+                "summary": "Manage monitoring configurations and queries",
+                "description": "Performs monitoring-related actions such as creating monitors, assigning hosts or host groups, and querying monitor data. Valid actions include: createMonitor, updateMonitor, deleteMonitor, monitorAddHost, monitorDeleteHost, monitorAddHostgroup, monitorDeleteHostGroup, findMonitors, findMonitorsAll, findMonitorsDisable, findMonitorsByHostId, findMonitorsByCheckName, findMonitorType, findMonitorStorage, findMonitorIteration, findDeviceId, findHostGroup.",
+                "operationId": "60a22e152c02502cecd0a6077730f0fd",
+                "parameters": [
+                    {
+                        "name": "action",
+                        "in": "path",
+                        "description": "The monitor action to perform",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "id": {
+                                        "description": "Monitor ID",
+                                        "type": "integer",
+                                        "example": 101
+                                    },
+                                    "hostId": {
+                                        "description": "Comma-separated or array of host IDs",
+                                        "type": "string",
+                                        "example": "12,15,23"
+                                    },
+                                    "hostGroup": {
+                                        "description": "Comma-separated or array of host group names",
+                                        "type": "string",
+                                        "example": "database-servers"
+                                    },
+                                    "checkName": {
+                                        "type": "string",
+                                        "example": "http_check"
+                                    },
+                                    "monitorType": {
+                                        "type": "string",
+                                        "example": "ping"
+                                    },
+                                    "interval": {
+                                        "description": "Polling interval in seconds",
+                                        "type": "integer",
+                                        "example": 60
+                                    },
+                                    "storageType": {
+                                        "type": "string",
+                                        "example": "rrd"
+                                    },
+                                    "iteration": {
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Monitor action completed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request (e.g. invalid action or missing required data)"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/poller/{poller}/{state}": {
+            "get": {
+                "tags": [
+                    "Poller"
+                ],
+                "summary": "Manage or query poller daemons",
+                "description": "Starts, stops, queries, or checks heartbeat for poller daemons. Valid states: start, stop, status, iteration, heartbeat, list.",
+                "operationId": "8016243bd9ee53af6e45340a70b39625",
+                "parameters": [
+                    {
+                        "name": "poller",
+                        "in": "path",
+                        "description": "Name of the poller to control or query (e.g., snmp, ping, smartPoller)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "state",
+                        "in": "path",
+                        "description": "Action to perform. Options: start, stop, restart, status, iteration, heartbeat, list",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Poller action completed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid poller or state value"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/rendergraph/{action}": {
+            "post": {
+                "tags": [
+                    "RenderGraph"
+                ],
+                "summary": "Render and manage graph data sources",
+                "description": "Handles graph rendering and lookup actions. Valid actions: render, delete, link, debug, metrics, findRrd, findGraphite, findRrdTemplates.",
+                "operationId": "95c038db17fd7c589ac4f0ede5ed7687",
+                "parameters": [
+                    {
+                        "name": "action",
+                        "in": "path",
+                        "description": "The graph-related action to perform",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "host": {
+                                        "type": "string",
+                                        "example": "web01"
+                                    },
+                                    "metric": {
+                                        "type": "string",
+                                        "example": "cpu.usage"
+                                    },
+                                    "template": {
+                                        "type": "string",
+                                        "example": "cpu_template"
+                                    },
+                                    "graphType": {
+                                        "type": "string",
+                                        "example": "line"
+                                    },
+                                    "startTime": {
+                                        "description": "RRD start time offset",
+                                        "type": "string",
+                                        "example": "-1h"
+                                    },
+                                    "endTime": {
+                                        "type": "string",
+                                        "example": "now"
+                                    },
+                                    "output": {
+                                        "description": "Graph output format",
+                                        "type": "string",
+                                        "example": "png"
+                                    },
+                                    "target": {
+                                        "type": "string",
+                                        "example": "graphite.target.string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Graph operation completed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "description": "Results such as rendered graph URLs or available RRDs",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or unsupported action"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/reporting/{action}": {
+            "post": {
+                "tags": [
+                    "Reporting"
+                ],
+                "summary": "Manage reporting jobs and templates",
+                "description": "Handles dynamic reporting operations such as test, run, purge, createReport, runPending, etc.",
+                "operationId": "e52e657b9ed1f62c0b15c549e5aa2986",
+                "parameters": [
+                    {
+                        "name": "action",
+                        "in": "path",
+                        "description": "The action to perform. Valid options: test, purge, run, searchComplete, viewComplete, searchTemplate, createReport, findPending, runPending",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "reportId": {
+                                        "description": "The report ID to run/view/delete",
+                                        "type": "integer",
+                                        "example": 42
+                                    },
+                                    "templateName": {
+                                        "type": "string",
+                                        "example": "Weekly Uptime Report"
+                                    },
+                                    "hostFilter": {
+                                        "type": "string",
+                                        "example": "host01"
+                                    },
+                                    "rangeStart": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2024-06-01T00:00:00Z"
+                                    },
+                                    "rangeEnd": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2024-06-07T00:00:00Z"
+                                    },
+                                    "format": {
+                                        "type": "string",
+                                        "example": "pdf"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Report operation completed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request, invalid action or missing data"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/trap": {
+            "post": {
+                "tags": [
+                    "Trap"
+                ],
+                "summary": "Submit a new trap event",
+                "description": "Receives a new trap via multipart form-data and processes it through validation and mapping.",
+                "operationId": "412c5939a6dc035bd9a64691fad0f2f8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "eventName",
+                                    "eventSummary"
+                                ],
+                                "properties": {
+                                    "endEvent": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "0000-00-00 00:00:00"
+                                    },
+                                    "evid": {
+                                        "type": "string",
+                                        "example": "64fa0b30b87c1"
+                                    },
+                                    "eventSeverity": {
+                                        "description": "0=ok, 1=debug, ..., 5=critical",
+                                        "type": "string",
+                                        "example": "3"
+                                    },
+                                    "eventReceiver": {
+                                        "type": "string",
+                                        "example": "192.168.1.10"
+                                    },
+                                    "eventSummary": {
+                                        "type": "string",
+                                        "example": "Ping failed on service X"
+                                    },
+                                    "eventName": {
+                                        "type": "string",
+                                        "example": "ping_check"
+                                    },
+                                    "eventType": {
+                                        "type": "string",
+                                        "example": "3"
+                                    },
+                                    "eventMonitor": {
+                                        "type": "string",
+                                        "example": "3"
+                                    },
+                                    "eventCounter": {
+                                        "type": "string",
+                                        "example": "1"
+                                    },
+                                    "eventAddress": {
+                                        "type": "string",
+                                        "example": "10.0.0.45"
+                                    },
+                                    "eventProxyIp": {
+                                        "type": "string",
+                                        "example": "0.0.0.0"
+                                    },
+                                    "device": {
+                                        "type": "string",
+                                        "example": "host01.domain.local"
+                                    },
+                                    "eventAgeOut": {
+                                        "type": "string",
+                                        "example": "3600"
+                                    },
+                                    "startEvent": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "stateChange": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "eventRaw": {
+                                        "type": "string",
+                                        "example": "{eventName: ping_check }"
+                                    },
+                                    "eventDetails": {
+                                        "type": "string",
+                                        "example": "Ping Check Failure"
+                                    },
+                                    "application": {
+                                        "type": "string",
+                                        "enum": [
+                                            "true",
+                                            "false"
+                                        ],
+                                        "example": "false"
+                                    },
+                                    "customerVisible": {
+                                        "type": "string",
+                                        "enum": [
+                                            "true",
+                                            "false"
+                                        ],
+                                        "example": "false"
+                                    },
+                                    "osEvent": {
+                                        "type": "string",
+                                        "enum": [
+                                            "true",
+                                            "false"
+                                        ],
+                                        "example": "false"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Trap successfully created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "example": "abc123"
+                                        },
+                                        "eventName": {
+                                            "type": "string",
+                                            "example": "ping_check"
+                                        },
+                                        "evid": {
+                                            "type": "string",
+                                            "example": "64fa0b30b87c1"
+                                        },
+                                        "eventSeverity": {
+                                            "type": "string",
+                                            "example": "3"
+                                        },
+                                        "eventSummary": {
+                                            "type": "string",
+                                            "example": "Ping failed"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-06-15T10:15:00Z"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation failed"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/user/{job}": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Execute a user-related job (create, update, delete)",
+                "operationId": "cf0ce4f36a32bdf88415960edbe58ede",
+                "parameters": [
+                    {
+                        "name": "job",
+                        "in": "path",
+                        "description": "User job to perform",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "create",
+                                "update",
+                                "delete"
+                            ]
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "username": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "roles": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User job completed"
+                    },
+                    "403": {
+                        "description": "Unauthorized access"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Admin",
+            "description": "Admin"
+        },
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "Device",
+            "description": "Device"
+        },
+        {
+            "name": "Discovery",
+            "description": "Discovery"
+        },
+        {
+            "name": "Events",
+            "description": "Events"
+        },
+        {
+            "name": "History",
+            "description": "History"
+        },
+        {
+            "name": "Infrastructure",
+            "description": "Infrastructure"
+        },
+        {
+            "name": "MonitoringPoller",
+            "description": "MonitoringPoller"
+        },
+        {
+            "name": "Monitors",
+            "description": "Monitors"
+        },
+        {
+            "name": "Poller",
+            "description": "Poller"
+        },
+        {
+            "name": "RenderGraph",
+            "description": "RenderGraph"
+        },
+        {
+            "name": "Reporting",
+            "description": "Reporting"
+        },
+        {
+            "name": "Trap",
+            "description": "Trap"
+        },
+        {
+            "name": "User",
+            "description": "User"
+        }
+    ]
+}

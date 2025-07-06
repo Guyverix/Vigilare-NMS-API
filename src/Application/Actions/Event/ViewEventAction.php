@@ -10,6 +10,18 @@ class ViewEventAction extends EventAction {
     /**
      * {@inheritdoc}
      */
+
+  protected function getFormData(): array {
+    $contentType = $this->request->getHeaderLine('Content-Type');
+
+    if (stripos($contentType, 'application/json') !== false) {
+        $input = $this->request->getBody()->getContents();
+        return json_decode($input, true) ?? [];
+    }
+
+    return $this->request->getParsedBody() ?? [];
+  }
+
   protected function action(): Response  {
     $jobType=["findAliveTime", "findHistoryTime", "findEventTime", "view", "findId", "viewTable", "viewAll", "countEventAllHostsSeen", "activeEventCount", "activeEventCountList","historyEventCount", "countEventEventHostsSeen", "monitorList", "ageOut", "moveToHistory", "moveFromHistory", "findActiveEventByHostname", "findClosedEventByHostname", "findHistoryEventByDeviceId", "findActiveEventByDeviceId"];
     if ( empty($this->args["action"]) ) { $action="failure";} else { $action=$this->resolveArg("action"); }
@@ -27,6 +39,8 @@ class ViewEventAction extends EventAction {
       $this->logger->error("Manage MonitoringPoller Action no valid action type given for requested action " . $action );
       throw new HttpBadRequestException($this->request, $job);
     }
+
+
     $data = $this->getFormData();
     $data['action'] = $action;
     switch ($action) {

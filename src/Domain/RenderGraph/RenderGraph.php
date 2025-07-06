@@ -68,6 +68,6 @@ class RenderGraph implements JsonSerializable {
         'eventMonitor' => $this->eventMonitor,
         'eventSummary' => $this->eventSummary,
         ];
-*/
     }
+*/
 }
