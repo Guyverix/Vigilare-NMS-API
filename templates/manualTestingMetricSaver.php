@@ -17,7 +17,7 @@
 require_once __DIR__ . "/generalMetricClass.php";
 require_once __DIR__ . '/../src/Infrastructure/Shared/Functions/daemonFunctions.php';
 require __DIR__ . "/../app/Logger.php";
-$logger = new Logger("Manual_testing", 0, 300);
+$logger = new ExternalLogger("Manual_testing", 0, 300);
 
 // Afer RRD I suspect this will be the next most common metric storage type
 function sendMetricToGraphite2($hostname, $dataToBeInserted, $checkName, $checkAction = null, $type = null, $cycle = null) {

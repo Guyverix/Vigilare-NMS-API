@@ -20,7 +20,7 @@
 
 require_once __DIR__ . '/../app/Logger.php';
 if ( ! isset($logger)) {
-  $logger = new Logger("graphClass", 0, 0);
+  $logger = new ExternalLogger("graphClass", 0, 0);
   $logger->debug("Loaded logger object " . json_encode($logger,1));
 }
 
@@ -30,7 +30,7 @@ class RenderGraphite {
 
   public function __construct() {
     include_once(__DIR__ . '/../app/Logger.php');
-    $this->logger = new Logger("renderGraphite", 0, 1);
+    $this->logger = new ExternalLogger("renderGraphite", 0, 1);
 //    $this->logger->debug("logger loaded via constructor");
   }
 
@@ -98,7 +98,7 @@ class RenderRrd {
 
   public function __construct() {
     include_once (__DIR__ . '/../app/Logger.php');
-    $this->logger = new Logger("RenderRrd", 0, 0);
+    $this->logger = new ExternalLogger("RenderRrd", 0, 0);
 //    $this->logger->debug("logger loaded via constructor");
   }
 
