@@ -60,7 +60,7 @@ if (empty($daemonState)) {
 
 // Enable logging system (filename, and minimum sev to log, iterationCycle)
 require __DIR__ . '/../../app/Logger.php';
-$logger = new Logger($monitorType."Poller", $housekeepingLogSeverity, $iterationCycle);
+$logger = new ExternalLogger($monitorType."Poller", $housekeepingLogSeverity, $iterationCycle);
 
 
 // Start the guts of the daemon here

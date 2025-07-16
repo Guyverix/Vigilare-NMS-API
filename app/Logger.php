@@ -1,109 +1,76 @@
 <?php
-//declare(strict_types=1);
 
-// https://gist.github.com/bradtraversy/a77931605ba9b7cf3326644e75530464
-// Using example for PDO class to make new generic logger class
 class ExternalLogger {
-  private $fatal;
-  private $critical;
-  private $error;
-  private $warning;
-  private $info;
-  private $debug;
-  public $loggerFile;
-  public $objectError;
-  public $app;
-  public $appName;
-  private $sev=1; // This is the minimum severity to log 1 - 5
-  private $iterationCycle;
+  const SEVERITY_DEBUG    = 1;
+  const SEVERITY_INFO     = 2;
+  const SEVERITY_WARNING  = 3;
+  const SEVERITY_ERROR    = 4;
+  const SEVERITY_CRITICAL = 5;
+  const SEVERITY_FATAL    = 5;
 
-  // Build out logging defaults
-  public function __construct(?string $app="unknownApplication", ?int $sev = 0 , ?int $iterationCycle= 0){
-    // If we are given a minimum severity to log, update
-    // so all functions know it
-    $this->app=$app;
-    $this->sev=$sev;
-    if ( $iterationCycle > 0 ) {
-      $this->iterationCycle="_$iterationCycle";
+  public $loggerFile;
+  public $initError;
+  private $appName;
+  private $severityThreshold;
+  private $iterationSuffix;
+  private $jsonOutput = false;
+
+  public function __construct(
+    ?string $app = "unknownApplication",
+    int $severityThreshold = 1,
+    int $iterationCycle = 0,
+    bool $jsonOutput = false
+  ) {
+    $this->severityThreshold = $severityThreshold;
+    $this->iterationSuffix = $iterationCycle > 0 ? "_$iterationCycle" : "";
+    $baseName = preg_replace('/\.php$/', '', $app);
+    $this->appName = $baseName . $this->iterationSuffix;
+    $this->jsonOutput = $jsonOutput;
+
+    $logDir = __DIR__ . '/../logs/';
+    if (!is_dir($logDir)) {
+      mkdir($logDir, 0755, true);
     }
-    else {
-      $this->iterationCycle="";
+
+    $this->loggerFile = $logDir . $baseName . '.log';
+    if (!touch($this->loggerFile)) {
+      $this->initError = "Unable to touch logfile: {$this->loggerFile}";
     }
-    // Clean our application names to make a nice logfile name
-    // Never assume we will have a .php in the filename however
-    $this->appName=(preg_replace('/.php/','',$this->app));
-    $this->loggerFile= __DIR__ . '/../logs/' . $this->appName . '.log';
-    $this->appName .= $this->iterationCycle;
-    // Touch file
-    echo "loggerFile " . $this->loggerFile . "\n";
-    if (! touch($this->loggerFile)) {
-      $this->error="Unable to touch logfile: $this->loggerFile";
+  }
+
+  public function setJsonOutput(bool $enabled): void {
+    $this->jsonOutput = $enabled;
+  }
+
+  private function log(int $level, string $label, string $message): void {
+    if ($level < $this->severityThreshold) {
       return;
     }
+
+    $timestamp = date('Y-m-d\TH:i:s');
+    $logEntry = '';
+
+    if ($this->jsonOutput) {
+      $logEntry = json_encode([
+        'timestamp'   => $timestamp,
+        'application' => $this->appName,
+        'severity'    => $label,
+        'severity_id' => $level,
+        'message'     => $message
+      ], JSON_UNESCAPED_SLASHES) . "\n";
+    } else {
+      $logEntry = "[{$timestamp}] {$this->appName} [Severity: {$label} - {$message}] {\"severity\":\"{$level}\"}\n";
+    }
+
+    file_put_contents($this->loggerFile, $logEntry, FILE_APPEND);
   }
 
-  public function fatal($details) {
-    $logSev=5;
-    if ( $logSev >= $this->sev ) {
-      $logName='FATAL';
-      $logDetails='['. date('Y-m-d\TH:i:s') . "] " . $this->appName . " [Severity: " . $logName . " - " . $details . "] {\"severity\":\"" . $logSev . "\"}\n";
-      file_put_contents($this->loggerFile, $logDetails, FILE_APPEND);
-    }
-  }
-
-  public function critical($details) {
-    $logSev=5;
-    if ( $logSev >= $this->sev ) {
-      $logName='CRITICAL';
-      $logDetails='['. date('Y-m-d\TH:i:s') . "] " . $this->appName . " [Severity: " . $logName . " - " . $details . "] {\"severity\":\"" . $logSev . "\"}\n";
-      file_put_contents($this->loggerFile, $logDetails, FILE_APPEND);
-    }
-  }
-
-  public function error($details) {
-    $logSev=4;
-    if ( $logSev >= $this->sev ) {
-      $logName='ERROR';
-      $logDetails='['. date('Y-m-d\TH:i:s') . "] " . $this->appName . " [Severity: " . $logName . " - " . $details . "] {\"severity\":\"" . $logSev . "\"}\n";
-      file_put_contents($this->loggerFile, $logDetails, FILE_APPEND);
-    }
-  }
-
-  public function warning($details) {
-    $logSev=3;
-    if ( $logSev >= $this->sev ) {
-      $logName='WARNING';
-      $logDetails='['. date('Y-m-d\TH:i:s') . "] " . $this->appName . " [Severity: " . $logName . " - " . $details . "] {\"severity\":\"" . $logSev . "\"}\n";
-      file_put_contents($this->loggerFile, $logDetails, FILE_APPEND);
-    }
-  }
-
-  public function warn($details) {
-    $logSev=3;
-    if ( $logSev >= $this->sev ) {
-      $logName='WARNING';
-      $logDetails='['. date('Y-m-d\TH:i:s') . "] " . $this->appName . " [Severity: " . $logName . " - " . $details . "] {\"severity\":\"" . $logSev . "\"}\n";
-      file_put_contents($this->loggerFile, $logDetails, FILE_APPEND);
-    }
-  }
-
-  public function info($details) {
-    $logSev=2;
-    if ( $logSev >= $this->sev ) {
-      $logName='INFO';
-      $logDetails='['. date('Y-m-d\TH:i:s') . "] " . $this->appName . " [Severity: " . $logName . " - " . $details . "] {\"severity\":\"" . $logSev . "\"}\n";
-      file_put_contents($this->loggerFile, $logDetails, FILE_APPEND);
-    }
-  }
-
-  public function debug($details) {
-    $logSev=1;
-    if ( $logSev >= $this->sev ) {
-      $logName='DEBUG';
-      $logDetails='['. date('Y-m-d\TH:i:s') . "] " . $this->appName . " [Severity: " . $logName . " - " . $details . "] {\"severity\":\"" . $logSev . "\"}\n";
-      file_put_contents($this->loggerFile, $logDetails, FILE_APPEND);
-    }
-  }
+  // Severity-specific public methods
+  public function debug(string $message): void    { $this->log(self::SEVERITY_DEBUG,    'DEBUG',    $message); }
+  public function info(string $message): void     { $this->log(self::SEVERITY_INFO,     'INFO',     $message); }
+  public function warning(string $message): void  { $this->log(self::SEVERITY_WARNING,  'WARNING',  $message); }
+  public function warn(string $message): void     { $this->warning($message); }
+  public function error(string $message): void    { $this->log(self::SEVERITY_ERROR,    'ERROR',    $message); }
+  public function critical(string $message): void { $this->log(self::SEVERITY_CRITICAL, 'CRITICAL', $message); }
+  public function fatal(string $message): void    { $this->log(self::SEVERITY_FATAL,    'FATAL',    $message); }
 }
-
-?>

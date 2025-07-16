@@ -31,7 +31,7 @@ class RenderGraphite {
   public function __construct() {
     include_once(__DIR__ . '/../app/Logger.php');
     $this->logger = new ExternalLogger("renderGraphite", 0, 1);
-//    $this->logger->debug("logger loaded via constructor");
+    $this->logger->debug("logger loaded via constructor");
   }
 
   public function parseRaw($checkType, $checkName, $sourceList, $sourceOptions = null) {
@@ -131,7 +131,7 @@ class RenderRrd {
 
 function renderGraph($hostname, $file, $filter, $start = null, $end = null, $ignoreMatch = null) {
   global $logger;
-//  $logger->debug("generalMetricRender.php function renderGraph called for " . $hostname . " file " . $file . " filter " . $filter);
+  $logger->debug("generalMetricRender.php function renderGraph called for " . $hostname . " file " . $file . " filter " . $filter);
   if (! isset($renderData)) {
     $renderData = new RenderRrd();
   }
