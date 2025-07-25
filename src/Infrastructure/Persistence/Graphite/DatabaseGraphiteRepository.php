@@ -94,7 +94,7 @@ class DatabaseGraphiteRepository implements GraphiteRepository {
       $debug[] = "VALUES PASSED checkType " . $checkType . " checkName " . $checkName . " detailNamesValue " . json_encode($detailNamesValue,1);
     }
     $debug[] = "CONFIRM PASSING ALL METRICS " . json_encode($detailNamesValue,1);
-    $renderUrls[] = $this->viewGraphite->graphiteUrls( $checkType, $checkName , $detailNamesValue, $dataOptions);
+    $renderUrls[] = $this->viewGraphite->graphiteUrls($checkType, $checkName , $detailNamesValue, $dataOptions);
     $debug[] = "RENDER URLS : " . json_encode($renderUrls, 1);
 
     if (empty($renderUrls)) { $renderUrls = array(); }
@@ -262,7 +262,7 @@ return $debug;
     //     $debug[] = "KEY " . $pollerKey . " checkName " . $namesKey .  " filter (not really used) " . $filter . " array of metrics " . json_encode($detailNamesValue,1);
         $filterValue = array();  // unset for the next loop
   //       $debug[] = json_encode($detailNamesValue,1);
-        $renderUrls[] = $this->viewGraphite->graphiteUrls( $pollerKey, $namesKey , $detailNamesValue, null);
+        $renderUrls[] = $this->viewGraphite->graphiteUrls($pollerKey, $namesKey , $detailNamesValue, null);
         $detailNamesValue = array();  // unset for the next loop
       }  // end foreach checkNames
     }  // end foreach metricList

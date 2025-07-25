@@ -12,12 +12,13 @@
   Return 5 actual update with data
 */
 
-//require __DIR__ . "/../app/Logger.php";
+require_once __DIR__ . "/../app/Logger.php";
 require_once __DIR__ . "/generalMetricClass.php";
 require_once __DIR__ . '/../src/Infrastructure/Shared/Functions/daemonFunctions.php';
 
 if ( ! isset($logger)) {
-   global $logger;
+  $logger = new ExternalLogger("graphClass", 0, 0);
+  global $logger;
 }
 
 // Afer RRD I suspect this will be the next most common metric storage type

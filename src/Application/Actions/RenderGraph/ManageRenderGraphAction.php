@@ -30,6 +30,7 @@ class ManageRenderGraphAction extends RenderGraphAction {
       throw new HttpBadRequestException($this->request, $job);
     }
 
+
     // This can be empty, so dont get bit here if there are no posted vars
     // This will always be an array
     $data = $this->getFormData();

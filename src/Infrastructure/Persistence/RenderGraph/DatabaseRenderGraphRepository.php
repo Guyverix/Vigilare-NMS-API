@@ -28,8 +28,9 @@ class DatabaseRenderGraphRepository implements RenderGraphRepository {
     if ( ! isset($arr['start'])) { $start= null; } else { $start = $arr['start']; }
     if ( ! isset($arr['end']) )  { $end = null; } else { $end   = $arr['end']; }
     if ( ! isset($arr['ignoreMatch']) ){ $ignoreMatch = null; } else  { $ignoreMatch = $arr['ignoreMatch']; }
+    // then null in renderGraph is so we can use external logging in the functions and classes
     require __DIR__ . '/../../../../templates/generalMetricRender.php';
-    $results = renderGraph($hostname, $file, $filter, $start, $end, $ignoreMatch );
+    $results = renderGraph(null, $hostname, $file, $filter, $start, $end, $ignoreMatch );
     if ( ! is_array($results) ) {
       $results = [$results];  // Return the err if we dont get a valid result.  Use caution, nothing returned IS a valid result
     }

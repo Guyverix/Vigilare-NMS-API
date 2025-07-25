@@ -17,11 +17,11 @@
 
 // Use this when bypassing builtin logging
 
-
-require_once __DIR__ . '/../app/Logger.php';
+//global $logger;
 if ( ! isset($logger)) {
+  require_once __DIR__ . '/../app/Logger.php';
   $logger = new ExternalLogger("graphClass", 0, 0);
-  $logger->debug("Loaded logger object " . json_encode($logger,1));
+  $logger->debug("Loaded logger object for external logs from generalMetricRender");
 }
 
 class RenderGraphite {
@@ -31,14 +31,15 @@ class RenderGraphite {
   public function __construct() {
     include_once(__DIR__ . '/../app/Logger.php');
     $this->logger = new ExternalLogger("renderGraphite", 0, 1);
-    $this->logger->debug("logger loaded via constructor");
+    $this->logger->debug("logger loaded via constructor for RenderGraphite class");
   }
 
   public function parseRaw($checkType, $checkName, $sourceList, $sourceOptions = null) {
     if ( ! is_array($sourceList)) { $sourceList=json_decode($sourceList,true); }
     // This WILL always be uniform, so use the array provided
     //echo "" . print_r($sourceList,true);  // DEBUG
-    $this->logger->debug("parseRaw");
+    $this->logger->debug("parseRaw function in class RenderGraphite called");
+    $this->logger->debug("Using vars from sourceList array: " . print_r($sourceList,1) ."");
     $filter=explode('.', $sourceList[0]['id']);
     if (file_exists(__DIR__ . "/graphite/template_" . $checkType . "_" . $checkName . ".php")) {
       $this->logger->debug("parseRaw found template_" . $checkType . "_" . $checkName . ".php");
@@ -92,6 +93,11 @@ class RenderGraphite {
 
 }
 
+/*
+  This is leveraging the ExternalLogger sitting in apps, not the slim framework one.
+  This is due to the class being isolated from the framework to support other graphing tools
+*/
+
 class RenderRrd {
   public $returnArrayValues;
   public $logger;
@@ -99,24 +105,24 @@ class RenderRrd {
   public function __construct() {
     include_once (__DIR__ . '/../app/Logger.php');
     $this->logger = new ExternalLogger("RenderRrd", 0, 0);
-//    $this->logger->debug("logger loaded via constructor");
+    $this->logger->debug("logger loaded via constructor for class RenderRrd");
   }
 
   public function parseRaw($hostname, $file, $filter, $start, $end, $ignoreMatch = null) {
-//    $this->logger->debug("parseRaw filechecks against " . $hostname . " file " . $file . " filter " . $filter );
+    $this->logger->debug("parseRaw filechecks against " . $hostname . " file " . $file . " filter " . $filter );
     if (file_exists(__DIR__ . "/render/". $filter . ".php")) {
       $this->logger->debug("parseRaw using file " . $filter . ".php");
       require __DIR__ . "/render/" . $filter . ".php";
       return 0;
     }
     elseif (file_exists(__DIR__ . "/render/default.php")) {
-  //    $this->logger->debug("parseRaw using default.php for rendering");
+      $this->logger->debug("parseRaw using default.php for rendering");
       include __DIR__ . "/render/default.php";
-   //   $this->logger->debug("parseRaw completed loading default.php for filter " . $filter);
+      $this->logger->debug("parseRaw completed loading default.php for filter " . $filter);
       return 0;
     }
     else {
-    //  $this->logger->debug("parseRaw did not load template correctly");
+      $this->logger->debug("parseRaw did not load template correctly");
       return "Failed to load template file successfully.  Likely a PHP parsing error.";
     }
   }
@@ -129,9 +135,12 @@ class RenderRrd {
   This is RRD rendering here
 */
 
-function renderGraph($hostname, $file, $filter, $start = null, $end = null, $ignoreMatch = null) {
-  global $logger;
-  $logger->debug("generalMetricRender.php function renderGraph called for " . $hostname . " file " . $file . " filter " . $filter);
+function renderGraph(?ExternalLogger $logger, $hostname, $file, $filter, $start = null, $end = null, $ignoreMatch = null) {
+  if ( ! $logger ){
+    $logger = new ExternalLogger("graphClass", 0, 0);
+  }
+  $logger->info("renderGraph called for $hostname file $file filter $filter");
+
   if (! isset($renderData)) {
     $renderData = new RenderRrd();
   }
@@ -147,22 +156,22 @@ function renderGraph($hostname, $file, $filter, $start = null, $end = null, $ign
   $rendering = $renderData->parseRaw($hostname, $file, $filter, $start, $end, $ignoreMatch);
   // A return of 0 is a success
   if ( $rendering !== 0 ) {
-//    $logger->debug("generalMetricRender.php renderGraph parseRaw did not return a success message");
+    $logger->fatal("generalMetricRender.php renderGraph parseRaw did not return a success message");
     return "failed to generate graph from parseRaw call for filter " . $filter . " details: ". $rendering;
   }
 
   $returnArray = $renderData->returnArrayValues;
   // print_r($returnArray);  // DEBUG
   if ( ! is_array($returnArray)) {
-//    $logger->debug("generalMetricRender.php renderGraph returnArray is not an array");
+    $logger->error("generalMetricRender.php renderGraph returnArray is not an array");
     return "Template did not return an array: " . $returnArray;
   }
   elseif ($returnArray == 1) {
-  //  $logger->debug("generalMetricRender.php renderGraph returnArray returned 1 somehow.  Screwball response from parseRaw");
+    $logger->error("generalMetricRender.php renderGraph returnArray returned 1 somehow.  Screwball response from parseRaw");
     return "Template exited in an unexpected error somehow.  This one is goofy!";
   }
   else {
-//    $logger->debug("generalMetricRender.php found and returned some sort of array successfully");
+    $logger->info("generalMetricRender.php found and returned some sort of array successfully");
     return $returnArray;
   }
 }
@@ -170,8 +179,11 @@ function renderGraph($hostname, $file, $filter, $start = null, $end = null, $ign
 /*
   This function will be specific to Graphite, since it is just munging URLs
 */
-function graphiteUrls( $checkType, $checkName, $sourceList, $sourceOptions = null) {
-  global $logger;
+function graphiteUrls(?ExternalLogger $logger, $checkType, $checkName, $sourceList, $sourceOptions = null) {
+  if ( ! $logger) {
+    $logger = new ExternalLogger("renderGraphite", 0, 0);
+  }
+//  global $logger;
   if ( is_null($sourceOptions)) { $sourceOptions = ''; }
   if ( !isset($renderData)) {
     $renderData = new RenderGraphite();
@@ -237,7 +249,6 @@ var_dump(graphiteUrls($checkType, $checkName, $sourceList, null));
 
 
 // *******  RRD testing below here ******************
-
 /*
 // Testing drive_space
 $hostname='guyver-myth.iwillfearnoevil.com';
@@ -245,7 +256,14 @@ $file='/opt/nmsApi/rrd/guyver-myth.iwillfearnoevil.com/snmp/drive/space/_mnt_nas
 $filter='snmp_drive_space';
 $start='-2d';
 $end='now';
-var_dump(renderGraph($hostname, $file, $filter, $start, $end));
+//var_dump($logger);
+//echo "Type of \$logger: " . gettype($logger) . "\n";
+
+//if (!method_exists($logger, 'debug')) {
+//    throw new \RuntimeException("Logger object is missing 'debug' method. Got: " . get_class($logger));
+//}
+
+var_dump(renderGraph($logger, $hostname, $file, $filter, $start, $end));
 */
 
 /*
