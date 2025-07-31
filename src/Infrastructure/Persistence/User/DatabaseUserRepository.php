@@ -191,7 +191,7 @@ class DatabaseUserRepository implements UserRepository {
       return ['FAILURE - No email address associated with user name ' . $username];
     }
     $tpw = $this->generateRandomString(40);
-    $this->db->prepare("INSERT INTO users VALUES('', :userId2, :email, :realName, :userPass, now(), 0, :accessList , 0)");
+    $this->db->prepare("INSERT INTO users VALUES('', :userId2, :email, :realName, :userPass, now(), 0, :accessList , 0, '')");
     $this->db->bind('userId2', $userData[0]['userId'] . '_reset');
     $this->db->bind('accessList', $userData[0]['userId']);  // This is how we know what userId is really being reset
     $this->db->bind('email', $userData[0]['email']);
@@ -473,6 +473,40 @@ class DatabaseUserRepository implements UserRepository {
 
   // confirm user knows info we provided for registering
   public function validateAccount(string $username, string $password) {
+  }
+
+  public function getSettings(int $userId) {
+    // Fetch existing settings
+    $this->db->prepare("SELECT settings FROM users WHERE userId = :userId");
+    $this->db->bind('userId', $userId);
+    $existing = $this->db->execute();
+    $existingSettings = $existing[0]['settings'] ?? '{}';
+    return [ $existingSettings ];
+  }
+
+  public function changeSettings(int $userId, string $settings) {
+    // Fetch existing settings
+    $this->db->prepare("SELECT settings FROM users WHERE userId = :userId");
+    $this->db->bind('userId', $userId);
+    $existing = $this->db->execute();
+    $existingSettings = $existing[0]['settings'] ?? '{}';
+
+    // Decode both existing and new settings
+    $existingArray = json_decode($existingSettings, true) ?? [];
+    $newSettingsArray = json_decode($settings, true) ?? [];
+
+    // Merge, new settings take precedence
+    $mergedSettings = array_merge($existingArray, $newSettingsArray);
+
+    // Re-encode the merged settings
+    $finalSettings = json_encode($mergedSettings);
+
+    // Update database
+    $this->db->prepare("UPDATE users SET settings = :changeSettings WHERE userId = :userId2");
+    $this->db->bind('userId2', $userId);
+    $this->db->bind('changeSettings', $finalSettings);
+    $this->db->execute();
+    return ["User id " . $userId . " updated settings"];
   }
 } // end class
 

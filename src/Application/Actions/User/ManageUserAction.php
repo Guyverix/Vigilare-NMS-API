@@ -181,6 +181,12 @@ class ManageUserAction extends UserAction {
         $this->logger->debug("validation called for ", $data);
         $UserValues = $this->userRepository->validateAccount($data['username'], $data['password']);  // This is how we are going to filter down to new users, the pass is not encrypted here, but a random string we gave them previously
         break;
+      case "changeSettings":      // Update the default values we are using in cookies etc.  Specific to user
+        $UserValues = $this->userRepository->changeSettings($data['id'], $data['settings']);
+        break;
+      case "getSettings":      // Update the default values we are using in cookies etc.  Specific to user
+        $UserValues = $this->userRepository->getSettings($data['id']);
+        break;
       default:
         $this->logger->error("Route called with no valid action set in URL.");
         throw new HttpBadRequestException($this->request, "Route called with no valid action set in URL.");

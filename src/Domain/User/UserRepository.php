@@ -109,4 +109,16 @@ interface UserRepository {
 
 //    private function findEncrypt($pwd, $pepper);
 //    public function findHmac($pwd, $pepper);
+    public function changeSettings(int $userId, string $settings);
+    /**
+     * @param int $username
+     * @param string $settings
+     * @return array
+    */
+    public function getSettings(int $userId);
+    /**
+     * @param int $username
+     * @return string
+    */
+
 }
