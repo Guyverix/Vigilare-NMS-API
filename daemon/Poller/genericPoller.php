@@ -69,9 +69,10 @@ else {
 $cycle=$iterationCycle;
 
 // Enable logging system (filename, and minimum sev to log, iterationCycle)
-require __DIR__ . '/../../app/Logger.php';
-$logger = new ExternalLogger($monitorType."Poller", $logSeverity, $iterationCycle);
-
+if ( ! isset($logger)) {
+  require __DIR__ . '/../../app/Logger.php';
+  $logger = new ExternalLogger($monitorType."Poller", $logSeverity, $iterationCycle);
+}
 
 /*
   Set values to create job processor
