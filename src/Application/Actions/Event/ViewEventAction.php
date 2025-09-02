@@ -23,7 +23,7 @@ class ViewEventAction extends EventAction {
   }
 
   protected function action(): Response  {
-    $jobType=["findAliveTime", "findHistoryTime", "findEventTime", "view", "findId", "viewTable", "viewAll", "countEventAllHostsSeen", "activeEventCount", "activeEventCountList","historyEventCount", "countEventEventHostsSeen", "monitorList", "ageOut", "moveToHistory", "moveFromHistory", "findActiveEventByHostname", "findClosedEventByHostname", "findHistoryEventByDeviceId", "findActiveEventByDeviceId"];
+    $jobType=["findHotSpot", "findAliveTime", "findHistoryTime", "findEventTime", "view", "findId", "viewTable", "viewAll", "countEventAllHostsSeen", "activeEventCount", "activeEventCountList","historyEventCount", "countEventEventHostsSeen", "monitorList", "ageOut", "moveToHistory", "moveFromHistory", "findActiveEventByHostname", "findClosedEventByHostname", "findHistoryEventByDeviceId", "findActiveEventByDeviceId"];
     if ( empty($this->args["action"]) ) { $action="failure";} else { $action=$this->resolveArg("action"); }
 
     // Fail fast if we are never going to be able to do anything
@@ -57,6 +57,13 @@ class ViewEventAction extends EventAction {
         $event = $this->eventRepository->findColumnDirectionOfEvent($column, $direction, $filter);
         $this->logger->info("Events retrieved where db column $column $direction $filter were retrieved.");
       }
+      break;
+    case 'findHotSpot':
+      $this->logger->debug("Retrieve hotSpotList of events");
+      if ( ! isset($data['window']) || empty($data['window'])) {
+        $data['window'] = date('Y-m-d', strtotime('-1 days'));
+      }
+      $event =  $this->eventRepository->findHotSpot($data);
       break;
     case 'findId':
       $id=$this->resolveArg('column');

@@ -258,6 +258,23 @@ class DatabaseEventRepository implements EventRepository {
     return $data;
   }
 
+  // return top 5 events in the last 24 hours
+  public function findHotSpot($arr) {
+    if ( empty($arr['window'])) {
+      $window = date('Y-m-d H:i:s', strtotime('-1 days'));
+    }
+    else {
+      $window = $arr['window'];
+    }
+
+    // These bigger queries sometimes choke on bind so use PHP to set values
+    $sql = "SELECT t.device, t.eventName, t.eventSummary, SUM(t.cnt) AS repeats_24h, MAX(t.last_seen) AS last_seen FROM ( SELECT h.device, h.eventName, h.eventSummary, COUNT(*) AS cnt, MAX(h.startEvent) AS last_seen FROM `history` h JOIN `Device` d ON d.hostname = h.device AND d.productionState = 0 WHERE h.startEvent >= '$window' GROUP BY h.device, h.eventName, h.eventSummary UNION ALL SELECT e.device, e.eventName, e.eventSummary, COUNT(*) AS cnt, MAX(e.startEvent) AS last_seen FROM `event` e JOIN `Device` d ON d.hostname = e.device AND d.productionState = 0 WHERE e.startEvent >= '$window' GROUP BY e.device, e.eventName, e.eventSummary ) AS t GROUP BY t.device, t.eventName, t.eventSummary ORDER BY repeats_24h DESC, last_seen DESC LIMIT 5;";
+    $this->db->prepare($sql);
+    $data = $this->db->resultset();
+    return $data;
+  }
+
+
   // Calc downtime by ping down minutes looking at now and history
   public function findAliveTime($arr) {
     if ( empty($arr['startEvent'])) {
