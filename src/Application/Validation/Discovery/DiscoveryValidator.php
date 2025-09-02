@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\Validation\Discovery;
 
-require '/opt/Vigilare-NMS-API/app/Logger.php';
-//use ExternalLogger;
+//require '/opt/Vigilare-NMS-API/app/Logger.php';
+require __DIR__ . '/../../../../app/Logger.php';
+use ExternalLogger;
 
 use App\Application\Validation\Validator;
 use Webmozart\Assert\Assert;
@@ -20,7 +21,7 @@ class DiscoveryValidator extends Validator {
 
     public function __construct() {
        $logger = new ExternalLogger("validationError", 0, 0);
-       $logger->loggerFile='/opt/Vigilare-NMS-API/logs/validationError.log';
+       $logger->loggerFile=__DIR__ . '/../../../../logs/validationError.log';
        $this->logger=$logger;
     }
 
