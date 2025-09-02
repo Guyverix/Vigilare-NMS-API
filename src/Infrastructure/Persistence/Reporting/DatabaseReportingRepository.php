@@ -7,6 +7,13 @@ use App\Domain\Reporting\Reporting;
 use App\Domain\Reporting\ReportingNotFoundException;
 use App\Domain\Reporting\ReportingRepository;
 
+use Slim\Exception\HttpBadRequestException;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+
+
+
+
 // Database defined in ReportingRepository
 use Database;
 
@@ -211,5 +218,34 @@ class DatabaseReportingRepository implements ReportingRepository {
      return 'Template file does not exist';
     }
   }  // end function
+
+  // Remember your formatting for dates in SQL.
+  // This is a really annoying one.  the SQL is goofy enough that PDO does not like it much.
+  // SET does not behave the way you think so we have to insert rather than bind variables.
+  // We need SQL validation to make sure there are no injection attacks on this query.
+  public function getEventAvgTimeToEnd($arr) {
+    $result = array();
+    // Window bounds
+    $from = $arr['startEvent'] ?? null; // required
+    // If endEvent is empty or '0000-00-00 00:00:00', treat as NOW() inside SQL via COALESCE(:to, NOW())
+    if ( ! isset($arr['endEvent'])) { $arr['endEvent'] = date('Y-m-d H:i:s'); }
+    $to = (!empty($arr['endEvent']) && $arr['endEvent'] !== '0000-00-00 00:00:00')
+        ? $arr['endEvent']
+        : null;
+
+    if (empty($from)) {
+        $result += ['errs' => "startEvent is required"];
+        return $result;
+    }
+    $sql = "SELECT AVG(TIMESTAMPDIFF(MINUTE, eff_start, eff_end)) AS avg_active_minutes_in_window FROM (SELECT GREATEST(CAST(e.startEvent AS DATETIME), CAST('$from' AS DATETIME)) AS eff_start, LEAST( CAST(CASE WHEN e.endEvent = '0000-00-00 00:00:00' THEN NOW() ELSE e.endEvent END AS DATETIME), CAST('$to' AS DATETIME)) AS eff_end FROM `event` e  WHERE (CASE WHEN e.endEvent = '0000-00-00 00:00:00' THEN NOW() ELSE e.endEvent END) > '$from' AND e.startEvent < '$to' UNION ALL SELECT GREATEST(CAST(h.startEvent AS DATETIME), CAST('$from' AS DATETIME)) AS eff_start, LEAST(CAST(CASE WHEN h.endEvent = '0000-00-00 00:00:00' THEN NOW() ELSE h.endEvent END AS DATETIME),CAST('$to' AS DATETIME)) AS eff_end FROM `history` h WHERE (CASE WHEN h.endEvent = '0000-00-00 00:00:00' THEN NOW() ELSE h.endEvent END) > '$from' AND h.startEvent < '$to') AS bounded WHERE eff_end > eff_start;";
+
+    $this->db->prepare($sql);
+    $errs = $this->db->errorInfo();
+    $data = $this->db->resultset();
+    $result = ['data' => $data];
+    $result += ['errs' => $errs];
+    $result += ['query' => "$sql" ];
+    return $data;
+  } // end function
 } // end class
 ?>

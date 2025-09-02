@@ -17,5 +17,5 @@ interface ReportingRepository {
     public function findPreviousReports(); // Unused
     public function findReports();         // Return a list of all available or defined reports
     public function findPending();         // Return id of all pending reports
-
+    public function getEventAvgTimeToEnd($arr); // Return mttr in minutes by window (startTime, endTime)
 }

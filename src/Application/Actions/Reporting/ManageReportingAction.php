@@ -11,7 +11,7 @@ class ManageReportingAction extends ReportingAction {
    * {@inheritdoc}
    */
   protected function action(): Response {
-    $jobType=["test", "purge", "run", "searchComplete", "viewComplete", "searchTemplate", "createReport", "findPending", "runPending"]; // sanity check that we only are doing what we expect here
+    $jobType=["test", "purge", "run", "searchComplete", "viewComplete", "searchTemplate", "createReport", "findPending", "runPending", "mttr", "ping"]; // sanity check that we only are doing what we expect here
 
     // How to check if resolveArg is even going to work
     // before calling it and kicking an exception
@@ -26,7 +26,7 @@ class ManageReportingAction extends ReportingAction {
     $data = $this->getFormData();
 
     // Setup our valiation now
-//    $validator = new ReportingValidator();
+    //    $validator = new ReportingValidator();
 
     switch ($action) {
     // Fail fast if we are never going to be able to do anything
@@ -66,6 +66,13 @@ class ManageReportingAction extends ReportingAction {
       break;
     case "viewComplete":
       $report = $this->reportingRepository->viewReport($data);
+      break;
+    case "mttr":
+//      $report = json_encode($data,1);
+      $report = $this->reportingRepository->getEventAvgTimeToEnd($data);
+      break;
+    case "ping":
+      $report = "pong";
       break;
     } // end switch
   $this->logger->info("manageReportingAction call for " . $action . " query data " . json_encode($data,1));
