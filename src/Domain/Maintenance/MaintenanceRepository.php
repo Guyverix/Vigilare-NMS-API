@@ -1,7 +1,10 @@
 <?php
 declare(strict_types=1);
+// Declare our credentials now
 
 namespace App\Domain\Maintenance;
+
+require __DIR__ . '/../../../app/Database.php';
 
 /* Maintenance is simple enough.  Kept in seporate table so we have
    a history of when things have been put in maintenance mode.
@@ -21,4 +24,5 @@ interface MaintenanceRepository {
     public function findMaintenanceStart($maintenanceRequest): array;
     public function findMaintenanceEnd($maintenanceRequest): array;
     public function findMaintenanceInvalid($maintenanceRequest): array;
+    public function findAllMaintenance();
 }

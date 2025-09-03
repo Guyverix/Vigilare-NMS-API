@@ -3,62 +3,61 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Maintenance;
 
-use PDO;
+use Database;
 use App\Domain\Maintenance\Maintenance;
 use App\Domain\Maintenance\MaintenanceNotFoundException;
 use App\Domain\Maintenance\MaintenanceRepository;
 
 class DatabaseMaintenanceRepository implements MaintenanceRepository {
-  private $creds;
-  private $server;
-  private $user;
-  private $pass;
-  private $options;
-  private $event;
+  public $db = "";
 
   public function __construct() {
-    /* PDO5.php is main database connection */
-    include (__DIR__.'/../../../Database/PDO5.php');
-    $a = creds();
-    $this->creds = $a;
-    $this->server = $a["server"];
-    $this->user = $a["user"];
-    $this->pass = $a["pass"];
+     $this->db = new Database();
   }
 
-
   public function setMaintenance($maintenanceRequest): array {
-      $db = new PDO($this->server, $this->user, $this->pass);
-      $sth = $db->prepare("INSERT INTO event.maintenance (device,component,start_time,end_time) VALUES(?,?,?,?)");
-      $sth->execute([$maintenanceRequest['device'], $maintenanceRequest['component'], $maintenanceRequest['startTime'], $maintenanceRequest['endTime']]);
+      if (empty($maintenanceRequest['groups']) || ! isset($maintenanceRequest['groups'])) { $maintenanceRequest['groups'] = ''; }
+      if (empty($maintenanceRequest['application']) || ! isset($maintenanceRequest['application'])) { $maintenanceRequest['application'] = ''; }
+      if (empty($maintenanceRequest['device']) || ! isset($maintenanceRequest['device'])) { $maintenanceRequest['device'] = ''; }
+      if (empty($maintenanceRequest['component']) || ! isset($maintenanceRequest['component'])) { $maintenanceRequest['component'] = ''; }
+      if (empty($maintenanceRequest['summary']) || ! isset($maintenanceRequest['summary'])) { $maintenanceRequest['summary'] = 'Generic maintenance event'; }
+      if (empty($maintenanceRequest['startTime']) || ! isset($maintenanceRequest['startTime'])) { $maintenanceRequest['startTime'] = date('Y-m-d H:i:s'); }
+      if (empty($maintenanceRequest['endTime']) || ! isset($maintenanceRequest['endTime'])) { $maintenanceRequest['endTime'] = date('Y-m-d H:i:s', strtotime('+1 days')); }
+      $this->db->prepare("INSERT INTO event.maintenance (groups, application,device,component,start_time,end_time) VALUES(:groups, :application, :device, :component, :summary :startTime, :endTime)");
+      $this->db->bind('groups', $maintenanceRequest['groups']);
+      $this->db->bind('application', $maintenanceRequest['application']);
+      $this->db->bind('device',$maintenanceRequest['device']);
+      $this->db->bind('component', $maintenanceRequest['component']);
+      $this->db->bind('summary', $maintenanceRequest['summary']);
+      $this->db->bind('startTime', $maintenanceRequest['startTime']);
+      $this->db->bind('endTime', $maintenanceRequest['endTime']);
+      $this->db->execute();
       return ["maintenance set complete"];
   }
 
   public function endMaintenance($maintenanceRequest): array {
       $device=$maintenanceRequest['device'];
       $endTime=$maintenanceRequest['endTime'];
-      $db = new PDO($this->server, $this->user, $this->pass);
-      $query="UPDATE event.maintenance SET end_time = ? WHERE device = ? AND end_time = '0000-00-00 00:00:00'";
-      $sth = $db->prepare($query);
-      $sth->execute([$maintenanceRequest['endTime'], $maintenanceRequest['device']]);
+      $query="UPDATE event.maintenance SET end_time = :endTime WHERE device = :device AND end_time = '0000-00-00 00:00:00'";
+      $this->db->prepare($query);
+      $this->db->bind('endTime', $endTime);
+      $this->db->bind('device', $maintenanceRequest['device']);
       return ["maintenance end complete"];
   }
 
   public function findMaintenanceDevice($maintenanceRequest): array {
       $device=$maintenanceRequest['device'];
-      $db = new PDO($this->server, $this->user, $this->pass);
-      $sth = $db->prepare("SELECT * FROM event.maintenance WHERE device = ?");
-      $sth->execute([$device]);
-      $data = $sth->fetchAll(PDO::FETCH_ASSOC);
-      return array_values($data);
+      $this->db->prepare("SELECT * FROM event.maintenance WHERE device = :device");
+      $this->db->bind('device', $device);
+      $data = $this->db->resultset();
+      return $data;
   }
 
   public function findMaintenanceComponent($maintenanceRequest): array {
       $component = $maintenanceRequest['component'];
-      $db = new PDO($this->server, $this->user, $this->pass);
-      $sth = $db->prepare("SELECT * FROM event.maintenance WHERE component = ?");
-      $sth->execute([$component]);
-      $data = $sth->fetchAll(PDO::FETCH_ASSOC);
+      $this->db->prepare("SELECT * FROM event.maintenance WHERE component = :component");
+      $this->db->bind('component', $component);
+      $data = $this->db->resultset();
       return array_values($data);
   }
 
@@ -72,11 +71,9 @@ class DatabaseMaintenanceRepository implements MaintenanceRepository {
       elseif ( $direction == "equal") { $dir='='; }
       else { $dir='='; }
       $maintenanceRequest['dir']=$dir;
-      $db = new PDO($this->server, $this->user, $this->pass);
       $query="SELECT * FROM event.maintenance where start_time " . $dir . " '" . $maintenanceRequest['startTime'] . "'";
-      $sth = $db->prepare($query);
-      $sth->execute();
-      $data = $sth->fetchAll(PDO::FETCH_ASSOC);
+      $this->db->prepare($query);
+      $data = $this->db->resultset();
       return array_values($data);
   }
 
@@ -88,18 +85,23 @@ class DatabaseMaintenanceRepository implements MaintenanceRepository {
       elseif ( $direction == "before") { $dir='<='; }
       elseif ( $direction == "after") { $dir='<='; }
       elseif ( $direction == "equal") { $dir='='; }
-      else { $dir='='; }
-      $db = new PDO($this->server, $this->user, $this->pass);
+      else { $dir = '='; }
       $query="SELECT * FROM event.maintenance WHERE end_time " . $dir . " '" . $maintenanceRequest['endTime'] . "'";
-      $sth = $db->prepare($query);
-      $sth->execute();
-      $data = $sth->fetchAll(PDO::FETCH_ASSOC);
+      $this->db->prepare($query);
+      $data = $this->db->resultset();
       return array_values($data);
   }
 
+  public function findAllMaintenance() {
+      $query="SELECT * FROM event.maintenance";
+      $this->db->prepare($query);
+      $data = $this->db->resultset();
+      return $data;
+  }
+
   public function findMaintenanceInvalid($maintenanceRequest): array {
-    $result=["Invalid API call received"];
-    return $result ;
+      $result = ["Invalid API call received"];
+      return $result ;
   }
 }
 
