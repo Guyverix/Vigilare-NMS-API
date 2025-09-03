@@ -29,6 +29,7 @@ interface EventRepository {
     public function findEventTime($arr);             // Return number of minutes events were happening ( id, startTime)
     public function findAliveTime($arr);             // Return number of minutes events were happening ( id, startTime)
     public function findHotSpot($arr);               // Return top 5 list of events in a window of time
+    public function findAppGroupDown();              // return up / down by id in applicationGroup table list
 
     // UPDATE
     public function ageOut();                        // Retrun list of ageOut events

@@ -274,6 +274,12 @@ class DatabaseEventRepository implements EventRepository {
     return $data;
   }
 
+  public function findAppGroupDown() {
+    $sql = "SELECT   ag.groupName,       CASE     WHEN ag.csv = '' OR ag.csv IS NULL THEN 0     ELSE 1 + LENGTH(ag.csv) - LENGTH(REPLACE(ag.csv, ',', ''))   END AS total_listed,       COUNT(DISTINCT CASE WHEN d.productionState = 0 THEN d.id END) AS total_in_production,   COUNT(DISTINCT CASE WHEN d.productionState = 0 AND e.device IS NOT NULL THEN d.id END) AS down_devices,   (COUNT(DISTINCT CASE WHEN d.productionState = 0 THEN d.id END)    - COUNT(DISTINCT CASE WHEN d.productionState = 0 AND e.device IS NOT NULL THEN d.id END)) AS up_devices  FROM (      SELECT     groupName,     TRIM(BOTH ',' FROM       REPLACE(         REPLACE(           REPLACE(             REPLACE(               REPLACE(                 REPLACE(deviceId, ' ', ''),                      CHAR(9), ''                                    ), CHAR(10), ''                                ), CHAR(13), ''                                ), CHAR(160), ''                               ), '''', ''                                    )     ) AS csv   FROM `applicationGroup` ) AS ag  LEFT JOIN `Device` AS d   ON FIND_IN_SET(CAST(d.id AS CHAR), ag.csv) > 0  LEFT JOIN `event` AS e   ON e.device = d.hostname  AND e.eventName IN ('ping','slow-ping')    GROUP BY ag.groupName ORDER BY ag.groupName;";
+    $this->db->prepare($sql);
+    $data = $this->db->resultset();
+    return $data;
+  }
 
   // Calc downtime by ping down minutes looking at now and history
   public function findAliveTime($arr) {
