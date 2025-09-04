@@ -268,7 +268,18 @@ class DatabaseEventRepository implements EventRepository {
     }
 
     // These bigger queries sometimes choke on bind so use PHP to set values
-    $sql = "SELECT t.device, t.eventName, t.eventSummary, SUM(t.cnt) AS repeats_24h, MAX(t.last_seen) AS last_seen FROM ( SELECT h.device, h.eventName, h.eventSummary, COUNT(*) AS cnt, MAX(h.startEvent) AS last_seen FROM `history` h JOIN `Device` d ON d.hostname = h.device AND d.productionState = 0 WHERE h.startEvent >= '$window' GROUP BY h.device, h.eventName, h.eventSummary UNION ALL SELECT e.device, e.eventName, e.eventSummary, COUNT(*) AS cnt, MAX(e.startEvent) AS last_seen FROM `event` e JOIN `Device` d ON d.hostname = e.device AND d.productionState = 0 WHERE e.startEvent >= '$window' GROUP BY e.device, e.eventName, e.eventSummary ) AS t GROUP BY t.device, t.eventName, t.eventSummary ORDER BY repeats_24h DESC, last_seen DESC LIMIT 5;";
+    $sql = "SELECT t.id, t.device, t.eventName, t.eventSummary, SUM(t.cnt) AS repeats_24h, MAX(t.last_seen) AS last_seen FROM
+ ( SELECT d.id, h.device, h.eventName, h.eventSummary, COUNT(*) AS cnt, MAX(h.startEvent) AS last_seen FROM `history` h JOIN
+ `Device` d ON d.hostname = h.device AND d.productionState = 0 
+WHERE h.startEvent >= '$window' 
+ GROUP BY d.id, h.device, h.eventName, h.eventSummary UNION ALL
+ SELECT d.id, e.device, e.eventName, e.eventSummary, COUNT(*) AS cnt, MAX(e.startEvent) AS last_seen FROM `event` e JOIN
+ `Device` d ON d.hostname = e.device AND d.productionState = 0 WHERE
+ e.startEvent >= '$window' GROUP BY 
+ d.id, e.device, e.eventName, e.eventSummary ) AS t
+GROUP BY t.id, t.device, t.eventName, t.eventSummary ORDER BY repeats_24h DESC, last_seen DESC LIMIT 5;
+";
+//    $sql2 = "SELECT t.device, t.eventName, t.eventSummary, SUM(t.cnt) AS repeats_24h, MAX(t.last_seen) AS last_seen FROM ( SELECT h.device, h.eventName, h.eventSummary, COUNT(*) AS cnt, MAX(h.startEvent) AS last_seen FROM `history` h JOIN `Device` d ON d.hostname = h.device AND d.productionState = 0 WHERE h.startEvent >= '$window' GROUP BY h.device, h.eventName, h.eventSummary UNION ALL SELECT e.device, e.eventName, e.eventSummary, COUNT(*) AS cnt, MAX(e.startEvent) AS last_seen FROM `event` e JOIN `Device` d ON d.hostname = e.device AND d.productionState = 0 WHERE e.startEvent >= '$window' GROUP BY e.device, e.eventName, e.eventSummary ) AS t GROUP BY t.device, t.eventName, t.eventSummary ORDER BY repeats_24h DESC, last_seen DESC LIMIT 5;";
     $this->db->prepare($sql);
     $data = $this->db->resultset();
     return $data;
