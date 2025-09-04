@@ -93,7 +93,7 @@ class DatabaseMaintenanceRepository implements MaintenanceRepository {
   }
 
   public function findAllMaintenance() {
-      $query="SELECT * FROM event.maintenance";
+      $query="SELECT * FROM event.maintenance WHERE endTime >= NOW()";
       $this->db->prepare($query);
       $data = $this->db->resultset();
       return $data;
