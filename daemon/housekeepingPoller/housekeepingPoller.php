@@ -59,9 +59,10 @@ if (empty($daemonState)) {
 }
 
 // Enable logging system (filename, and minimum sev to log, iterationCycle)
-require __DIR__ . '/../../app/Logger.php';
-$logger = new ExternalLogger($monitorType."Poller", $housekeepingLogSeverity, $iterationCycle);
-
+if ( empty($logger)) {
+  require __DIR__ . '/../../app/Logger.php';
+  $logger = new ExternalLogger($monitorType."Poller", $housekeepingLogSeverity, $iterationCycle);
+}
 
 // Start the guts of the daemon here
 $sleepDate=time();
