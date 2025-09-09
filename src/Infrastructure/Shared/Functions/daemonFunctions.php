@@ -2,7 +2,8 @@
 /*
   Functions that different daemons can use without changes.
   Since these are simply functions, do NOT use the logger
-  interface here.
+  interface here.  It must be already defined and we are
+  currently pulling logger in as a global (blah!)
 */
 
 
@@ -557,6 +558,99 @@ function cleanNrpeMetrics($nrpeResult) {
 //  $logger->debug("cleanNrpeMetrics " . json_encode($nrpeResults,1));
 
   return $nrpeResults;
+}
+
+// Version 2 universal metric checks..
+
+
+function checkForMetrics(string $rawOutput, string $type = 'auto'): array {
+  $result = [
+    'output' => '',
+    'perf' => 'false',
+    'data' => []
+  ];
+
+  if (empty($rawOutput)) {
+    return $result;
+  }
+
+  // Detect type if not explicitly provided
+  if ($type === 'auto') {
+    if (strpos($rawOutput, '|') !== false) {
+      $type = 'nrpe';  // safe default guess
+    }
+    elseif (preg_match('/([a-zA-Z0-9\s_\/\-]+)=([\d\.]+)/', $rawOutput)) {
+      $type = 'snmp';
+    }
+    else {
+      $type = 'text';  // nothing parseable
+    }
+  }
+
+  // Parse by type
+  switch ($type) {
+    case 'nrpe':
+    case 'adhoc':
+      return parseNagiosStyleMetrics($rawOutput);
+    case 'snmp':
+      return parseSnmpStyleMetrics($rawOutput);
+    default:
+      $result['output'] = trim($rawOutput);
+      return $result;
+  }
+}
+
+function parseNagiosStyleMetrics(string $input): array {
+  $result = [
+    'output' => '',
+    'perf' => 'false',
+    'data' => []
+  ];
+
+  [$output, $metrics] = array_pad(explode('|', $input, 2), 2, '');
+  $result['output'] = trim($output);
+
+  if (empty($metrics) || strpos($metrics, '=') === false) {
+    return $result;
+  }
+
+  $result['perf'] = 'true';
+
+  foreach (preg_split('/\s+/', trim($metrics)) as $entry) {
+    [$rawKey, $rawValue] = explode('=', $entry, 2) + [null, null];
+
+    if ($rawKey === null || $rawValue === null) continue;
+
+    $key = trim(str_replace(['/', ' '], '_', $rawKey)); // replace / and space with _
+    $value = preg_replace('/;.*$/', '', $rawValue);      // strip after first ;
+    $value = preg_replace('/[^\d\.\-]/', '', $value);     // strip non-numerics
+
+    if ($key !== '' && $value !== '') {
+      $result['data'][$key] = $value;
+    }
+  }
+
+  return $result;
+}
+
+function parseSnmpStyleMetrics(string $input): array {
+  $result = [
+    'output' => trim($input),
+    'perf' => 'false',
+    'data' => []
+  ];
+
+  if (preg_match_all('/([a-zA-Z0-9_\/\s\-]+)\s*=\s*([\d\.\-]+)/', $input, $matches, PREG_SET_ORDER)) {
+    $result['perf'] = 'true';
+
+    foreach ($matches as $match) {
+      $key = trim(str_replace(['/', ' '], '_', $match[1]));
+      $value = $match[2];
+      $result['data'][$key] = $value;
+    }
+  }
+
+  return $result;
 }
 
 function shellShell($hostname, $address, $checkValue) {
