@@ -332,7 +332,7 @@ class DatabaseUserRepository implements UserRepository {
   public function createUser($newUser, $pepper) {
     $hashPass = $this->findEncrypt($newUser['userPass'], $pepper);
     if ( ! isset($newUser['enable'])) { $newUser['enable'] = 0; }  // Default disable if not defined, silly admin
-    $this->db->prepare("INSERT INTO users VALUES( null, :userId, :email, :realName, :userPass, now(), :accessList, :enable)");
+    $this->db->prepare("INSERT INTO users VALUES( null, :userId, :email, :realName, :userPass, now(), :accessList, :enable, '')");
     $this->db->bind('userId', $newUser['userId']);
     $this->db->bind('email', $newUser['email']);
     $this->db->bind('realName', $newUser['realName']);
@@ -353,7 +353,7 @@ class DatabaseUserRepository implements UserRepository {
     }
     $newUser['accessList'] = 'user';
     $hashPass = $this->generateRandomString(40);      // This is not usable for login!  This is kind of a temp password to validate email
-    $this->db->prepare("INSERT INTO users VALUES( null, :userId, :email, :realName, :userPass, now(), 8, :accessList, :enable)");
+    $this->db->prepare("INSERT INTO users VALUES( null, :userId, :email, :realName, :userPass, now(), 8, :accessList, :enable, '')");
     $this->db->bind('userId', $newUser['userName']);
     $this->db->bind('email', $newUser['email']);
     $this->db->bind('realName', $newUser['realName']);
@@ -475,6 +475,8 @@ class DatabaseUserRepository implements UserRepository {
   public function validateAccount(string $username, string $password) {
   }
 
+
+  // Settings will contain custom UI, etc to be stored in a cookie
   public function getSettings(int $userId) {
     // Fetch existing settings
     $this->db->prepare("SELECT settings FROM users WHERE userId = :userId");
