@@ -10,7 +10,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 
 class ManageMonitorsAction extends MonitorsAction {
   protected function action(): Response {
-    $jobType=["findMonitorsByHostId", "findHostGroup", "findDeviceId", "findMonitorType", "findMonitorStorage", "findMonitorIteration", "createMonitor", "updateMonitor", "deleteMonitor", "monitorAddHost", "monitorAddHostgroup", "findMonitors", "findMonitorNames", "findMonitorsDisable", "findMonitorsAll", "findMonitorsByCheckName", "monitorDeleteHost", "monitorDeleteHostGroup"]; // sanity check that we only are doing what we expect here
+    $jobType=["findAlarmCount", "findMonitorsByHostId", "findHostGroup", "findDeviceId", "findMonitorType", "findMonitorStorage", "findMonitorIteration", "createMonitor", "updateMonitor", "deleteMonitor", "monitorAddHost", "monitorAddHostgroup", "findMonitors", "findMonitorNames", "findMonitorsDisable", "findMonitorsAll", "findMonitorsByCheckName", "monitorDeleteHost", "monitorDeleteHostGroup"]; // sanity check that we only are doing what we expect here
 
     // How to check if resolveArg is even going to work
     // before calling it and kicking an exception
@@ -126,6 +126,9 @@ class ManageMonitorsAction extends MonitorsAction {
       break;
     case 'findHostGroup':
       $monitoringChanges = $this->monitorsRepository->findHostGroup();
+      break;
+    case 'findAlarmCount':
+      $monitoringChanges = $this->monitorsRepository->findAlarmCount();
       break;
     }
 

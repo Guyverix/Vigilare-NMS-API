@@ -24,6 +24,7 @@ interface MonitorsRepository {
     public function findMonitorType();                        // Return valid types of monitors    (get,walk,nrpe)
     public function findDeviceId();                           // Return device id, name, ip address
     public function findHostGroup();                          // Return list of hostgroups
+    public function findAlarmCount();                         // Return list of alarms
 
     public function findMonitorsByHostId($arr): array;        // Return list of monitors that a specific host is using
 

@@ -360,4 +360,113 @@ class DatabaseMonitorsRepository implements MonitorsRepository {
     return $results;
   }
 
+  public function findAlarmCount() {
+    $results = array();
+    $sql = "SELECT
+  /* 1) total host×check targets (direct hosts + group hosts) */
+  (
+    SELECT SUM(direct_cnt + IFNULL(group_cnt, 0)) AS total_targets
+    FROM (
+      /* compute targets per poller */
+      SELECT
+        m.id,
+        m.checkName,
+        /* count of direct hosts in monitoringDevicePoller.hostid */
+        CASE
+          WHEN m.clean_hosts = '' THEN 0
+          ELSE 1
+               + LENGTH(m.clean_hosts)
+               - LENGTH(REPLACE(m.clean_hosts, ',', ''))
+        END AS direct_cnt,
+
+        /* sum of hosts in each matched DeviceGroup for this poller */
+        SUM(
+          CASE
+            WHEN dg.clean_dg_hosts IS NULL OR dg.clean_dg_hosts = '' THEN 0
+            ELSE 1
+                 + LENGTH(dg.clean_dg_hosts)
+                 - LENGTH(REPLACE(dg.clean_dg_hosts, ',', ''))
+          END
+        ) AS group_cnt
+
+      FROM (
+        /* clean JSON-ish fields once per poller */
+        SELECT
+          id,
+          checkName,
+          REPLACE(REPLACE(REPLACE(hostid,    '[',''),']',''),'\"','') AS clean_hosts,   -- e.g.  host1,host2
+          REPLACE(REPLACE(REPLACE(hostGroup, '[',''),']',''),'\"','') AS clean_groups   -- e.g.  grpA,grpB
+        FROM monitoringDevicePoller
+      ) AS m
+
+      /* join to each DeviceGroup whose name appears in the poller’s hostGroup list */
+      LEFT JOIN DeviceGroup AS g
+        ON m.clean_groups <> ''
+       AND CONCAT(',', m.clean_groups, ',') LIKE CONCAT('%,', g.devicegroupName, ',%')
+
+      /* clean the DeviceGroup.hostname list once */
+      LEFT JOIN (
+        SELECT
+          id,
+          REPLACE(REPLACE(REPLACE(hostname, '[',''),']',''),'\"','') AS clean_dg_hosts  -- e.g. host3,host4
+        FROM DeviceGroup
+      ) AS dg
+        ON dg.id = g.id
+
+      GROUP BY m.id, m.checkName, m.clean_hosts
+    ) AS per_poller
+  )                                                   AS total_targets,
+
+  /* 2) total distinct checks defined */
+  (SELECT COUNT(DISTINCT checkName) FROM monitoringDevicePoller) AS total_checks,
+
+  /* 3) severity buckets for events whose names match a defined check (treat '-' == '_', case-insensitive) */
+  (SELECT SUM(e.eventSeverity = 5)
+     FROM `event` e
+     WHERE LOWER(REPLACE(e.eventName, '-', '_')) IN
+           (SELECT DISTINCT LOWER(REPLACE(checkName, '-', '_')) FROM monitoringDevicePoller)
+  ) AS critical,
+
+  (SELECT SUM(e.eventSeverity = 4)
+     FROM `event` e
+     WHERE LOWER(REPLACE(e.eventName, '-', '_')) IN
+           (SELECT DISTINCT LOWER(REPLACE(checkName, '-', '_')) FROM monitoringDevicePoller)
+  ) AS error,
+
+  (SELECT SUM(e.eventSeverity = 3)
+     FROM `event` e
+     WHERE LOWER(REPLACE(e.eventName, '-', '_')) IN
+           (SELECT DISTINCT LOWER(REPLACE(checkName, '-', '_')) FROM monitoringDevicePoller)
+  ) AS warning,
+
+  (SELECT SUM(e.eventSeverity = 2)
+     FROM `event` e
+     WHERE LOWER(REPLACE(e.eventName, '-', '_')) IN
+           (SELECT DISTINCT LOWER(REPLACE(checkName, '-', '_')) FROM monitoringDevicePoller)
+  ) AS info,
+
+  (SELECT SUM(e.eventSeverity = 1)
+     FROM `event` e
+     WHERE LOWER(REPLACE(e.eventName, '-', '_')) IN
+           (SELECT DISTINCT LOWER(REPLACE(checkName, '-', '_')) FROM monitoringDevicePoller)
+  ) AS debug,
+
+  /* optional: OK = total_checks - checks with any alarm (severity > 0) */
+  (
+    (SELECT COUNT(DISTINCT checkName) FROM monitoringDevicePoller)
+    -
+    (SELECT COUNT(DISTINCT m.checkName)
+       FROM monitoringDevicePoller m
+       JOIN `event` e
+         ON LOWER(REPLACE(e.eventName, '-', '_')) = LOWER(REPLACE(m.checkName, '-', '_'))
+        AND e.eventSeverity > 0
+    )
+  ) AS ok;";
+    $this->db->prepare("$sql");
+    $data = $this->db->resultset();
+    $errs = $this->db->errorInfo();
+    $results += ['result' => $data];
+    $results += ['errors' => $errs ];
+    return $results;
+  }
 } // end class
