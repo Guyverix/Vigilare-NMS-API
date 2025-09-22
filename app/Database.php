@@ -135,12 +135,21 @@ class Database {
      return $this->stmt->execute();
     }
     catch(PDOException $e) {
-      // Catch exception, set it to our error var for use
-      // Class does not want to set errorCode value from exception.  match against errorInfo to see if there is an error
-      $this->errorInfo =  $e->errorInfo ?? [null, (int)$e->getCode(), $e->getMessage()];
+      /*
+        Catch exception, set it to our error var for use
+        Class does not want to set errorCode value from exception AARRGGH.
+        Match against string: 'errorInfo' to see if there is an error
+      */
+//      $this->errorInfo =  $e->errorInfo ?? [null, (int)$e->getCode(), $e->getMessage()];
+//      $this->dbh->errorInfo =  $e->errorInfo;
+//      $this->dbh->errorCode = (int)$e->getCode();
+      //      return $e->getCode();
+      //      $errInfo = json_decode(json_encode($e, 1), true);
+      //      return $errInfo[0];
       return json_encode($e, true);
-      $this->errorInfo =  $e->errorInfo;
-      return 'ERROR: ' . json_encode($this->errorInfo, true);
+      // Old style adding ERROR as a match string
+      // $this->errorInfo =  $e->errorInfo;
+      // return 'ERROR: ' . json_encode($this->errorInfo, true);
     }
   }
 
@@ -191,10 +200,12 @@ class Database {
   }
 
   public function errorInfo(){
+//    return $e->errorInfo();
     return $this->dbh->errorInfo();
   }
 
   public function errorCode(){
+//    return $e->errorCode();
     return $this->dbh->errorCode();
   }
 }

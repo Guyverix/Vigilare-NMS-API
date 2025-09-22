@@ -74,15 +74,28 @@ class DatabaseSiteRepository implements SiteRepository {
     return $results;
   }
 
+
+  /*
+    This is the only way I have been able to consistently get error
+    information and codes.  Sucks, but it is what it is
+  */
   public function addGroupName($arr): array { // group needed.  This does NOT add hosts
     $results = array();
     $sql = "INSERT INTO applicationGroup VALUES(:group, '')";
     $this->db->prepare("$sql");
     $this->db->bind('group', $arr['group']);
-//    $finalData = $this->db->resultset();
     $finalData = $this->db->execute();
-    $errs = $this->db->errorInfo();
-    $errCode = $this->db->errorCode();
+    // str_contains is PHP 8+
+    // execute just returns bool true if the insert works
+    if (! is_bool($finalData) && str_contains($finalData, 'errorInfo')) {
+      $errDetails = json_decode($finalData, true);
+      $errs = $this->db->errorInfo();
+      $errCode = $errDetails['errorInfo'][0];
+    }
+    else {
+      $errs = $this->db->errorInfo();
+      $errCode = $this->db->errorCode();
+    }
     $results += ['result' => $finalData];
     $results += ['errors' => $errs ];
     $results += ['code' => $errCode ];

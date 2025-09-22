@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Application\Actions\Site;
 
 use Slim\Exception\HttpBadRequestException;
+use App\Application\Validation\Site\SiteValidator;
 use App\Application\Actions\Site\SiteAction;
 use App\Domain\Site\SiteRepository;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -37,6 +38,8 @@ class ManageSiteAction extends SiteAction {
     // pull in any form data we may have
     $data = $this->getFormData();
 
+    $validator = new SiteValidator();
+
     /* END BOILERPLATE */
 
     switch ($action) {
@@ -44,24 +47,31 @@ class ManageSiteAction extends SiteAction {
         $queryResult = $this->siteRepository->getAllHostnames();
         break;
       case 'getHostnameFromGroupName':
+        $validator->group($data);
         $queryResult = $this->siteRepository->getHostnameFromGroupName($data);
         break;
       case 'getGroupNamesFromHostname':
+        $validator->id($data);
         $queryResult = $this->siteRepository->getGroupNamesfromHostname($data);
         break;
       case 'addGroupName':
+        $validator->group($data);
         $queryResult = $this->siteRepository->addGroupName($data);
         break;
       case 'deleteGroupName':
+        $validator->group($data);
         $queryResult = $this->siteRepository->deleteGroupName($data);
         break;
       case 'addHostname':
+        $validator->both($data);
         $queryResult = $this->siteRepository->addHostname($data);
         break;
       case 'deleteHostname':
+        $validator->both($data);
         $queryResult = $this->siteRepository->deleteHostname($data);
         break;
       case 'cleanHostname':
+        $validator->id($data);
         $queryResult = $this->siteRepository->cleanHostname($data);
         break;
       case 'ping':
