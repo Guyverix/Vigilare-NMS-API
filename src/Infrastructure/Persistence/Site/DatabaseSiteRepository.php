@@ -37,7 +37,7 @@ class DatabaseSiteRepository implements SiteRepository {
 
   public function getAllHostnames() { // no args
     $results = array();
-    $sql = "SELECT ag.groupName, GROUP_CONCAT(d.hostname ORDER BY FIND_IN_SET(d.id, REPLACE(TRIM(BOTH '''' FROM ag.deviceId), ' ', '')) SEPARATOR ', ') AS hostnames FROM applicationGroup ag JOIN Device d ON FIND_IN_SET(d.id, REPLACE(TRIM(BOTH '''' FROM ag.deviceId), ' ', '')) > 0 GROUP BY ag.groupName ORDER BY ag.groupName";
+    $sql = "SELECT ag.groupName, ag.deviceId, GROUP_CONCAT(d.hostname ORDER BY FIND_IN_SET(d.id, REPLACE(TRIM(BOTH '''' FROM ag.deviceId), ' ', '')) SEPARATOR ', ') AS hostnames FROM applicationGroup ag JOIN Device d ON FIND_IN_SET(d.id, REPLACE(TRIM(BOTH '''' FROM ag.deviceId), ' ', '')) > 0 GROUP BY ag.groupName ORDER BY ag.groupName";
     $this->db->prepare("$sql");
     $finalData = $this->db->resultset();
     $errs = $this->db->errorInfo();
