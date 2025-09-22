@@ -15,6 +15,10 @@ class Database {
   public $error;
   public $stmt;
 
+  private ?array $errorInfo = null;      // [sqlstate, driver_code, message]
+  private ?PDOException $lastException = null;
+  private $errorCode;
+
   public function __construct(){
     include("config.php");
     $this->host = $dbHost;
@@ -30,8 +34,9 @@ class Database {
     // SETTING ERRMODE_WARNING CATCHES DUPLICATE KEY VIOLATIONS
     $options = array (
       PDO::ATTR_PERSISTENT => false,
-      // PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING,
+      //PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING,
       PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+      //PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT,
       PDO::ATTR_EMULATE_PREPARES => true,
       PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     );
@@ -43,7 +48,7 @@ class Database {
     // Catch any errors and return them for error correction
     catch ( PDOException $e ) {
       $this->error = $e->getMessage();
-    return $this->error;
+      return $this->error;
     }
   }
 
@@ -57,7 +62,7 @@ class Database {
     return $this->stmt ;
   }
 
-    public function statement() {
+  public function statement() {
     return $this->stmt ;
   }
 
@@ -71,22 +76,23 @@ class Database {
       switch (true) {
       case is_int ($value) :
         $type = PDO::PARAM_INT;
-	break;
+	      break;
       case is_bool ($value) :
         $type = PDO::PARAM_BOOL;
-	break;
+      	break;
       case is_string ($value) :
         $type = PDO::PARAM_STR;
-	break;
+      	break;
       case is_null ($value) :
         $type = PDO::PARAM_NULL;
-	break;
+      	break;
       default :
         $type = PDO::PARAM_STR;
       }
     }
     $this->stmt->bindValue($param, $value, $type);
   }
+  
 /*
   An ill concieved idea of testing what the binding values and
   types were.  This did not work, sigh...
@@ -114,6 +120,7 @@ class Database {
     return $this->stmt;
   }
 */
+
   // Adds quotes to string data
   public function quote($arg){
     return $this->dbh->quote($arg);
@@ -121,14 +128,19 @@ class Database {
 
   // Execute the prepared statement
   public function execute(){
+    $this->errorInfo = null;
+    $this->errorCode = null;
+    $this->lastException = null;
     try {
      return $this->stmt->execute();
     }
     catch(PDOException $e) {
       // Catch exception, set it to our error var for use
-      $this->error = $e->getMessage();
-       return 'ERROR: ' . $e->getMessage();
-       // return  $e->getMessage();
+      // Class does not want to set errorCode value from exception.  match against errorInfo to see if there is an error
+      $this->errorInfo =  $e->errorInfo ?? [null, (int)$e->getCode(), $e->getMessage()];
+      return json_encode($e, true);
+      $this->errorInfo =  $e->errorInfo;
+      return 'ERROR: ' . json_encode($this->errorInfo, true);
     }
   }
 
@@ -144,10 +156,16 @@ class Database {
       return "PONG";
   }
 
-  // Get result set as array of objects
+  // Get result set as array of objects (normal?)
   public function resultset(){
     $this->execute();
     return $this->stmt->fetchAll(PDO::FETCH_OBJ);
+  }
+
+  // Get result set as associated array of objects
+  public function resultsetArray(){
+    $this->execute();
+    return $this->stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
   // Get single record as object (first row returned)

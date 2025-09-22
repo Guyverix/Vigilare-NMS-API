@@ -25,6 +25,7 @@ use App\Infrastructure\Persistence\Reporting\DatabaseReportingRepository;
 use App\Domain\Discovery\DiscoveryRepository;
 use App\Domain\MonitoringPoller\MonitoringPollerRepository;
 use App\Domain\Monitors\MonitorsRepository;
+use App\Domain\Site\SiteRepository;
 
 // DATABASES
 // Likely this is going away!
@@ -49,6 +50,7 @@ use App\Infrastructure\Persistence\RenderGraph\DatabaseRenderGraphRepository;
 use App\Infrastructure\Persistence\Discovery\DatabaseDiscoveryRepository;
 use App\Infrastructure\Persistence\MonitoringPoller\DatabaseMonitoringPollerRepository;
 use App\Infrastructure\Persistence\Monitors\DatabaseMonitorsRepository;
+use App\Infrastructure\Persistence\Site\DatabaseSiteRepository;
 
 
 use DI\ContainerBuilder;
@@ -74,6 +76,7 @@ return function (ContainerBuilder $containerBuilder) {
         DeviceRepository::class => \DI\autowire(DatabaseDeviceRepository::class),
         MonitoringPollerRepository::class => \DI\autowire(DatabaseMonitoringPollerRepository::class),
         MonitorsRepository::class => \DI\autowire(DatabaseMonitorsRepository::class),
+        SiteRepository::class => \DI\autowire(DatabaseSiteRepository::class),
         DiscoveryRepository::class => \DI\autowire(DatabaseDiscoveryRepository::class),
         RenderGraphRepository::class => \DI\autowire(DatabaseRenderGraphRepository::class),
         ReportingRepository::class => \DI\autowire(DatabaseReportingRepository::class),
