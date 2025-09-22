@@ -1,0 +1,27 @@
+This directory is simply a template to use to build out standard API calls.
+
+Note that changes are case sensitive.
+
+TEMPLATE will refer to names that need the first character capitol.
+IE: Maintenance, Site, Foo, Bar, Baz
+
+template will refer to names that are expected to remain lower cased.  Commonly the name will be identical to TEMPLATE, simply only lower-cased.
+IE: maintenance, site, foo, bar, baz
+
+task# is simply a placeholder for the different tasks you need done.
+
+It is expected that they will be defined as what the task is such as findSomething, createSomething, deleteSomething
+
+Remember, you have dependency in
+
+Activations:
+app/routes.php
+app/repositories.php
+Applications/Actions/TEMPLATE/TEMPLATEAction.php
+
+Destinations:
+Infrastructure/Persistence/TEMPLATE
+
+If secondary classes or services are needed they cannot be covered by this template.  Sorry...
+
+
