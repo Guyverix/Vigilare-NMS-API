@@ -70,6 +70,40 @@ SELECT
   ag.groupName,
   CONCAT(
     '{',
+    IFNULL(
+      GROUP_CONCAT(
+        CONCAT(
+          '"', d.id, '":"',
+          REPLACE(REPLACE(d.hostname, '\\', '\\\\'), '"', '\"'),
+          '"'
+        )
+        ORDER BY FIND_IN_SET(
+          d.id,
+          REPLACE(TRIM(BOTH '''' FROM ag.deviceId), ' ', '')
+        )
+        SEPARATOR ','
+      ),
+      ''  -- no devices → empty body
+    ),
+    '}'
+  ) AS id_to_hostname_json
+FROM applicationGroup ag
+LEFT JOIN Device d
+  ON ag.deviceId IS NOT NULL
+ AND ag.deviceId <> ''
+ AND FIND_IN_SET(
+       d.id,
+       REPLACE(TRIM(BOTH '''' FROM ag.deviceId), ' ', '')
+     ) > 0
+GROUP BY ag.groupName, ag.deviceId
+ORDER BY ag.groupName;
+SQL;
+
+    $sql2 = <<<'SQL'
+SELECT
+  ag.groupName,
+  CONCAT(
+    '{',
     GROUP_CONCAT(
       CONCAT(
         '"', d.id, '":"',
@@ -104,7 +138,35 @@ SQL;
   // Raw results but id and hostnames cannot be corleated
   public function getAllHostnames() { // no args
     $results = array();
-    $sql = "SELECT ag.groupName, ag.deviceId, GROUP_CONCAT(d.hostname ORDER BY FIND_IN_SET(d.id, REPLACE(TRIM(BOTH '''' FROM ag.deviceId), ' ', '')) SEPARATOR ', ') AS hostnames FROM applicationGroup ag JOIN Device d ON FIND_IN_SET(d.id, REPLACE(TRIM(BOTH '''' FROM ag.deviceId), ' ', '')) > 0 GROUP BY ag.groupName ORDER BY ag.groupName";
+    $sql = <<<'SQL'
+    SELECT
+  ag.groupName,
+  ag.deviceId,
+  COALESCE(
+    GROUP_CONCAT(
+      d.hostname
+      ORDER BY FIND_IN_SET(
+        d.id,
+        REPLACE(TRIM(BOTH '''' FROM ag.deviceId), ' ', '')
+      )
+      SEPARATOR ', '
+    ),
+    ''
+  ) AS hostnames
+FROM applicationGroup ag
+LEFT JOIN Device d
+  ON ag.deviceId IS NOT NULL
+ AND ag.deviceId <> ''
+ AND FIND_IN_SET(
+       d.id,
+       REPLACE(TRIM(BOTH '''' FROM ag.deviceId), ' ', '')
+     ) > 0
+GROUP BY ag.groupName, ag.deviceId
+ORDER BY ag.groupName;
+SQL;
+
+// Old version does not support empty deviceId or hostnames
+//  $sql = "SELECT ag.groupName, ag.deviceId, GROUP_CONCAT(d.hostname ORDER BY FIND_IN_SET(d.id, REPLACE(TRIM(BOTH '''' FROM ag.deviceId), ' ', '')) SEPARATOR ', ') AS hostnames FROM applicationGroup ag JOIN Device d ON FIND_IN_SET(d.id, REPLACE(TRIM(BOTH '''' FROM ag.deviceId), ' ', '')) > 0 GROUP BY ag.groupName ORDER BY ag.groupName";
     $this->db->prepare("$sql");
     $finalData = $this->db->resultset();
     $errs = $this->db->errorInfo();
