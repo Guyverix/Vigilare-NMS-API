@@ -20,6 +20,7 @@ require __DIR__ . '/../../../app/Database.php';
 interface SiteRepository {
   public function getId($arr): array;
   public function getAllHostnames();
+  public function getAllHostnamesJson();
   public function getHostnameFromGroupName($arr): array;
   public function getGroupNamesFromHostname($arr): array;
   public function addGroupName($arr): array;

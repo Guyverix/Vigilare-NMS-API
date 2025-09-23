@@ -13,7 +13,7 @@ class ManageSiteAction extends SiteAction {
   protected function action(): Response {
 
     // Define the allowed jobs this class can do
-    $jobType = ['getAllHostnames', 'getHostnameFromGroupName', 'getGroupNamesFromHostname', 'addGroupName', 'deleteGroupName', 'addHostname', 'deleteHostname', 'cleanHostname'];
+    $jobType = ['getAllHostnamesJson', 'getAllHostnames', 'getHostnameFromGroupName', 'getGroupNamesFromHostname', 'addGroupName', 'deleteGroupName', 'addHostname', 'deleteHostname', 'cleanHostname'];
 
     /* BOILERPLATE
        This should be a generic way for each route to vet the supported arguments
@@ -46,12 +46,17 @@ class ManageSiteAction extends SiteAction {
       case 'getAllHostnames':
         $queryResult = $this->siteRepository->getAllHostnames();
         break;
+      case 'getAllHostnamesJson':
+        $queryResult = $this->siteRepository->getAllHostnamesJson();
+        break;
       case 'getHostnameFromGroupName':
         $validator->group($data);
         $queryResult = $this->siteRepository->getHostnameFromGroupName($data);
         break;
       case 'getGroupNamesFromHostname':
-        $validator->id($data);
+        if (empty($data['hostname'])) {
+          $validator->id($data);
+        }
         $queryResult = $this->siteRepository->getGroupNamesfromHostname($data);
         break;
       case 'addGroupName':
@@ -63,7 +68,8 @@ class ManageSiteAction extends SiteAction {
         $queryResult = $this->siteRepository->deleteGroupName($data);
         break;
       case 'addHostname':
-        $validator->both($data);
+        // we are going to support array updates for id values so id is not just an integer anymore
+        $validator->group($data);
         $queryResult = $this->siteRepository->addHostname($data);
         break;
       case 'deleteHostname':
