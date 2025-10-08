@@ -55,7 +55,7 @@ class CompleteGlobalMappingAction extends GlobalMappingAction {
           break;
         case "find":
           $data = $this->globalmappingRepository->findGlobalMappingHost($data);
-return $this->respondWithData($data);
+          // return $this->respondWithData($data);
           break;
         case "create":
           $data = $this->globalmappingRepository->createGlobalMappingHost($data);
