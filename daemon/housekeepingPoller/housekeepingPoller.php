@@ -59,10 +59,13 @@ if (empty($daemonState)) {
 }
 
 // Enable logging system (filename, and minimum sev to log, iterationCycle)
-if ( empty($logger)) {
-  require __DIR__ . '/../../app/Logger.php';
-  $logger = new ExternalLogger($monitorType."Poller", $housekeepingLogSeverity, $iterationCycle);
-}
+// echo "Logger vars 1: " . $monitorType . "Poller" . " severity " . $housekeepingLogSeverity . " iteration cycle " . $iterationCycle . "\n";
+// if (! empty($logger)) { echo "LOGGER: " . print_r(json_decode(json_encode($logger,1), true)) . "\n"; }
+
+require_once __DIR__ . '/../../app/Logger.php';
+$logger = new ExternalLogger($monitorType."Poller", $housekeepingLogSeverity, $iterationCycle);
+
+// echo "Logger vars 2: " . $monitorType . "Poller" . " severity " . $housekeepingLogSeverity . " iteration cycle " . $iterationCycle;
 
 // Start the guts of the daemon here
 $sleepDate=time();
