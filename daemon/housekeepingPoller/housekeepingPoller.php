@@ -115,7 +115,7 @@ ftruncate($daemonPidFile, 0);
 fwrite($daemonPidFile, "$pid");
 
 // Send a heartbeat to start
-$sendHeartbeat=heartBeat($monitorType,$iterationCycle,$pid);
+$sendHeartbeat = v2HeartBeat($pollerIpAddress, $monitorType, $iterationCycle, $pid);
 if ( $sendHeartbeat == "ok") {
   $logger->debug("Initial hartbeat sent for " . $monitorType);
 }
@@ -123,11 +123,13 @@ else {
   $logger->error("Failed to send initial heartbeat for ". $monitorType);
 }
 
+$logger->debug("My local Poller IP address is " . $pollerIpAddress);
+
 // Daemon loop starts now
 while (true) {
 
   // heartbeat always at the beginning of the loop
-  $sendHeartbeat=heartBeat($monitorType,$iterationCycle,$pid);
+  $sendHeartbeat = v2HeartBeat($pollerIpAddress, $monitorType, $iterationCycle, $pid);
   if ( $sendHeartbeat == "ok") {
     $logger->debug("Initial hartbeat sent for " . $monitorType);
   }
@@ -135,7 +137,7 @@ while (true) {
     $logger->error("Failed to send initial heartbeat for ". $monitorType);
   }
   // If it can write to the DB, then thats a valid heartbeat ;)
-  heartBeat('mysql', 60, 12345);
+  v2HeartBeat($pollerIpAddress, 'mysql', 60, 12345);
 
   // Pull all active events
   $activeEvents=findAllEvents();
@@ -170,19 +172,23 @@ while (true) {
   // pull all heartbeats
   $currentHeartbeats=getHeartbeats();
   if ( empty($currentHeartbeats)) { $currentHeartbeats=array(); }
+  // debugger($currentHeartbeats);
 
+  // valid Ignore should be saved in config and called here so users can ignore specific things.  TODO
   $validIgnores = array("snmptrapd", "mysql", "randomPollerOrPassiveCheck");
+  
   foreach ($currentHeartbeats as $singleHeartbeat) {
     $checkHbPid='check';
     $hbCycle = explode('_', $singleHeartbeat['component']);
     $hbCycle = ltrim(rtrim($hbCycle[1]));
     $hbDevice = $singleHeartbeat['device'];
     $hbLastUpdate = $singleHeartbeat['lastTime'];
+    $hbIp = $singleHeartbeat['poller'];
     $hbLastUpdateEpoch = strtotime($hbLastUpdate);
     $hbCycleWindow = $hbCycle * 2 ;
     $hbTimeNow = time();
     $hbTimeWindow = $hbCycleWindow + $hbLastUpdateEpoch;
-    if ( $hbTimeWindow <= $hbTimeNow ) {  // too long since last hb update in database
+    if ( $hbTimeWindow <= $hbTimeNow && $hbIp == $pollerIpAddress) {  // too long since last hb update in database AND ip address matches
       if ( ! in_array($singleHeartbeat['device'], $validIgnores)) {  // only look at legit processes
       sendHostAlarm("Poller "  . $singleHeartbeat['device'] . " with a cycle of " . $hbCycle . " has not sent a heartbeat within check window", 5, $singleHeartbeat['device']. '-' . $hbCycle, $pollerName, 3600, null);
       $logger->error("Poller " . $singleHeartbeat['device'] . " with a cycle of " . $hbCycle . " has not sent a heartbeat within check window");
@@ -191,13 +197,13 @@ while (true) {
     }
     else { // Clear events if there are any from previous failures
       foreach ($activeEvents as $activeEvent) {
-        if ( $activeEvent['eventName'] == $singleHeartbeat['device'] . '-' . $hbCycle ) {
+        if ( $activeEvent['eventName'] == $singleHeartbeat['device'] . '-' . $hbCycle && $hbIp == $pollerIpAddress) {
           sendHostAlarm("Poller " . $singleHeartbeat['device'] . " with a cycle of " . $hbCycle . " is running", 0, $singleHeartbeat['device']. '-' . $hbCycle, $pollerName, 3600, null);
           $logger->info("Cleared failure for " . $singleHeartbeat['device'] . " not running");
         }
       }
     }
-    if ( $checkHbPid == 'check' &&  ! in_array($singleHeartbeat['device'], $validIgnores) ) { // alarm if daemons are not running.  Ignore database.  Cant alarm to db if it is dead anyway
+    if ( $checkHbPid == 'check' &&  ! in_array($singleHeartbeat['device'], $validIgnores) && $hbIp == $pollerIpAddress) { // alarm if daemons are not running.  Ignore database.  Cant alarm to db if it is dead anyway
       $hbPid = verifyPid($singleHeartbeat['pid']);
       if ( $hbPid !== 'running') {
         sendHostAlarm("Poller "  . $singleHeartbeat['device'] . " with a cycle of " . $hbCycle . " is a possible zombie process.  Pid does not match database", 3, $singleHeartbeat['device'] . '-' . $hbCycle . '-pid', $pollerName, 1800, null);
@@ -205,7 +211,7 @@ while (true) {
       }
       else {  // clear alarms if they exist
         foreach ($activeEvents as $activeEvent) {
-          if ( $activeEvent['eventName'] == $singleHeartbeat['device'] . '-' . $hbCycle . '-pid' ) {
+          if ( $activeEvent['eventName'] == $singleHeartbeat['device'] . '-' . $hbCycle . '-pid' && $activeEvent['address'] == $pollerIpAddress ) {
             sendHostAlarm($singleHeartbeat['device'] . ' daemon is running', 0, $singleHeartbeat['device'] . '-' . $hbCycle . '-pid', $pollerName, 3600, null);
             $logger->info("Cleared failure for " . $singleHeartbeat['device'] . " mismatched pid");
           }
@@ -225,7 +231,7 @@ while (true) {
   else {
    // This is as good as we are going to get for snmptrapd validation
    $snmpTrapDaemonPid = intval(file_get_contents('/run/snmptrapd.pid'));
-   heartBeat('snmptrapd', 60, $snmpTrapDaemonPid);
+   v2HeartBeat($pollerIpAddress, 'snmptrapd', 60, $snmpTrapDaemonPid);
     foreach ($activeEvents as $activeEvent) {
       if ( $activeEvent['eventName'] == 'snmptrapd' ) {
         sendHostAlarm('snmptrapd daemon is running', 0, 'snmptrapd', $pollerName, 3600, null);
