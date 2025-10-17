@@ -18,19 +18,13 @@ declare(ticks=1);
 // unique pidfile based on iteration cycle so we can kill easier
 $daemonPid=getmypid();
 
+/*
+  The following requires are useful for setting our configuration
+  as well as defining how to call Curl and other Classes..
+*/
 require_once __DIR__ . "/../../app/config.php";
 
-$nrpePath="/usr/lib/nagios/plugins/check_nrpe";
-$pollerName='larvel01.iwillfearnoevil.com';
-
-
-/*
-  daemonFunctions contains the following:
-  signalHandler, convert, sendAlarm, sendHostAlarm, dumpDatabaseObject, heartBeat, pullActiveEvents, pullMonitors, storeResults, convertPeriodToUnderbar, convertSlashToUnderbar
-*/
-// Enable Eventing support for daemon
 require __DIR__ . '/../../app/Curl.php';
-
 include_once __DIR__ . '/../../src/Infrastructure/Shared/Functions/daemonFunctions.php';
 
 
@@ -66,15 +60,23 @@ else {
   $logSeverity = $defaultDaemonLog;
 }
 
-$cycle=$iterationCycle;
+/*
+  Enable logging system (filename, and minimum sev to log, iterationCycle)
+  This is not going to know if it is a local poller or a remote one.  Keep
+  it all looking the same in the logs either way.
+*/
 
-debugger($logger);
-
-// Enable logging system (filename, and minimum sev to log, iterationCycle)
 if ( ! isset($logger)) {
   require __DIR__ . '/../../app/Logger.php';
   $logger = new ExternalLogger($monitorType."Poller", $logSeverity, $iterationCycle);
+  debugger($logger);
 }
+
+/*
+  This is distinct so we dont clobber the logging with this function set or
+  the classes it supports
+*/
+require_once __DIR__ . "/../../templates/generalMetricSaver.php";
 
 echo "Log directory: " . $logger->loggerFile . "\n";
 
@@ -111,14 +113,6 @@ $sleepDate=time();
 date_default_timezone_set('UTC');
 $logger->info("Daemon called for iteration cycle of $iterationCycle under pid: $daemonPid to $daemonState daemon");
 
-/*
-  daemonFunctions contains the following:
-  signalHandler, convert, sendAlarm, sendHostAlarm, dumpDatabaseObject, heartBeat, pullActiveEvents, pullMonitors, storeResults, convertPeriodToUnderbar, convertSlashToUnderbar
-*/
-//require __DIR__ . '/../../src/Infrastructure/Shared/Functions/daemonFunctions.php';
-
-// This will allow different daemons with different
-// iteration cycles to run side by side
 $daemonPidFileName = $monitorType."Poller" . '.' . $iterationCycle . '.pid';
 $daemonPidFile = @fopen($daemonPidFileName, 'c');
 if (! $daemonPidFile) {
@@ -170,7 +164,7 @@ while (true) {
   $startSize=convert(memory_get_usage(true));
 
   // Update heartbeat each iteration
-  heartBeat($monitorType."Poller", $iterationCycle, $daemonPid);
+  v2HeartBeat($pollerIpAddress, $monitorType."Poller", $iterationCycle, $daemonPid);
   $logger->debug("Heartbeat sent");
 
   /*
@@ -187,12 +181,11 @@ while (true) {
     $countActiveEvents=0;
   }
   $logger->debug("Active events found is " . $countActiveEvents);
-
-  // echo "COUNT ACTIVE " . $countActiveEvents . "\n";  // DEBUG
-  // print_r($activeEvents); // DEBUG
+  // debugger($activeEvents);
   // exit();  // DEBUG
 
-  $pullMonitors2 = pullMonitors($monitorType, $iterationCycle);
+  // This must be changed AFTER we have migrated
+  $pullMonitors2 = pullMonitors($pollerIpAddress,$monitorType, $iterationCycle);
   $pullMonitors=json_decode($pullMonitors2,true);
   if ( ! is_null($pullMonitors['data'])) {
     $pullMonitorsCount=count($pullMonitors['data']);
@@ -201,43 +194,41 @@ while (true) {
     $pullMonitorsCount=0;
   }
   $logger->info("Poller table query for $monitorType returned $pullMonitorsCount distinct monitors");
-  //  print_r($pullMonitors['data']);  //DEBUG
-  //  exit();  // DEUBG
-  // echo "COUNT MONITORS " . $pullMonitorsCount . "\n";  // DEBUG
-
+  // debugger($pullMonitors);
+  //exit();  // DEUBG
 
   // Our list of monitors and all host details that we have in hostProperties
   $monitorListHostDetails = getMonitorHostDetails( $pullMonitors['data'] );
-  //  print_r($monitorListHostDetails);  //DEBUG
+  //  debugger($monitorListHostDetails);  //DEBUG
   //  exit();  // DEBUG
 
   $expandedList=array();
   foreach ($monitorListHostDetails as $monitorExpanded) {
-    // print_r($monitorExpanded); // DEBUG
+    // debugger($monitorExpanded); // DEBUG
     foreach($monitorExpanded['hostProperties'] as $singleHostProperties) {
       $expandedList[] = array( 'id' => $monitorExpanded['id'], 'checkName' => $monitorExpanded['checkName'], 'checkAction' => $monitorExpanded['checkAction'], 'type' => $monitorExpanded['type'], 'storage' => $monitorExpanded['storage'], 'hostProperties' => $singleHostProperties);
     }
   }
   $countExpandedList=count($expandedList);
   $logger->debug("Count list of checks is " . $countExpandedList);
-  //print_r($expandedList);  // DEBUG
+  //debugger($expandedList);  // DEBUG
   //exit();
   /*
     This is where the magic happens.
   */
-  //print_r($server); // DEBUG
+  //debugger($server); // DEBUG
   job_blocking();
   //  job_nonblocking();
 
 
   // After we are all done getting data, get our results
   $jobResults = $server->get_all_results();
-  // print_r($jobResults); // DEBUG
+  // debugger($jobResults); // DEBUG
 
   // We have data, now DO something with it
   foreach ($jobResults as $monitorResults) {
     //echo "JOB RESULTS " . $monitorResults['checkName'] . " ". $monitorResults['hostname'] . " " . json_encode($monitorResults['output'],1) . "\n"; // DEBUG
-    //print_r($monitorResults); // DEBUG
+    //debugger($monitorResults); // DEBUG
     if ( array_key_exists('output', $monitorResults) && array_key_exists('exitCode', $monitorResults) ) { // No output or exit code implies check was not run
       // Clear active events if we have a success match
       clearEvents($activeEvents, $monitorResults);
@@ -250,7 +241,7 @@ while (true) {
       $logger->warning("Service check for " . $monitorResults['hostname'] . " with check name " . $monitorResults['checkName'] . " have no output or exit code defined.  Bypassing attempt to record metrics or work with events");
     }
   }  // end foreach
-  // print_r($jobResults);  // DEBUG
+  // debugger($jobResults);  // DEBUG
   //  exit(); // DEBUG
 
   /*
@@ -284,7 +275,7 @@ while (true) {
     // echo json_encode($pollerMetric,1) . "\n"; // DEBUG
 
     //    $sent=sendPollerPerformance($pollerName, json_encode($pollerMetric,1), $monitorType."-".$cycle, null, "poller", null);
-    $sent=sendPollerPerformance($pollerName, json_encode($pollerMetric,1), $monitorType."-".$cycle, "poller", null, null);
+    $sent=sendPollerPerformance($pollerName, json_encode($pollerMetric,1), $monitorType."-".$iterationCycle, "poller", null, null);
     if ( $sent == 1 ) {
       $logger->error("Failed to save metric data");
     }
@@ -332,7 +323,7 @@ function process_child_run($data_set, $identifier = "") {
     There is simply no reason to do them on a down host.  Just make VERY
     sure that we still allow the alive check to happen! (duh)
   */
-  //  print_r($data_set);
+  //  debugger($data_set);
   if ( $pollerType !== "alive" && $data_set[0]['hostProperties']['isAlive'] == 'dead' ) {  // Do not check services on a dead host, duh
     $logger->warning("Host " . $returnData['hostname'] . " is showing offline.  Service check bypassed " . $data_set[0]['checkAction']);
   }
@@ -390,11 +381,11 @@ function process_child_run($data_set, $identifier = "") {
         // echo "DEBUG host " . $data_set[0]['hostProperties']['address'] . " community " . $data_set[0]['hostProperties']['Properties']['snmpCommunity'] . " version " . $data_set[0]['hostProperties']['Properties']['snmpVersion'] . "\n";
         if ( $data_set[0]['type'] == "get" ) {
           $result=shellSnmpGet($data_set[0]['hostProperties']['address'], $data_set[0]['hostProperties']['Properties']['snmpVersion'], $data_set[0]['hostProperties']['Properties']['snmpCommunity'],$data_set[0]['checkAction']);
-          //print_r($result); // DEBUG
+          //debugger($result); // DEBUG
         }
         else {
           $result=shellSnmpWalk($data_set[0]['hostProperties']['address'], $data_set[0]['hostProperties']['Properties']['snmpVersion'], $data_set[0]['hostProperties']['Properties']['snmpCommunity'],$data_set[0]['checkAction']);
-          //print_r($result); // DEBUG
+          //debugger($result); // DEBUG
         }
         $returnData['output'] = $result['output'];
         $returnData['exitCode'] = $result['exitCode'];
