@@ -30,14 +30,25 @@ class ManageMonitoringPollerAction extends MonitoringPollerAction {
       throw new HttpBadRequestException($this->request, $job);
     }
 
-    // This can be empty, so dont get bit here if there are no posted vars
-    // This will always be an array
+    /*
+      This can be both empty as well as fully datafilled.  Set sane defaults if something is
+      not defined.  Support both POST and GET in this specific route.
+    */
     $data = $this->getFormData();
-    $data['action'] = $action;
-    if ( ! empty($_GET["cycle"])) { $data['cycle']=$_GET["cycle"]; } else { $data['cycle'] = 0; }
-    if ( ! empty($_GET["hostgroup"])) { $data['hostgroup']=$_GET["hostgroup"]; } else { $data['hostgroup']='undefinedHostgroup'; }
-    if ( ! empty($_GET['monitor'])) { $data['monitor']=$_GET['monitor']; } else { $data['monitor']='undefinedMonitor'; }
+    $data['action']      = $action;
+    $data['cycle']       = $data['cycle']       ?? $_GET['cycle'] ?? 0;
+    $data['hostgroup']   = $data['hostgroup']   ?? $_GET['hostgroup']  ?? "undefinedHostgroup";
+    $data['monitor']     = $data['monitor']     ?? $_GET['monitor']    ?? "undefinedMonitor";
+    $data['pollerIp']    = $data['pollerIp']    ?? $_GET['pollerIp']   ?? '255.255.255.255';
+    $data['pollerName']  = $data['pollerName']  ?? $_GET['pollerName'] ?? 'undefinedPoller';
+    $data['pollerPid']   = $data['pollerPid']   ?? $_GET['pollerPid']  ?? 0;
+    $data['pollerCycle'] = $data['pollerCycle'] ?? $data['cycle']      ?? 0;
     // return $this->respondWithData($data);
+
+    /*
+      This should be turned into a case statement, and we need more validation on inputs when possible
+    */
+
     if("$action" == "all") {
       $FindMonitoringPoller=$this->monitoringPollerRepository->FindMonitoringPollerAll($data);  // this is an array
     }
@@ -57,7 +68,6 @@ class ManageMonitoringPollerAction extends MonitoringPollerAction {
       $FindMonitoringPoller=$this->monitoringPollerRepository->FindMonitoringHostname($data);  // this is an array
     }
     elseif ($action == "heartbeat") {
-      // Make sure idList is a clean string list with no quotes or extras.
       $FindMonitoringPoller=$this->monitoringPollerRepository->saveHeartBeat($data);  // this is an array
     }
     elseif ($action == "savePerformance") {

@@ -8,15 +8,29 @@ use App\Application\Actions\Monitors\MonitorsAction;
 use App\Domain\Monitors\MonitorsRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 
+/*
+  Monitoring is ONLY going to have POST due to the chance
+  of passwords being transferred when working with monitors
+  Dropping real values is dumb, but there will likely be cases
+  where a user needs something sensitive for a host.
+  Do not echo that junk in the URL
+*/
+
+
 class ManageMonitorsAction extends MonitorsAction {
+  // I guess we DONT need this for use since we call the object..
+  // public $pollerIpAddress;
+
   protected function action(): Response {
-    $jobType=["findAlarmCount", "findMonitorsByHostId", "findHostGroup", "findDeviceId", "findMonitorType", "findMonitorStorage", "findMonitorIteration", "createMonitor", "updateMonitor", "deleteMonitor", "monitorAddHost", "monitorAddHostgroup", "findMonitors", "findMonitorNames", "findMonitorsDisable", "findMonitorsAll", "findMonitorsByCheckName", "monitorDeleteHost", "monitorDeleteHostGroup"]; // sanity check that we only are doing what we expect here
 
-    // How to check if resolveArg is even going to work
-    // before calling it and kicking an exception
-    if ( empty($this->args["action"]) ) { $action="failure";} else { $action=$this->resolveArg("action"); }
+    /*
+      Check early if we can even do the request...
+      How to check if resolveArg is even going to work before calling it and kicking an exception
+      Fail fast if we are never going to be able to do anything
+    */
+    $jobType=["ping", "findAlarmCount", "findMonitorsByHostId", "findHostGroup", "findDeviceId", "findMonitorType", "findMonitorStorage", "findMonitorIteration", "createMonitor", "updateMonitor", "deleteMonitor", "monitorAddHost", "monitorAddHostgroup", "findMonitors", "findMonitorNames", "findMonitorsDisable", "findMonitorsAll", "findMonitorsByCheckName", "monitorDeleteHost", "monitorDeleteHostGroup"]; // sanity check that we only are doing what we expect here
 
-    // Fail fast if we are never going to be able to do anything
+    $action = $this->args["action"] ?? "failure"; 
     if ( ! in_array("$action", $jobType) ) {
       $x='';
       foreach ($jobType as $list) {
@@ -29,10 +43,19 @@ class ManageMonitorsAction extends MonitorsAction {
       $this->logger->error("ManageMonitors Action no valid action type defined for requested action " . $action );
       throw new HttpBadRequestException($this->request, $job);
     }
+
+    /*
+      We know we at least called a sane path.  Pull the information now and return some data
+    */
+
     $data = $this->getFormData();
+    $data['poller'] = $data['poller'] ?? $this->pollerIpAddress;   // GPT version looks better than mine
     $monitoringChanges = array();
 
     switch ($action) {
+    case 'ping':
+      $monitoringChanges = $data;
+      break;
     case 'createMonitor':
       $monitoringChanges = $this->monitorsRepository->createMonitor($data);
       break;
@@ -131,7 +154,6 @@ class ManageMonitorsAction extends MonitorsAction {
       $monitoringChanges = $this->monitorsRepository->findAlarmCount();
       break;
     }
-
     $this->logger->info("Monitoring change request for " . $action . '.', $data);
     return $this->respondWithData($monitoringChanges);
   }

@@ -10,23 +10,34 @@ use Slim\Exception\HttpBadRequestException;
 class ManageMetricsAction extends MetricsAction {
   /**
    * {@inheritdoc}
-   */
+ */
+  /*
+    We are not going to normally support CRUD operations here
+    This is more simplistic.
+    
+    This will also be stubbed for a queue as metrics can be
+    resource intense.  By default it is simply going to take
+    metric data and write.
+  */ 
   protected function action(): Response {
     $jobType=["validate", "clean", "add", "test", "queue"]; // sanity check that we only are doing what we expect here
 
     // How to check if resolveArg is even going to work
     // before calling it and kicking an exception
     if ( empty($this->args["action"]) ) {
-      $action="failure";
+      $action = "failure";
     }
     else {
-      $action=$this->resolveArg("action");
+      $action = $this->resolveArg("action");
     }
 
     // All the different POST data we could have as an array
     $data = $this->getFormData();
 
-    // Setup our valiation now
+    // Support GET later..  A return of raw data
+    // should be reasonable from this api as well
+
+    // Setup our valiation later...
     // $validator = new MetricsValidator();
 
     switch ($action) {

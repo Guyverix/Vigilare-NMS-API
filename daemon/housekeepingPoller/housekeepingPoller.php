@@ -176,7 +176,13 @@ while (true) {
 
   // valid Ignore should be saved in config and called here so users can ignore specific things.  TODO
   $validIgnores = array("snmptrapd", "mysql", "randomPollerOrPassiveCheck");
-  
+
+
+  /*
+    As a primary housekeeping check, this validates all remote poller
+    heartbeats as well as local heartbeatss
+  */
+
   foreach ($currentHeartbeats as $singleHeartbeat) {
     $checkHbPid='check';
     $hbCycle = explode('_', $singleHeartbeat['component']);
@@ -219,6 +225,8 @@ while (true) {
       }  // end else
     }  // end if
   } // end foreach
+
+
   if ( is_null($currentHeartbeats)) { $currentHeartbeats=''; }
   $logger->info("Completed heartbeat checks against " . count($currentHeartbeats) . " pollers.");
 

@@ -4,10 +4,13 @@
   Since these are simply functions, do NOT use the logger
   interface here.  It must be already defined and we are
   currently pulling logger in as a global (blah!)
+
+  The one exception is for daemon control.  That needs
+  a logger fucntion and it is defined as logger2
 */
 
 
-require_once __DIR__ . "/../../../../templates/generalMetricSaver.php";
+// require_once __DIR__ . "/../../../../templates/generalMetricSaver.php";
 
 // Debugging database object
 function dumpDatabaseObject() {
@@ -120,6 +123,32 @@ function heartBeat( $pollerName, $pollerCycle, $pollerPid = null ) {
   return "ok";
 }
 
+// Define the API destination since this is not an event
+function v2HeartBeat( $pollerIpAddress, $pollerName, $pollerCycle, $pollerPid = null ) {
+  global $logger;
+  global $apiHost;
+  global $apiPort;
+  global $apiKey;
+
+  if ( null === $pollerPid ) {
+    $pollerPid = 0;
+  }
+  $heartBeat = new Curl();
+  $heartBeat->url = $apiHost . ":" . $apiPort . "/monitoringPoller/heartbeat";
+  $heartBeat->method = "post";
+  $heartBeatValues['pollerIp']  = $pollerIpAddress;
+  $heartBeatValues['pollerName']  = $pollerName;
+  $heartBeatValues['pollerCycle'] = $pollerCycle;
+  $heartBeatValues['pollerPid']   = $pollerPid;
+  $heartBeat->headers = ["X-Api-Key: $apiKey"];
+  $heartBeat->data($heartBeatValues);
+  $heartBeat->send();
+  $heartBeat->close();
+  $logger->debug("heartBeat " . json_encode($heartBeat,1) . " POST data " . json_encode($heartBeatValues,1) );
+  unset($heartBeat);
+  return "ok";
+}
+
 // Define the API destination for aliveness results
 function isAlive( $hostname, $address, $isAliveResult = null ) {
   global $logger;
@@ -168,13 +197,13 @@ function pullActiveEvents() {
 }
 
 // Retrieve all monitors for a given type and iteration cycle
-function pullMonitors( $monitorType, $monitorCycle ) {
+function pullMonitors($pollerIpAddress, $monitorType, $monitorCycle ) {
   global $apiHost;
   global $apiPort;
   global $apiKey;
 
   $pullMonitors = new Curl();
-  $pullMonitors->url = $apiHost . ":" . $apiPort . "/monitoringPoller/" . $monitorType . "?cycle=" . $monitorCycle;
+  $pullMonitors->url = $apiHost . ":" . $apiPort . "/monitoringPoller/" . $monitorType . "?cycle=" . $monitorCycle . "&pollerIp=" . $pollerIpAddress;
   $pullMonitors->headers = ["X-Api-Key: $apiKey"];
 
   $pullMonitors->send();
@@ -224,10 +253,12 @@ function signalHandler($signal) {
   global $logSeverity;
   global $daemonPidFile;
   global $daemonPid;
-print "Caught signal $signal";
+  print "Caught signal $signal";
   ftruncate($daemonPidFile, 0);
+  $logSeverity = $logSeverity ?? 1;
+  $iterationCycle = $iterationCycle ?? 60;
   echo "PIDFILE is " . $daemonPidFile . "\n";
-  $logger2 = new Logger(basename(__FILE__), $logSeverity, $iterationCycle);
+  $logger2 = new ExternalLogger(basename(__FILE__), $logSeverity, $iterationCycle);
   $logger2->info("Daemon shutdown");
   exit;
 }
@@ -237,7 +268,10 @@ print "Caught signal $signal";
 */
 
 /* registered call back function */
+// CSH disalbe this for now 10/10/2025
 function logger($message) {
+
+// function loggerFork($message) {
   // This is to stdout for the daemon..
   echo "logger: " . $message . PHP_EOL;
 }

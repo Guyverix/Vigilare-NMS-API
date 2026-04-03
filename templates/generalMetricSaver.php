@@ -10,16 +10,20 @@
   Return 3 template script
   Return 4 back to main method after template completed
   Return 5 actual update with data
+
+  REMEMBER THIS IS NOT A CLASS it CALLS a Class
+
 */
 
-require_once __DIR__ . "/../app/Logger.php";
+//require_once __DIR__ . "/../app/Logger.php";
 require_once __DIR__ . "/generalMetricClass.php";
 require_once __DIR__ . '/../src/Infrastructure/Shared/Functions/daemonFunctions.php';
 
-if ( ! isset($logger)) {
-  $logger = new ExternalLogger("graphClass", 0, 0);
-  global $logger;
-}
+//if ( ! isset($logger)) {
+//  $logger = new ExternalLogger("graphClass", 0, 0);
+//  global $logger;
+//}
+
 
 // Afer RRD I suspect this will be the next most common metric storage type
 function sendMetricToGraphite($hostname, $dataToBeInserted, $checkName, $checkAction = null, $type = null, $cycle = null) {
@@ -131,7 +135,7 @@ function rrdUpdate($singleRrdMetricFileName, $singleRrdMetricUpdate) {
   $cmd="rrdtool update " . $fileName . " " . $singleRrdMetricUpdate . " ";
   $result = exec($cmd, $output, $exitCode);
   if ( $exitCode == 0 ) {
-    $logger->debug("Attempting rrdtool update. result(json): " . json_encode($result,1) . " filename: " . $singleRrdMetricFileName . " metric " . $singleRrdMetricUpdate);
+    $logger->debug("Attempting rrdtool update. result: " . json_encode($result,1) . " filename: " . $singleRrdMetricFileName . " metric " . $singleRrdMetricUpdate);
     return 0;
   }
   else {

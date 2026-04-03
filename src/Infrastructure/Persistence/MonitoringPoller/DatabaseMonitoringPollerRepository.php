@@ -11,8 +11,12 @@ use Database;
 class DatabaseMonitoringPollerRepository implements MonitoringPollerRepository {
 
   public $db = "";
+  public $cfg;
+  public $apiIpAddress;
 
   public function __construct() {
+    require __DIR__ . '/../../../../app/config.php';
+    $this->cfg['apiIpAddress'] = $apiIpAddress;;
     $this->db = new Database();
   }
 
@@ -39,8 +43,39 @@ class DatabaseMonitoringPollerRepository implements MonitoringPollerRepository {
     return $data;
   }
 
+  /*
+    New table query returns a flat result based on the poller IP address.  Private so we dont need new API paths
+    this can be applied via logic of having pollerIp present.
+  */
+  private function newFindMonitoringPoller($arr):array {
+    if ($arr['action'] == "snmp") {
+      $this->db->prepare("SELECT * FROM activeMonitors WHERE iteration= :iteration AND (type='get' OR type='walk') AND poller= :poller AND type= :type");
+      $this->db->bind('iteration', $arr['cycle']);
+      $this->db->bind('poller', $arr['pollerIp']);
+      $this->db->bind('type', $arr['action']);
+    }
+    else {
+      $sql = "SELECT * FROM activeMonitors WHERE iteration= :iteration AND poller= :poller AND type= :type";
+      $this->db->prepare("$sql");
+      $this->db->bind('iteration', $arr['cycle']);
+      $this->db->bind('type', $arr['action']);
+      $this->db->bind('poller', $arr['pollerIp']);
+      $result = $this->db->resultset();
+    }
+    return $result;
+  }
+
+  /*
+    Return the monitors for the pollers.  both old style and new
+  */
   public function FindMonitoringPoller($arr): array {
-    if ( $arr['action'] == "snmp" ) {
+    // Currently this is only set when a query is done for the NEW table that is poller aware and not on the same host as the apiServer
+    if (isset($arr['pollerIp']) && $arr['pollerIp'] != $this->cfg['apiIpAddress']) {
+      return self::newFindMonitoringPoller($arr);
+      $data = self::newFindMonitoringPoller($arr);
+      return $data;
+    }
+    elseif ( $arr['action'] == "snmp" ) {
       $this->db->prepare("SELECT * FROM monitoringDevicePoller WHERE iteration= :cycle AND (type='get' OR type='walk') AND (hostid !='' OR hostGroup !='')");
       $this->db->bind('cycle', $arr['cycle']);
     }
@@ -75,10 +110,12 @@ class DatabaseMonitoringPollerRepository implements MonitoringPollerRepository {
 
   public function saveHeartBeat($arr): array {
     $arr['pollerCycle'] = "iteration_" . $arr['pollerCycle'];
-    $this->db->prepare("INSERT INTO heartbeat VALUES( :poller, :cycle, NOW(), :pid ) ON DUPLICATE KEY UPDATE lastTime= NOW(), pid= :pid");
+    $arr['pollerIp'] = $arr['pollerIp'] ?? '255.255.255.255';
+    $this->db->prepare("INSERT INTO heartbeat VALUES(:ip, :poller, :cycle, NOW(), :pid ) ON DUPLICATE KEY UPDATE lastTime= NOW(), pid= :pid");
     $this->db->bind('poller', $arr['pollerName']);
     $this->db->bind('cycle',  $arr['pollerCycle']);
     $this->db->bind('pid',    $arr['pollerPid']);
+    $this->db->bind('ip',    $arr['pollerIp']);
     $data=$this->db->resultset();
     return $data;
   }
@@ -140,7 +177,7 @@ class DatabaseMonitoringPollerRepository implements MonitoringPollerRepository {
       }
     }
     // hostid is a CSV, so we need 3 LIKES to make sure we find our ID in the list
-//    $query='SELECT checkName, type, storage FROM monitoringDevicePoller WHERE hostid LIKE \'' . $arr['id'] . ',%\' OR hostid LIKE \'%,' . $arr['id'] . ',%\' OR hostid LIKE \'%,' .$arr['id'] . '\''; 
+    //    $query='SELECT checkName, type, storage FROM monitoringDevicePoller WHERE hostid LIKE \'' . $arr['id'] . ',%\' OR hostid LIKE \'%,' . $arr['id'] . ',%\' OR hostid LIKE \'%,' .$arr['id'] . '\''; 
     $query='SELECT checkName, type, storage FROM monitoringDevicePoller WHERE hostid LIKE \'' . $arr['id'] . '\' OR hostid LIKE \'%,' . $arr['id'] . ',%\' OR hostid LIKE \'%,' .$arr['id'] . '\' OR hostid LIKE \'' . $arr['id'] . ',%\''; 
     $this->db->prepare($query . $append);
     $checkNames=$this->db->resultset();
